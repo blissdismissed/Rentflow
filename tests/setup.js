@@ -1,10 +1,15 @@
 // Jest setup file
 import '@testing-library/jest-dom';
 
+// Add TextEncoder/TextDecoder polyfills for jsdom
+const { TextEncoder, TextDecoder } = require('util');
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().queryInput => ({
+  value: jest.fn(queryInput => ({
     matches: false,
     media: queryInput,
     onchange: null,
@@ -13,7 +18,7 @@ Object.defineProperty(window, 'matchMedia', {
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn()
-  })
+  }))
 });
 
 // Mock IntersectionObserver
@@ -42,12 +47,11 @@ global.echarts = {
 };
 
 // Mock Anime.js
-global.anime = {
-  stagger: jest.fn(() => jest.fn()),
-  timeline: jest.fn(() => ({
-    add: jest.fn()
-  }))
-};
+global.anime = jest.fn();
+global.anime.stagger = jest.fn(() => jest.fn());
+global.anime.timeline = jest.fn(() => ({
+  add: jest.fn()
+}));
 
 // Mock Typed.js
 global.Typed = jest.fn();

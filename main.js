@@ -971,6 +971,355 @@ class PropertyManagerUI {
     }
 }
 
+// Financial Manager Class
+class FinancialManager {
+    constructor() {
+        this.expenses = [
+            { id: 1, date: '2024-12-01', description: 'Deep cleaning - Ocean View Condo', amount: 150, category: 'Cleaning', property: 'Ocean View Condo', taxDeductible: true },
+            { id: 2, date: '2024-12-02', description: 'HVAC repair - Mountain Retreat', amount: 320, category: 'Maintenance', property: 'Mountain Retreat', taxDeductible: true },
+            { id: 3, date: '2024-12-03', description: 'Electricity bill - Downtown Loft', amount: 85, category: 'Utilities', property: 'Downtown Loft', taxDeductible: true },
+            { id: 4, date: '2024-12-04', description: 'Professional photography - Beachfront Villa', amount: 200, category: 'Marketing', property: 'Beachfront Villa', taxDeductible: true },
+            { id: 5, date: '2024-12-05', description: 'Property insurance - All properties', amount: 450, category: 'Insurance', property: 'Portfolio', taxDeductible: true },
+            { id: 6, date: '2024-12-06', description: 'Window cleaning - Urban Studio', amount: 75, category: 'Cleaning', property: 'Urban Studio', taxDeductible: true },
+            { id: 7, date: '2024-12-07', description: 'Plumbing fix - Lake House', amount: 180, category: 'Maintenance', property: 'Lake House', taxDeductible: true },
+            { id: 8, date: '2024-12-08', description: 'Internet bill - All properties', amount: 120, category: 'Utilities', property: 'Portfolio', taxDeductible: true }
+        ];
+
+        this.revenue = 12500;
+        this.totalExpenses = 4200;
+
+        this.init();
+    }
+
+    init() {
+        this.updateFinancialMetrics();
+        this.renderExpenses();
+        this.initializeCharts();
+        this.bindUploadEvents();
+        this.updateMonthlyStats();
+    }
+
+    updateFinancialMetrics() {
+        const netProfit = this.revenue - this.totalExpenses;
+        const profitMargin = (netProfit / this.revenue) * 100;
+
+        // Animate counters
+        this.animateCounter('total-revenue', this.revenue, '$');
+        this.animateCounter('total-expenses', this.totalExpenses, '$');
+        this.animateCounter('net-profit', netProfit, '$');
+        this.animateCounter('profit-margin', profitMargin.toFixed(1), '', '%');
+    }
+
+    renderExpenses() {
+        const expensesList = document.getElementById('expenses-list');
+        if (!expensesList) return;
+
+        expensesList.innerHTML = this.expenses.map(expense => `
+            <div class="expense-item p-4 rounded-lg">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-medium text-gray-900">${expense.description}</h4>
+                            <span class="font-semibold text-gray-900">$${expense.amount}</span>
+                        </div>
+                        <div class="flex items-center space-x-4 text-sm text-gray-600">
+                            <span>${new Date(expense.date).toLocaleDateString()}</span>
+                            <span class="category-badge category-${expense.category.toLowerCase()}">${expense.category}</span>
+                            <span>${expense.property}</span>
+                            ${expense.taxDeductible ? '<span class="text-green-600">Tax Deductible</span>' : ''}
+                        </div>
+                    </div>
+                    <button class="ml-4 text-gray-400 hover:text-gray-600" onclick="financialManager.editExpense(${expense.id})">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    initializeCharts() {
+        this.createRevenueExpensesChart();
+        this.createExpenseBreakdownChart();
+    }
+
+    createRevenueExpensesChart() {
+        const chartElement = document.getElementById('revenue-expenses-chart');
+        if (!chartElement) return;
+
+        if (typeof echarts === 'undefined') return;
+        const chart = echarts.init(chartElement);
+
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const revenueData = [8200, 9100, 8800, 10200, 9800, 11500, 11200, 10800, 12500, 12100, 11800, 12500];
+        const expensesData = [3200, 3800, 3500, 4200, 3900, 4600, 4300, 4100, 4200, 4000, 3900, 4200];
+
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderColor: '#e5e7eb',
+                textStyle: { color: '#374151' }
+            },
+            legend: {
+                data: ['Revenue', 'Expenses'],
+                bottom: 0,
+                textStyle: { color: '#6b7280' }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '15%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: months,
+                axisLine: { lineStyle: { color: '#e5e7eb' } },
+                axisLabel: { color: '#6b7280' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLine: { lineStyle: { color: '#e5e7eb' } },
+                axisLabel: { color: '#6b7280', formatter: '${value}' },
+                splitLine: { lineStyle: { color: '#f3f4f6' } }
+            },
+            series: [
+                {
+                    name: 'Revenue',
+                    type: 'bar',
+                    data: revenueData,
+                    itemStyle: { color: '#10b981' },
+                    barWidth: '40%'
+                },
+                {
+                    name: 'Expenses',
+                    type: 'bar',
+                    data: expensesData,
+                    itemStyle: { color: '#f59e0b' },
+                    barWidth: '40%'
+                }
+            ]
+        };
+
+        chart.setOption(option);
+
+        // Make chart responsive
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    createExpenseBreakdownChart() {
+        const chartElement = document.getElementById('expense-breakdown-chart');
+        if (!chartElement) return;
+
+        if (typeof echarts === 'undefined') return;
+        const chart = echarts.init(chartElement);
+
+        const expenseCategories = [
+            { name: 'Maintenance', value: 1200, itemStyle: { color: '#f59e0b' } },
+            { name: 'Cleaning', value: 800, itemStyle: { color: '#3b82f6' } },
+            { name: 'Utilities', value: 600, itemStyle: { color: '#10b981' } },
+            { name: 'Marketing', value: 400, itemStyle: { color: '#ec4899' } },
+            { name: 'Insurance', value: 800, itemStyle: { color: '#6366f1' } },
+            { name: 'Taxes', value: 400, itemStyle: { color: '#ef4444' } }
+        ];
+
+        const option = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b}: ${c} ({d}%)',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderColor: '#e5e7eb',
+                textStyle: { color: '#374151' }
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                textStyle: { color: '#6b7280' }
+            },
+            series: [
+                {
+                    name: 'Expenses',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    center: ['60%', '50%'],
+                    avoidLabelOverlap: false,
+                    label: {
+                        show: false,
+                        position: 'center'
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: '18',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    labelLine: {
+                        show: false
+                    },
+                    data: expenseCategories
+                }
+            ]
+        };
+
+        chart.setOption(option);
+
+        // Make chart responsive
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    bindUploadEvents() {
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('receipt-upload');
+
+        if (!uploadArea || !fileInput) return;
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            this.handleFileUpload(files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            this.handleFileUpload(e.target.files);
+        });
+    }
+
+    handleFileUpload(files) {
+        Array.from(files).forEach(file => {
+            if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+                this.processReceipt(file);
+            }
+        });
+    }
+
+    processReceipt(file) {
+        // Simulate OCR processing
+        const mockExpense = {
+            id: this.expenses.length + 1,
+            date: new Date().toISOString().split('T')[0],
+            description: `Receipt from ${file.name}`,
+            amount: Math.floor(Math.random() * 200) + 50,
+            category: 'Maintenance',
+            property: 'Various Properties',
+            taxDeductible: true
+        };
+
+        // Add to expenses list
+        this.expenses.unshift(mockExpense);
+        this.renderExpenses();
+        this.updateFinancialMetrics();
+
+        // Show notification
+        this.showNotification(`Receipt processed: ${mockExpense.description} - $${mockExpense.amount}`, 'success');
+    }
+
+    updateMonthlyStats() {
+        // Mock monthly statistics
+        const monthRevenue = 12500;
+        const monthExpenses = 4200;
+        const monthBookings = 18;
+        const avgStay = 4.2;
+        const taxDeductible = 3800;
+        const taxOwed = 2100;
+
+        this.animateCounter('month-revenue', monthRevenue, '$');
+        this.animateCounter('month-expenses', monthExpenses, '$');
+        this.animateCounter('month-bookings', monthBookings);
+        this.animateCounter('avg-stay', avgStay.toFixed(1), '', ' nights');
+        this.animateCounter('tax-deductible', taxDeductible, '$');
+        this.animateCounter('tax-owed', taxOwed, '$');
+    }
+
+    animateCounter(elementId, targetValue, prefix = '', suffix = '') {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        const startValue = 0;
+        const duration = 1500;
+        const startTime = performance.now();
+
+        const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            const currentValue = startValue + (targetValue - startValue) * easeOutQuart;
+
+            if (elementId === 'avg-stay' || elementId === 'profit-margin') {
+                element.textContent = prefix + currentValue.toFixed(1) + suffix;
+            } else if (elementId === 'total-revenue' || elementId === 'total-expenses' || elementId === 'net-profit' || elementId === 'month-revenue' || elementId === 'month-expenses' || elementId === 'tax-deductible' || elementId === 'tax-owed') {
+                element.textContent = prefix + Math.round(currentValue).toLocaleString();
+            } else {
+                element.textContent = prefix + Math.round(currentValue) + suffix;
+            }
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        requestAnimationFrame(animate);
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+            type === 'success' ? 'bg-green-100 text-green-800' :
+            type === 'error' ? 'bg-red-100 text-red-800' :
+            'bg-blue-100 text-blue-800'
+        }`;
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        // Animate in
+        if (typeof anime !== 'undefined') {
+            anime({
+                targets: notification,
+                translateX: [300, 0],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                anime({
+                    targets: notification,
+                    translateX: [0, 300],
+                    opacity: [1, 0],
+                    duration: 300,
+                    easing: 'easeInQuart',
+                    complete: () => notification.remove()
+                });
+            }, 3000);
+        } else {
+            // Fallback if anime.js is not available
+            setTimeout(() => notification.remove(), 3000);
+        }
+    }
+
+    editExpense(expenseId) {
+        // Mock edit functionality
+        this.showNotification('Edit functionality coming soon!', 'info');
+    }
+}
+
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize main property manager
@@ -1012,3 +1361,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// Export for testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        PropertyManager,
+        CalendarManager,
+        PropertyManagerUI,
+        FinancialManager
+    };
+}
