@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar - RentFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+        .bg-gradient-primary { background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        .nav-link { position: relative; transition: all 0.3s ease; }
+        .nav-link:hover { color: #0F766E; }
+        .nav-link.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: #0F766E; }
+        .calendar-day { min-height: 120px; transition: all 0.2s ease; }
+        .calendar-day:hover { background-color: #f0fdfa; }
+        .calendar-day.has-bookings { background-color: #ecfdf5; }
+        .calendar-day.empty { background-color: #f9fafb; }
+        .booking-indicators { max-width: 100%; }
+        .channel-indicator { width: 8px; height: 8px; border-radius: 50%; }
+        .hero-bg { background: linear-gradient(135deg, #F0FDFA 0%, #ECFDF5 50%, #F0F9FF 100%); }
+        .floating-element { animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .calendar-header { background: #f9fafb; font-weight: 600; }
+        .month-nav { cursor: pointer; transition: all 0.2s ease; }
+        .month-nav:hover { background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-display font-bold text-gray-900">RentFlow</h1>
+                    </div>
+                    <div class="hidden md:block ml-10">
+                        <div class="flex items-baseline space-x-8">
+                            <a href="index.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium">Dashboard</a>
+                            <a href="properties.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium">Properties</a>
+                            <a href="calendar.html" class="nav-link active text-gray-900 font-medium">Calendar</a>
+                            <a href="finances.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium">Finances</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
+                        Sync Calendars
+                    </button>
+                    <div class="relative">
+                        <img class="h-8 w-8 rounded-full" src="resources/avatar-1.jpg" alt="User avatar">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-bg relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">
+                    Multi-Channel Calendar
+                </h1>
+                <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Manage bookings across Airbnb, VRBO, Booking.com, and direct reservations in one unified calendar view.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button class="bg-teal-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-teal-700 transition-colors card-hover">
+                        Create Booking
+                    </button>
+                    <button class="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 transition-colors card-hover">
+                        Block Dates
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="floating-element absolute top-20 right-10 w-20 h-20 bg-teal-100 rounded-full opacity-60"></div>
+        <div class="floating-element absolute bottom-20 left-10 w-16 h-16 bg-amber-100 rounded-full opacity-60"></div>
+    </div>
+
+    <!-- Calendar Controls -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                <div class="flex items-center space-x-4">
+                    <button id="prev-month" class="month-nav p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <h2 id="current-month" class="text-2xl font-semibold text-gray-900">December 2024</h2>
+                    <button id="next-month" class="month-nav p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="channel-indicator bg-red-500"></div>
+                        <span class="text-sm text-gray-600">Airbnb</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="channel-indicator bg-blue-500"></div>
+                        <span class="text-sm text-gray-600">VRBO</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="channel-indicator bg-green-500"></div>
+                        <span class="text-sm text-gray-600">Booking.com</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="channel-indicator bg-purple-500"></div>
+                        <span class="text-sm text-gray-600">Direct</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div id="calendar-grid" class="p-6">
+                <!-- Calendar will be dynamically generated -->
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                <div class="h-12 w-12 bg-teal-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <svg class="h-6 w-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <p class="text-2xl font-bold text-gray-900" id="bookings-count">0</p>
+                <p class="text-sm text-gray-600">This Month</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                <div class="h-12 w-12 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <svg class="h-6 w-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                    </svg>
+                </div>
+                <p class="text-2xl font-bold text-gray-900" id="revenue-count">$0</p>
+                <p class="text-sm text-gray-600">Monthly Revenue</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <p class="text-2xl font-bold text-gray-900" id="confirmed-count">0</p>
+                <p class="text-sm text-gray-600">Confirmed</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <p class="text-2xl font-bold text-gray-900" id="pending-count">0</p>
+                <p class="text-sm text-gray-600">Pending</p>
+            </div>
+        </div>
+
+        <!-- Channel Management -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mt-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Channel Connections</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="text-center p-4 border border-gray-200 rounded-lg">
+                    <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                        <svg class="h-6 w-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12.007 0C5.374 0 .113 5.24.113 11.865c0 5.858 4.27 10.715 9.87 11.698v-8.312H7.12V11.89h2.857V9.124c0-2.822 1.705-4.37 4.25-4.37 1.23 0 2.52.22 2.52.22v2.77h-1.42c-1.4 0-1.835.87-1.835 1.76v2.11h3.13l-.502 3.196h-2.628v8.312C19.73 22.58 24 17.723 24 11.865 24 5.24 18.64 0 12.007 0z"/>
+                        </svg>
+                    </div>
+                    <h4 class="font-medium text-gray-900 mb-1">Airbnb</h4>
+                    <p class="text-sm text-green-600 mb-2">Connected</p>
+                    <p class="text-xs text-gray-500">Last sync: 2 min ago</p>
+                </div>
+                <div class="text-center p-4 border border-gray-200 rounded-lg">
+                    <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                        <svg class="h-6 w-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12.007 0C5.374 0 .113 5.24.113 11.865c0 5.858 4.27 10.715 9.87 11.698v-8.312H7.12V11.89h2.857V9.124c0-2.822 1.705-4.37 4.25-4.37 1.23 0 2.52.22 2.52.22v2.77h-1.42c-1.4 0-1.835.87-1.835 1.76v2.11h3.13l-.502 3.196h-2.628v8.312C19.73 22.58 24 17.723 24 11.865 24 5.24 18.64 0 12.007 0z"/>
+                        </svg>
+                    </div>
+                    <h4 class="font-medium text-gray-900 mb-1">VRBO</h4>
+                    <p class="text-sm text-green-600 mb-2">Connected</p>
+                    <p class="text-xs text-gray-500">Last sync: 5 min ago</p>
+                </div>
+                <div class="text-center p-4 border border-gray-200 rounded-lg">
+                    <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                        <svg class="h-6 w-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12.007 0C5.374 0 .113 5.24.113 11.865c0 5.858 4.27 10.715 9.87 11.698v-8.312H7.12V11.89h2.857V9.124c0-2.822 1.705-4.37 4.25-4.37 1.23 0 2.52.22 2.52.22v2.77h-1.42c-1.4 0-1.835.87-1.835 1.76v2.11h3.13l-.502 3.196h-2.628v8.312C19.73 22.58 24 17.723 24 11.865 24 5.24 18.64 0 12.007 0z"/>
+                        </svg>
+                    </div>
+                    <h4 class="font-medium text-gray-900 mb-1">Booking.com</h4>
+                    <p class="text-sm text-green-600 mb-2">Connected</p>
+                    <p class="text-xs text-gray-500">Last sync: 1 min ago</p>
+                </div>
+                <div class="text-center p-4 border border-gray-200 rounded-lg">
+                    <div class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                        <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"></path>
+                        </svg>
+                    </div>
+                    <h4 class="font-medium text-gray-900 mb-1">Direct Bookings</h4>
+                    <p class="text-sm text-green-600 mb-2">Active</p>
+                    <p class="text-xs text-gray-500">Website connected</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <p class="text-gray-600">&copy; 2024 RentFlow. Professional property management made simple.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        // Calendar-specific functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCalendarPage();
+            updateCalendarStats();
+        });
+
+        function initializeCalendarPage() {
+            // Month navigation
+            const prevBtn = document.getElementById('prev-month');
+            const nextBtn = document.getElementById('next-month');
+            
+            if (prevBtn && nextBtn && window.calendarManager) {
+                prevBtn.addEventListener('click', () => {
+                    window.calendarManager.selectedDate.setMonth(window.calendarManager.selectedDate.getMonth() - 1);
+                    window.calendarManager.renderCalendar();
+                    updateMonthDisplay();
+                });
+
+                nextBtn.addEventListener('click', () => {
+                    window.calendarManager.selectedDate.setMonth(window.calendarManager.selectedDate.getMonth() + 1);
+                    window.calendarManager.renderCalendar();
+                    updateMonthDisplay();
+                });
+
+                updateMonthDisplay();
+            }
+        }
+
+        function updateMonthDisplay() {
+            if (window.calendarManager) {
+                const monthNames = ["January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"];
+                const currentMonth = document.getElementById('current-month');
+                if (currentMonth) {
+                    const date = window.calendarManager.selectedDate;
+                    currentMonth.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+                }
+            }
+        }
+
+        function updateCalendarStats() {
+            if (window.calendarManager && window.calendarManager.bookings) {
+                const bookings = window.calendarManager.bookings;
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+                
+                const thisMonthBookings = bookings.filter(booking => {
+                    const bookingDate = new Date(booking.checkIn);
+                    return bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear;
+                });
+
+                const confirmedBookings = thisMonthBookings.filter(b => b.status === 'confirmed');
+                const pendingBookings = thisMonthBookings.filter(b => b.status === 'pending');
+                const totalRevenue = thisMonthBookings.reduce((sum, booking) => sum + booking.amount, 0);
+
+                // Animate counters
+                animateCounter('bookings-count', thisMonthBookings.length);
+                animateCounter('revenue-count', totalRevenue, '$');
+                animateCounter('confirmed-count', confirmedBookings.length);
+                animateCounter('pending-count', pendingBookings.length);
+            }
+        }
+
+        function animateCounter(elementId, targetValue, prefix = '', suffix = '') {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const startValue = 0;
+            const duration = 1500;
+            const startTime = performance.now();
+
+            const animate = (currentTime) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                const currentValue = startValue + (targetValue - startValue) * easeOutQuart;
+                
+                if (elementId === 'revenue-count') {
+                    element.textContent = prefix + Math.round(currentValue).toLocaleString();
+                } else {
+                    element.textContent = prefix + Math.round(currentValue) + suffix;
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            };
+
+            requestAnimationFrame(animate);
+        }
+    </script>
+</body>
+</html>

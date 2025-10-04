@@ -1,0 +1,91 @@
+{
+  "name": "rentflow-property-management",
+  "version": "1.0.0",
+  "description": "Professional property management platform with comprehensive testing suite",
+  "main": "main.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:e2e": "cypress run",
+    "test:e2e:open": "cypress open",
+    "lint": "eslint . --ext .js,.html",
+    "lint:fix": "eslint . --ext .js,.html --fix",
+    "build": "npm run lint && npm run test && npm run test:e2e",
+    "dev": "python -m http.server 8000",
+    "start": "python -m http.server 8000"
+  },
+  "keywords": [
+    "property-management",
+    "vacation-rental",
+    "airbnb",
+    "vrbo",
+    "booking.com",
+    "testing",
+    "automation"
+  ],
+  "author": "Property Management Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@testing-library/jest-dom": "^6.1.4",
+    "@testing-library/user-event": "^14.5.1",
+    "babel-jest": "^29.7.0",
+    "cypress": "^13.6.0",
+    "eslint": "^8.53.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-cypress": "^2.15.1",
+    "eslint-plugin-html": "^7.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-n": "^16.3.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-fetch-mock": "^3.0.3",
+    "jsdom": "^23.0.0"
+  },
+  "dependencies": {
+    "animejs": "^3.2.1",
+    "echarts": "^5.4.3",
+    "typed.js": "^2.0.12"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.js",
+      "<rootDir>/tests/**/*.spec.js"
+    ],
+    "collectCoverageFrom": [
+      "main.js",
+      "!node_modules/**",
+      "!tests/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"]
+  },
+  "babel": {
+    "presets": ["@babel/preset-env"]
+  },
+  "eslintConfig": {
+    "extends": ["standard", "plugin:cypress/recommended"],
+    "plugins": ["html"],
+    "env": {
+      "browser": true,
+      "es2021": true,
+      "jest": true,
+      "cypress/globals": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2021,
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-console": "warn",
+      "no-unused-vars": "error",
+      "prefer-const": "error"
+    }
+  }
+}

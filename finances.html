@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finances - RentFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+        .bg-gradient-primary { background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        .nav-link { position: relative; transition: all 0.3s ease; }
+        .nav-link:hover { color: #0F766E; }
+        .nav-link.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: #0F766E; }
+        .hero-bg { background: linear-gradient(135deg, #F0FDFA 0%, #ECFDF5 50%, #F0F9FF 100%); }
+        .floating-element { animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .chart-container { height: 400px; }
+        .expense-item { border-left: 4px solid #e5e7eb; transition: all 0.2s ease; }
+        .expense-item:hover { border-left-color: #0f766e; background-color: #f9fafb; }
+        .category-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+        .category-maintenance { background-color: #fef3c7; color: #92400e; }
+        .category-cleaning { background-color: #dbeafe; color: #1e40af; }
+        .category-utilities { background-color: #d1fae5; color: #065f46; }
+        .category-marketing { background-color: #fce7f3; color: #9d174d; }
+        .category-insurance { background-color: #e0e7ff; color: #3730a3; }
+        .category-taxes { background-color: #fed7d7; color: #c53030; }
+        .upload-area { border: 2px dashed #d1d5db; transition: all 0.3s ease; }
+        .upload-area:hover { border-color: #0f766e; background-color: #f0fdfa; }
+        .upload-area.dragover { border-color: #0f766e; background-color: #ecfdf5; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-display font-bold text-gray-900">RentFlow</h1>
+                    </div>
+                    <div class="hidden md:block ml-10">
+                        <div class="flex items-baseline space-x-8">
+                            <a href="index.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium">Dashboard</a>
+                            <a href="properties.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium">Properties</a>
+                            <a href="calendar.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium">Calendar</a>
+                            <a href="finances.html" class="nav-link active text-gray-900 font-medium">Finances</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
+                        Generate Report
+                    </button>
+                    <div class="relative">
+                        <img class="h-8 w-8 rounded-full" src="resources/avatar-1.jpg" alt="User avatar">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-bg relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">
+                    Financial Dashboard
+                </h1>
+                <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Track revenue, manage expenses, and generate comprehensive financial reports for your property portfolio.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button class="bg-teal-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-teal-700 transition-colors card-hover">
+                        Upload Receipt
+                    </button>
+                    <button class="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 transition-colors card-hover">
+                        Export Tax Report
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="floating-element absolute top-20 right-10 w-20 h-20 bg-teal-100 rounded-full opacity-60"></div>
+        <div class="floating-element absolute bottom-20 left-10 w-16 h-16 bg-amber-100 rounded-full opacity-60"></div>
+    </div>
+
+    <!-- Financial Overview -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Key Financial Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Revenue</p>
+                        <p class="text-2xl font-bold text-gray-900" id="total-revenue">$0</p>
+                    </div>
+                    <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-green-600 text-sm font-medium">+15.3%</span>
+                    <span class="text-gray-500 text-sm ml-2">vs last year</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Expenses</p>
+                        <p class="text-2xl font-bold text-gray-900" id="total-expenses">$0</p>
+                    </div>
+                    <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-red-600 text-sm font-medium">+8.7%</span>
+                    <span class="text-gray-500 text-sm ml-2">vs last year</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Net Profit</p>
+                        <p class="text-2xl font-bold text-gray-900" id="net-profit">$0</p>
+                    </div>
+                    <div class="h-12 w-12 bg-teal-100 rounded-lg flex items-center justify-center">
+                        <svg class="h-6 w-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-green-600 text-sm font-medium">+22.1%</span>
+                    <span class="text-gray-500 text-sm ml-2">vs last year</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Profit Margin</p>
+                        <p class="text-2xl font-bold text-gray-900" id="profit-margin">0%</p>
+                    </div>
+                    <div class="h-12 w-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <svg class="h-6 w-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-green-600 text-sm font-medium">+3.2%</span>
+                    <span class="text-gray-500 text-sm ml-2">vs last year</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Revenue vs Expenses Chart -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900">Revenue vs Expenses</h2>
+                    <div class="flex space-x-2">
+                        <button class="px-3 py-1 text-sm bg-teal-100 text-teal-700 rounded-md font-medium">12 Months</button>
+                        <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md font-medium">YTD</button>
+                    </div>
+                </div>
+                <div class="chart-container" id="revenue-expenses-chart"></div>
+            </div>
+
+            <!-- Expense Breakdown Chart -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900">Expense Breakdown</h2>
+                    <div class="flex space-x-2">
+                        <button class="px-3 py-1 text-sm bg-teal-100 text-teal-700 rounded-md font-medium">This Month</button>
+                        <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md font-medium">All Time</button>
+                    </div>
+                </div>
+                <div class="chart-container" id="expense-breakdown-chart"></div>
+            </div>
+        </div>
+
+        <!-- Expense Management -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Recent Expenses -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold text-gray-900">Recent Expenses</h2>
+                        <button class="text-teal-600 hover:text-teal-700 font-medium text-sm">View All</button>
+                    </div>
+                    <div class="space-y-4" id="expenses-list">
+                        <!-- Expenses will be dynamically generated -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions & Upload -->
+            <div class="space-y-6">
+                <!-- Upload Receipt -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Upload Receipt</h3>
+                    <div class="upload-area rounded-lg p-6 text-center cursor-pointer" id="upload-area">
+                        <svg class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p class="text-gray-600 mb-2">Drop files here or click to upload</p>
+                        <p class="text-sm text-gray-500">Supports PDF, JPG, PNG up to 10MB</p>
+                        <input type="file" id="receipt-upload" class="hidden" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">This Month</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Revenue</span>
+                            <span class="font-semibold text-gray-900" id="month-revenue">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Expenses</span>
+                            <span class="font-semibold text-gray-900" id="month-expenses">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Bookings</span>
+                            <span class="font-semibold text-gray-900" id="month-bookings">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Avg Stay</span>
+                            <span class="font-semibold text-gray-900" id="avg-stay">0 nights</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tax Information -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Tax Information</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Tax Deductible</span>
+                            <span class="font-semibold text-green-600" id="tax-deductible">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Total Tax Owed</span>
+                            <span class="font-semibold text-red-600" id="tax-owed">$0</span>
+                        </div>
+                        <button class="w-full bg-teal-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-teal-700 transition-colors mt-4">
+                            Generate Tax Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <p class="text-gray-600">&copy; 2024 RentFlow. Professional property management made simple.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        // Financial Management System
+        class FinancialManager {
+            constructor() {
+                this.expenses = [
+                    { id: 1, date: '2024-12-01', description: 'Deep cleaning - Ocean View Condo', amount: 150, category: 'Cleaning', property: 'Ocean View Condo', taxDeductible: true },
+                    { id: 2, date: '2024-12-02', description: 'HVAC repair - Mountain Retreat', amount: 320, category: 'Maintenance', property: 'Mountain Retreat', taxDeductible: true },
+                    { id: 3, date: '2024-12-03', description: 'Electricity bill - Downtown Loft', amount: 85, category: 'Utilities', property: 'Downtown Loft', taxDeductible: true },
+                    { id: 4, date: '2024-12-04', description: 'Professional photography - Beachfront Villa', amount: 200, category: 'Marketing', property: 'Beachfront Villa', taxDeductible: true },
+                    { id: 5, date: '2024-12-05', description: 'Property insurance - All properties', amount: 450, category: 'Insurance', property: 'Portfolio', taxDeductible: true },
+                    { id: 6, date: '2024-12-06', description: 'Window cleaning - Urban Studio', amount: 75, category: 'Cleaning', property: 'Urban Studio', taxDeductible: true },
+                    { id: 7, date: '2024-12-07', description: 'Plumbing fix - Lake House', amount: 180, category: 'Maintenance', property: 'Lake House', taxDeductible: true },
+                    { id: 8, date: '2024-12-08', description: 'Internet bill - All properties', amount: 120, category: 'Utilities', property: 'Portfolio', taxDeductible: true }
+                ];
+
+                this.revenue = 12500;
+                this.totalExpenses = 4200;
+                
+                this.init();
+            }
+
+            init() {
+                this.updateFinancialMetrics();
+                this.renderExpenses();
+                this.initializeCharts();
+                this.bindUploadEvents();
+                this.updateMonthlyStats();
+            }
+
+            updateFinancialMetrics() {
+                const netProfit = this.revenue - this.totalExpenses;
+                const profitMargin = (netProfit / this.revenue) * 100;
+
+                // Animate counters
+                this.animateCounter('total-revenue', this.revenue, '$');
+                this.animateCounter('total-expenses', this.totalExpenses, '$');
+                this.animateCounter('net-profit', netProfit, '$');
+                this.animateCounter('profit-margin', profitMargin.toFixed(1), '', '%');
+            }
+
+            renderExpenses() {
+                const expensesList = document.getElementById('expenses-list');
+                if (!expensesList) return;
+
+                expensesList.innerHTML = this.expenses.map(expense => `
+                    <div class="expense-item p-4 rounded-lg">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-medium text-gray-900">${expense.description}</h4>
+                                    <span class="font-semibold text-gray-900">$${expense.amount}</span>
+                                </div>
+                                <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                    <span>${new Date(expense.date).toLocaleDateString()}</span>
+                                    <span class="category-badge category-${expense.category.toLowerCase()}">${expense.category}</span>
+                                    <span>${expense.property}</span>
+                                    ${expense.taxDeductible ? '<span class="text-green-600">Tax Deductible</span>' : ''}
+                                </div>
+                            </div>
+                            <button class="ml-4 text-gray-400 hover:text-gray-600" onclick="financialManager.editExpense(${expense.id})">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            initializeCharts() {
+                this.createRevenueExpensesChart();
+                this.createExpenseBreakdownChart();
+            }
+
+            createRevenueExpensesChart() {
+                const chartElement = document.getElementById('revenue-expenses-chart');
+                if (!chartElement) return;
+
+                const chart = echarts.init(chartElement);
+                
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const revenueData = [8200, 9100, 8800, 10200, 9800, 11500, 11200, 10800, 12500, 12100, 11800, 12500];
+                const expensesData = [3200, 3800, 3500, 4200, 3900, 4600, 4300, 4100, 4200, 4000, 3900, 4200];
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        borderColor: '#e5e7eb',
+                        textStyle: { color: '#374151' }
+                    },
+                    legend: {
+                        data: ['Revenue', 'Expenses'],
+                        bottom: 0,
+                        textStyle: { color: '#6b7280' }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '15%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: months,
+                        axisLine: { lineStyle: { color: '#e5e7eb' } },
+                        axisLabel: { color: '#6b7280' }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLine: { lineStyle: { color: '#e5e7eb' } },
+                        axisLabel: { color: '#6b7280', formatter: '${value}' },
+                        splitLine: { lineStyle: { color: '#f3f4f6' } }
+                    },
+                    series: [
+                        {
+                            name: 'Revenue',
+                            type: 'bar',
+                            data: revenueData,
+                            itemStyle: { color: '#10b981' },
+                            barWidth: '40%'
+                        },
+                        {
+                            name: 'Expenses',
+                            type: 'bar',
+                            data: expensesData,
+                            itemStyle: { color: '#f59e0b' },
+                            barWidth: '40%'
+                        }
+                    ]
+                };
+
+                chart.setOption(option);
+                
+                // Make chart responsive
+                window.addEventListener('resize', () => chart.resize());
+            }
+
+            createExpenseBreakdownChart() {
+                const chartElement = document.getElementById('expense-breakdown-chart');
+                if (!chartElement) return;
+
+                const chart = echarts.init(chartElement);
+                
+                const expenseCategories = [
+                    { name: 'Maintenance', value: 1200, itemStyle: { color: '#f59e0b' } },
+                    { name: 'Cleaning', value: 800, itemStyle: { color: '#3b82f6' } },
+                    { name: 'Utilities', value: 600, itemStyle: { color: '#10b981' } },
+                    { name: 'Marketing', value: 400, itemStyle: { color: '#ec4899' } },
+                    { name: 'Insurance', value: 800, itemStyle: { color: '#6366f1' } },
+                    { name: 'Taxes', value: 400, itemStyle: { color: '#ef4444' } }
+                ];
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b}: ${c} ({d}%)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        borderColor: '#e5e7eb',
+                        textStyle: { color: '#374151' }
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: 'left',
+                        textStyle: { color: '#6b7280' }
+                    },
+                    series: [
+                        {
+                            name: 'Expenses',
+                            type: 'pie',
+                            radius: ['40%', '70%'],
+                            center: ['60%', '50%'],
+                            avoidLabelOverlap: false,
+                            label: {
+                                show: false,
+                                position: 'center'
+                            },
+                            emphasis: {
+                                label: {
+                                    show: true,
+                                    fontSize: '18',
+                                    fontWeight: 'bold'
+                                }
+                            },
+                            labelLine: {
+                                show: false
+                            },
+                            data: expenseCategories
+                        }
+                    ]
+                };
+
+                chart.setOption(option);
+                
+                // Make chart responsive
+                window.addEventListener('resize', () => chart.resize());
+            }
+
+            bindUploadEvents() {
+                const uploadArea = document.getElementById('upload-area');
+                const fileInput = document.getElementById('receipt-upload');
+
+                if (!uploadArea || !fileInput) return;
+
+                uploadArea.addEventListener('click', () => fileInput.click());
+                
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('dragover');
+                });
+
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.classList.remove('dragover');
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    this.handleFileUpload(files);
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    this.handleFileUpload(e.target.files);
+                });
+            }
+
+            handleFileUpload(files) {
+                Array.from(files).forEach(file => {
+                    if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+                        this.processReceipt(file);
+                    }
+                });
+            }
+
+            processReceipt(file) {
+                // Simulate OCR processing
+                const mockExpense = {
+                    id: this.expenses.length + 1,
+                    date: new Date().toISOString().split('T')[0],
+                    description: `Receipt from ${file.name}`,
+                    amount: Math.floor(Math.random() * 200) + 50,
+                    category: 'Maintenance',
+                    property: 'Various Properties',
+                    taxDeductible: true
+                };
+
+                // Add to expenses list
+                this.expenses.unshift(mockExpense);
+                this.renderExpenses();
+                this.updateFinancialMetrics();
+
+                // Show notification
+                this.showNotification(`Receipt processed: ${mockExpense.description} - $${mockExpense.amount}`, 'success');
+            }
+
+            updateMonthlyStats() {
+                // Mock monthly statistics
+                const monthRevenue = 12500;
+                const monthExpenses = 4200;
+                const monthBookings = 18;
+                const avgStay = 4.2;
+                const taxDeductible = 3800;
+                const taxOwed = 2100;
+
+                this.animateCounter('month-revenue', monthRevenue, '$');
+                this.animateCounter('month-expenses', monthExpenses, '$');
+                this.animateCounter('month-bookings', monthBookings);
+                this.animateCounter('avg-stay', avgStay.toFixed(1), '', ' nights');
+                this.animateCounter('tax-deductible', taxDeductible, '$');
+                this.animateCounter('tax-owed', taxOwed, '$');
+            }
+
+            animateCounter(elementId, targetValue, prefix = '', suffix = '') {
+                const element = document.getElementById(elementId);
+                if (!element) return;
+
+                const startValue = 0;
+                const duration = 1500;
+                const startTime = performance.now();
+
+                const animate = (currentTime) => {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                    const currentValue = startValue + (targetValue - startValue) * easeOutQuart;
+                    
+                    if (elementId === 'avg-stay' || elementId === 'profit-margin') {
+                        element.textContent = prefix + currentValue.toFixed(1) + suffix;
+                    } else if (elementId === 'total-revenue' || elementId === 'total-expenses' || elementId === 'net-profit' || elementId === 'month-revenue' || elementId === 'month-expenses' || elementId === 'tax-deductible' || elementId === 'tax-owed') {
+                        element.textContent = prefix + Math.round(currentValue).toLocaleString();
+                    } else {
+                        element.textContent = prefix + Math.round(currentValue) + suffix;
+                    }
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    }
+                };
+
+                requestAnimationFrame(animate);
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+                    type === 'success' ? 'bg-green-100 text-green-800' : 
+                    type === 'error' ? 'bg-red-100 text-red-800' : 
+                    'bg-blue-100 text-blue-800'
+                }`;
+                notification.textContent = message;
+
+                document.body.appendChild(notification);
+
+                // Animate in
+                anime({
+                    targets: notification,
+                    translateX: [300, 0],
+                    opacity: [0, 1],
+                    duration: 300,
+                    easing: 'easeOutQuart'
+                });
+
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    anime({
+                        targets: notification,
+                        translateX: [0, 300],
+                        opacity: [1, 0],
+                        duration: 300,
+                        easing: 'easeInQuart',
+                        complete: () => notification.remove()
+                    });
+                }, 3000);
+            }
+
+            editExpense(expenseId) {
+                // Mock edit functionality
+                this.showNotification('Edit functionality coming soon!', 'info');
+            }
+        }
+
+        // Initialize financial manager
+        document.addEventListener('DOMContentLoaded', () => {
+            window.financialManager = new FinancialManager();
+        });
+    </script>
+</body>
+</html>
