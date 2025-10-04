@@ -1,6 +1,6 @@
 # RentFlow Property Management Platform
 
-A comprehensive property management platform designed for vacation rental property managers, combining the sleek design of uplisting.com with the robust functionality of guesty.com.
+A comprehensive property management platform designed for vacation rental property managers.
 
 ## 🏠 Features
 
@@ -184,7 +184,7 @@ rentflow-property-management/
 - **ECharts**: Interactive chart animations
 - **p5.js**: Subtle background particle effects
 
-## 🧪 Testing Strategy
+## Testing Strategy
 
 ### Unit Tests
 - PropertyManager class functionality
