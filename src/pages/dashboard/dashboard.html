@@ -294,31 +294,33 @@
     <script>
         // Load header and footer for dashboard
         loadHeaderFooter('dashboard');
+    </script>
+
+    <!-- Dashboard-specific initialization - BEFORE main.js -->
+    <script>
+        // Prevent PropertyManager from initializing on dashboard
+        window.isDashboardPage = true;
 
         // Update typed name with user's first name
-        function updateUserName() {
+        document.addEventListener('DOMContentLoaded', function() {
             const user = JSON.parse(localStorage.getItem('user') || 'null');
             const userName = user?.firstName || user?.name || 'User';
 
             // Wait for typed.js to load
             const checkTyped = setInterval(() => {
-                if (window.Typed && document.getElementById('typed-name')) {
+                const typedElement = document.getElementById('typed-name');
+                if (window.Typed && typedElement) {
                     clearInterval(checkTyped);
+                    typedElement.classList.add('typed-initialized');
                     new Typed('#typed-name', {
                         strings: [userName],
-                        typeSpeed: 100,
-                        showCursor: false
+                        typeSpeed: 80,
+                        showCursor: false,
+                        loop: false
                     });
                 }
-            }, 100);
-        }
-
-        // Update user name when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', updateUserName);
-        } else {
-            updateUserName();
-        }
+            }, 50);
+        });
     </script>
     <script src="/public/js/main.js"></script>
 </body>
