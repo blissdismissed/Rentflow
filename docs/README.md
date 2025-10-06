@@ -1,8 +1,32 @@
-# RentFlow Property Management Platform
+# 🏠 A&A RentFlow - Property Management Platform
 
-A comprehensive property management platform designed for vacation rental property managers.
+A comprehensive, production-ready property management platform for vacation rental owners with unified channel integration, payment processing, and financial management.
 
-## 🏠 Features
+## 📚 Documentation
+
+- **[QUICKSTART.md](./QUICKSTART.md)** - Get up and running in 15 minutes
+- **[BUILD_SUMMARY.md](./BUILD_SUMMARY.md)** - Overview of what's been built
+- **[IMPLEMENTATION_GUIDE.md](./IMPLEMENTATION_GUIDE.md)** - Complete development roadmap
+- **[design-system.md](./design-system.md)** - UI/UX design guidelines
+- **[PROJECT_README.md](./PROJECT_README.md)** - Comprehensive project documentation
+
+## 🎯 Quick Overview
+
+### What's Built ✅
+- **Backend API** - Node.js/Express with PostgreSQL
+- **Authentication** - JWT + Google OAuth
+- **Database Schema** - Complete models for all features
+- **Frontend Pages** - Login, Signup, Dashboard, Properties, Calendar, Finances
+- **Design System** - Fully documented UI components
+
+### What's Next 🚧
+- Multi-step property creation wizard
+- Payment integrations (Stripe, Venmo, Bitcoin)
+- Channel integrations (Airbnb, VRBO, Booking.com)
+- Direct booking page builder
+- Enhanced financial dashboard
+
+## 🏠 Core Features
 
 ### Dashboard
 - Real-time property metrics and analytics
@@ -38,52 +62,68 @@ A comprehensive property management platform designed for vacation rental proper
 
 ## 🛠 Technology Stack
 
+### Backend
+- **Node.js 18+** - JavaScript runtime
+- **Express.js** - Web framework
+- **PostgreSQL** - Relational database
+- **Sequelize** - ORM for database
+- **JWT** - Authentication tokens
+- **Passport.js** - OAuth strategies
+- **Stripe/Braintree/Coinbase** - Payment processing
+
 ### Frontend
 - **HTML5** - Semantic markup
 - **Tailwind CSS** - Utility-first CSS framework
 - **JavaScript (ES6+)** - Modern JavaScript features
+- **Anime.js** - Smooth animations
+- **ECharts.js** - Data visualization
+- **Typed.js** - Dynamic text effects
 
-### Libraries & Dependencies
-- **Anime.js** - Smooth animations and transitions
-- **ECharts.js** - Interactive data visualization
-- **Typed.js** - Dynamic text animations
-- **Splide.js** - Property image carousels
-- **p5.js** - Particle background effects
-
-### Testing Framework
-- **Jest** - Unit testing framework
+### Testing
+- **Jest** - Unit testing
 - **Cypress** - End-to-end testing
-- **Testing Library** - Component testing utilities
+- **Supertest** - API testing
 
 ## 🚀 Getting Started
 
+👉 **See [QUICKSTART.md](./QUICKSTART.md) for detailed setup instructions**
+
 ### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn package manager
-- Modern web browser
+- Node.js (v18 or higher)
+- PostgreSQL (v13 or higher)
+- npm (v9 or higher)
 
-### Installation
+### Quick Setup
 
-1. Clone the repository:
+1. Clone and install:
 ```bash
-git clone https://github.com/yourusername/rentflow-property-management.git
-cd rentflow-property-management
+git clone https://github.com/yourusername/rentflow.git
+cd rentflow
 ```
 
-2. Install dependencies:
+2. Setup backend:
 ```bash
+cd backend
 npm install
-```
-
-3. Start the development server:
-```bash
+cp .env.example .env
+# Edit .env with your database credentials
+createdb rentflow_db
+npm run migrate
 npm run dev
 ```
 
-4. Open your browser and navigate to:
+3. Setup frontend:
+```bash
+# In another terminal, from root directory
+npm install
+npm run dev
 ```
-http://localhost:8000
-```
+
+4. Access the application:
+- Frontend: http://localhost:8000
+- Backend API: http://localhost:5000
+
+For detailed setup, see **[QUICKSTART.md](./QUICKSTART.md)**
 
 ## 🧪 Testing
 

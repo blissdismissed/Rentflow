@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A&A RentFlow - Vacation Rental Property Management</title>
+    <title>Dashboard - A&A RentFlow</title>
+    <script>
+        // Auth protection - redirect to login if not authenticated
+        if (!localStorage.getItem('token')) {
+            window.location.href = '/src/pages/auth/login.html';
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
@@ -36,7 +42,7 @@
         .particle-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.1; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen" data-page="dashboard">
     <!-- Header Component -->
     <div id="header-placeholder"></div>
 
@@ -46,18 +52,18 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="text-center">
                 <h1 class="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">
-                    Streamline Your Vacation Rental Business
+                    Welcome back, <span class="text-teal-600" id="typed-name"></span>
                 </h1>
                 <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                     Manage your vacation rental portfolio with ease. Track bookings, monitor finances, and optimize performance across all channels.
                 </p>
                 <div class="flex flex-wrap justify-center gap-4">
-                    <a href="/src/pages/auth/signup.html" class="bg-teal-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-teal-700 transition-colors card-hover">
-                        Get Started Free
-                    </a>
-                    <a href="/src/pages/auth/login.html" class="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 transition-colors card-hover">
-                        Login
-                    </a>
+                    <button class="bg-teal-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-teal-700 transition-colors card-hover">
+                        View Calendar
+                    </button>
+                    <button class="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 transition-colors card-hover">
+                        Generate Report
+                    </button>
                 </div>
             </div>
         </div>
@@ -284,11 +290,36 @@
     <!-- Footer Component -->
     <div id="footer-placeholder"></div>
 
-    <script src="src/components/component-loader.js"></script>
+    <script src="/src/components/component-loader.js"></script>
     <script>
-        // Load header and footer
-        loadHeaderFooter('public');
+        // Load header and footer for dashboard
+        loadHeaderFooter('dashboard');
+
+        // Update typed name with user's first name
+        function updateUserName() {
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            const userName = user?.firstName || user?.name || 'User';
+
+            // Wait for typed.js to load
+            const checkTyped = setInterval(() => {
+                if (window.Typed && document.getElementById('typed-name')) {
+                    clearInterval(checkTyped);
+                    new Typed('#typed-name', {
+                        strings: [userName],
+                        typeSpeed: 100,
+                        showCursor: false
+                    });
+                }
+            }, 100);
+        }
+
+        // Update user name when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateUserName);
+        } else {
+            updateUserName();
+        }
     </script>
-    <script src="public/js/main.js"></script>
+    <script src="/public/js/main.js"></script>
 </body>
 </html>
