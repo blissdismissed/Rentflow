@@ -34,35 +34,9 @@
         .month-nav:hover { background-color: #f3f4f6; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <h1 class="text-2xl font-display font-bold text-gray-900">RentFlow</h1>
-                    </div>
-                    <div class="hidden md:block ml-10">
-                        <div class="flex items-baseline space-x-8">
-                            <a href="index.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium">Dashboard</a>
-                            <a href="properties.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium">Properties</a>
-                            <a href="calendar.html" class="nav-link active text-gray-900 font-medium">Calendar</a>
-                            <a href="finances.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium">Finances</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button class="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
-                        Sync Calendars
-                    </button>
-                    <div class="relative">
-                        <img class="h-8 w-8 rounded-full" src="resources/avatar-1.jpg" alt="User avatar">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body class="bg-gray-50 min-h-screen" data-page="calendar">
+    <!-- Header Component -->
+    <div id="header-placeholder"></div>
 
     <!-- Hero Section -->
     <div class="hero-bg relative overflow-hidden">
@@ -221,16 +195,7 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="text-center">
-                <p class="text-gray-600">&copy; 2024 RentFlow. Professional property management made simple.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script src="main.js"></script>
+    <script src="/public/js/main.js"></script>
     <script>
         // Calendar-specific functionality
         document.addEventListener('DOMContentLoaded', () => {
@@ -323,6 +288,15 @@
 
             requestAnimationFrame(animate);
         }
+    </script>
+
+    <!-- Footer Component -->
+    <div id="footer-placeholder"></div>
+
+    <script src="/src/components/component-loader.js"></script>
+    <script>
+        // Load header and footer for calendar page
+        loadHeaderFooter('dashboard');
     </script>
 </body>
 </html>

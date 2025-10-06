@@ -1,4 +1,59 @@
 // Property Management Dashboard JavaScript
+
+// Authentication Management
+class AuthManager {
+    constructor() {
+        this.token = localStorage.getItem('token');
+        this.user = JSON.parse(localStorage.getItem('user') || 'null');
+        this.init();
+    }
+
+    init() {
+        this.updateAuthUI();
+    }
+
+    isAuthenticated() {
+        return !!this.token;
+    }
+
+    updateAuthUI() {
+        const authButtons = document.getElementById('auth-buttons');
+        if (!authButtons) return;
+
+        if (this.isAuthenticated()) {
+            // Show user info and sign out button
+            authButtons.innerHTML = `
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600">Welcome, ${this.user?.name || 'User'}</span>
+                    <button onclick="authManager.signOut()" class="bg-white text-teal-600 px-4 py-2 rounded-lg text-sm font-medium border border-teal-600 hover:bg-teal-50 transition-colors">
+                        Sign Out
+                    </button>
+                </div>
+            `;
+        } else {
+            // Show login and signup buttons
+            authButtons.innerHTML = `
+                <a href="login.html" class="bg-white text-teal-600 px-4 py-2 rounded-lg text-sm font-medium border border-teal-600 hover:bg-teal-50 transition-colors">
+                    Login
+                </a>
+                <a href="signup.html" class="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
+                    Sign Up
+                </a>
+            `;
+        }
+    }
+
+    signOut() {
+        // Clear local storage
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+
+        // Redirect to index page
+        window.location.href = 'index.html';
+    }
+}
+
 class PropertyManager {
     constructor() {
         this.properties = [
@@ -1322,6 +1377,9 @@ class FinancialManager {
 
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize auth manager first
+    window.authManager = new AuthManager();
+
     // Initialize main property manager
     window.propertyManager = new PropertyManager();
     

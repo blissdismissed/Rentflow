@@ -1,0 +1,47 @@
+<!-- Navigation for authenticated pages -->
+<nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <h1 class="text-2xl font-display font-bold text-gray-900">A&A RentFlow</h1>
+                </div>
+                <div class="hidden md:block ml-10">
+                    <div class="flex items-baseline space-x-8">
+                        <a href="/src/pages/dashboard/dashboard.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium" data-page="dashboard">Dashboard</a>
+                        <a href="/src/pages/dashboard/properties.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium" data-page="properties">Properties</a>
+                        <a href="/src/pages/dashboard/calendar.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium" data-page="calendar">Calendar</a>
+                        <a href="/src/pages/dashboard/finances.html" class="nav-link text-gray-600 hover:text-gray-900 font-medium" data-page="finances">Finances</a>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4" id="auth-buttons">
+                <button onclick="signOut()" class="bg-white text-teal-600 px-4 py-2 rounded-lg text-sm font-medium border border-teal-600 hover:bg-teal-50 transition-colors">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    // Highlight active page in navigation
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPage = document.body.dataset.page;
+        if (currentPage) {
+            const activeLink = document.querySelector(`a[data-page="${currentPage}"]`);
+            if (activeLink) {
+                activeLink.classList.remove('text-gray-600');
+                activeLink.classList.add('active', 'text-gray-900');
+            }
+        }
+    });
+
+    // Sign out function
+    function signOut() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = '/index.html';
+    }
+</script>
