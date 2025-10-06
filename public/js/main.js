@@ -176,8 +176,10 @@ class PropertyManager {
     }
 
     initializeAnimations() {
-        // Typed.js for hero name
-        if (document.getElementById('typed-name')) {
+        // Typed.js for hero name - Skip if already initialized (e.g., on dashboard)
+        const typedElement = document.getElementById('typed-name');
+        if (typedElement && !typedElement.classList.contains('typed-initialized')) {
+            typedElement.classList.add('typed-initialized');
             new Typed('#typed-name', {
                 strings: ['Sarah', 'Property Manager', 'Host'],
                 typeSpeed: 100,
@@ -1380,8 +1382,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize auth manager first
     window.authManager = new AuthManager();
 
-    // Initialize main property manager
-    window.propertyManager = new PropertyManager();
+    // Initialize main property manager only if NOT on dashboard page
+    if (!window.isDashboardPage) {
+        window.propertyManager = new PropertyManager();
+    }
     
     // Initialize calendar manager if on calendar page
     if (document.getElementById('calendar-grid')) {
