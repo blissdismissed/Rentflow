@@ -7,6 +7,8 @@
  * - For S3 production: Replace API_BASE_URL with your EC2 public IP or domain
  */
 
+// Development config
+/*
 const CONFIG = {
   // API Configuration
   API_BASE_URL: 'http://localhost:5000',  // Change to 'http://your-ec2-ip' or 'https://yourdomain.com' for production
@@ -18,16 +20,16 @@ const CONFIG = {
   ENABLE_ANALYTICS: false,
   ENABLE_DEBUG: true,  // Set to false in production
 }
+*/
 
-// Production configuration (uncomment and update when deploying to S3)
-/*
+// Production configuration
 const CONFIG = {
-  API_BASE_URL: 'http://YOUR_EC2_PUBLIC_IP',  // Or https://api.yourdomain.com
+  API_BASE_URL: 'http://54.145.250.158',
   ENV: 'production',
   ENABLE_ANALYTICS: true,
   ENABLE_DEBUG: false,
 }
-*/
+
 
 // Make config available globally
 window.CONFIG = CONFIG

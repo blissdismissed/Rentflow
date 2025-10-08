@@ -3,7 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Your Dream Vacation - AspireTowards</title>
+
+    <!-- Primary SEO Meta Tags -->
+    <title>Direct Vacation Rental Booking | Save 15-20% | AspireTowards Vermont</title>
+    <meta name="title" content="Direct Vacation Rental Booking | Save 15-20% | AspireTowards Vermont">
+    <meta name="description" content="Book your Vermont vacation rental directly and save 15-20% on fees. Bromley Mountain ski condo with hiking trails, fall foliage views, and crypto payment options. Book now!">
+    <meta name="keywords" content="Vermont vacation rental, Bromley Mountain, direct booking, ski rental Vermont, vacation home Vermont, book direct, crypto payment rental, fall foliage Vermont, Appalachian trail">
+    <link rel="canonical" href="https://aspiretowards.com/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aspiretowards.com/">
+    <meta property="og:title" content="Direct Vacation Rental Booking | Save 15-20% | AspireTowards Vermont">
+    <meta property="og:description" content="Book your Vermont vacation rental directly and save 15-20% on fees. Bromley Mountain ski condo with hiking trails, fall foliage views, and crypto payment options.">
+    <meta property="og:image" content="https://aspiretowards.com/images/og-image.jpg">
+    <meta property="og:site_name" content="AspireTowards">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://aspiretowards.com/">
+    <meta name="twitter:title" content="Direct Vacation Rental Booking | Save 15-20% | AspireTowards Vermont">
+    <meta name="twitter:description" content="Book your Vermont vacation rental directly and save 15-20% on fees. Bromley Mountain ski condo with hiking trails, fall foliage views, and crypto payment options.">
+    <meta name="twitter:image" content="https://aspiretowards.com/images/twitter-card.jpg">
+
+    <!-- Additional SEO Tags -->
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="author" content="AspireTowards">
+    <meta name="geo.region" content="US-VT">
+    <meta name="geo.placename" content="Bromley Village, Vermont">
+    <meta name="geo.position" content="43.2285;-72.9443">
+    <meta name="ICBM" content="43.2285, -72.9443">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -17,6 +47,23 @@
         .feature-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%); }
         .floating { animation: floating 3s ease-in-out infinite; }
         @keyframes floating { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+
+        /* Mobile menu styles */
+        .mobile-menu { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        .mobile-menu.active { transform: translateX(0); }
+
+        /* Prevent hover effects on touch devices */
+        @media (hover: none) {
+            .card-hover:hover { transform: none; }
+            .property-card:hover { transform: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        }
+
+        /* Improved mobile touch targets */
+        @media (max-width: 640px) {
+            .hero-gradient { padding-top: 3rem; padding-bottom: 3rem; }
+            .feature-icon { width: 40px; height: 40px; }
+            button, a.btn, input[type="submit"] { min-height: 44px; }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -25,7 +72,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-display font-bold text-gray-900">AspireTowards</h1>
+                    <h1 class="text-xl sm:text-2xl font-display font-bold text-gray-900">AspireTowards</h1>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#properties" class="text-gray-600 hover:text-teal-600 font-medium transition">Properties</a>
@@ -33,12 +80,44 @@
                     <a href="#contact" class="text-gray-600 hover:text-teal-600 font-medium transition">Contact</a>
                     <a href="/src/pages/auth/login.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Host Login</a>
                 </div>
-                <a href="#properties" class="bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700 transition">
-                    Browse Properties
-                </a>
+                <div class="hidden md:block">
+                    <a href="#properties" class="bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700 transition">
+                        Browse Properties
+                    </a>
+                </div>
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu fixed inset-y-0 right-0 w-64 bg-white shadow-2xl z-50 md:hidden">
+        <div class="flex flex-col h-full">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 class="text-lg font-display font-bold text-gray-900">Menu</h2>
+                <button id="mobile-menu-close" class="p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <nav class="flex-1 overflow-y-auto p-4">
+                <a href="#properties" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium mobile-menu-link">Properties</a>
+                <a href="#why-direct" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium mobile-menu-link">Why Book Direct</a>
+                <a href="#contact" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium mobile-menu-link">Contact</a>
+                <a href="/src/pages/auth/login.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium mobile-menu-link">Host Login</a>
+                <a href="properties.html" class="block mt-4 py-3 px-4 bg-teal-600 text-white rounded-lg font-medium text-center hover:bg-teal-700">Browse Properties</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
 
     <!-- Hero Section -->
     <div class="hero-gradient text-white py-20 md:py-32">
@@ -86,16 +165,16 @@
     <!-- Featured Properties -->
     <section id="properties" class="py-16 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">
+            <div class="text-center mb-8 sm:mb-12">
+                <h2 class="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 mb-3 sm:mb-4">
                     Featured Properties
                 </h2>
-                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto px-4">
                     Discover our handpicked selection of premium vacation rentals
                 </p>
             </div>
 
-            <div id="featured-properties" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div id="featured-properties" class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-8">
                 <!-- Properties will be loaded here dynamically -->
                 <div class="animate-pulse">
                     <div class="property-card">
@@ -137,9 +216,9 @@
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
                 <!-- Save Money -->
-                <div class="bg-white p-8 rounded-xl card-hover text-center">
+                <div class="bg-white p-6 sm:p-8 rounded-xl card-hover text-center">
                     <div class="feature-icon rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -150,7 +229,7 @@
                 </div>
 
                 <!-- Direct Support -->
-                <div class="bg-white p-8 rounded-xl card-hover text-center">
+                <div class="bg-white p-6 sm:p-8 rounded-xl card-hover text-center">
                     <div class="feature-icon rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path>
@@ -161,7 +240,7 @@
                 </div>
 
                 <!-- Flexible Payments -->
-                <div class="bg-white p-8 rounded-xl card-hover text-center">
+                <div class="bg-white p-6 sm:p-8 rounded-xl card-hover text-center">
                     <div class="feature-icon rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
@@ -358,6 +437,60 @@
 
         // Load properties when page loads
         document.addEventListener('DOMContentLoaded', loadFeaturedProperties)
+
+        // Add structured data for SEO
+        const structuredData = {
+            "@context": "https://schema.org",
+            "@type": "RealEstateAgent",
+            "name": "AspireTowards",
+            "description": "Direct vacation rental booking platform offering Vermont properties with no booking fees",
+            "url": "https://aspiretowards.com",
+            "logo": "https://aspiretowards.com/images/logo.png",
+            "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Bromley Village",
+                "addressRegion": "VT",
+                "addressCountry": "US"
+            },
+            "offers": {
+                "@type": "Offer",
+                "description": "15-20% savings on vacation rentals by booking direct",
+                "priceSpecification": {
+                    "@type": "PriceSpecification",
+                    "priceCurrency": "USD"
+                }
+            },
+            "paymentAccepted": ["Cash", "Credit Card", "Bitcoin", "Ethereum"]
+        }
+
+        const script = document.createElement('script')
+        script.type = 'application/ld+json'
+        script.text = JSON.stringify(structuredData)
+        document.head.appendChild(script)
+
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button')
+        const mobileMenu = document.getElementById('mobile-menu')
+        const mobileMenuClose = document.getElementById('mobile-menu-close')
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay')
+        const mobileMenuLinks = document.querySelectorAll('.mobile-menu-link')
+
+        function openMobileMenu() {
+            mobileMenu.classList.add('active')
+            mobileMenuOverlay.classList.remove('hidden')
+            document.body.style.overflow = 'hidden'
+        }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active')
+            mobileMenuOverlay.classList.add('hidden')
+            document.body.style.overflow = ''
+        }
+
+        mobileMenuButton.addEventListener('click', openMobileMenu)
+        mobileMenuClose.addEventListener('click', closeMobileMenu)
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu)
+        mobileMenuLinks.forEach(link => link.addEventListener('click', closeMobileMenu))
     </script>
 </body>
 </html>

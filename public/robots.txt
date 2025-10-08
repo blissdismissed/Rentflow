@@ -1,0 +1,14 @@
+# AspireTowards Robots.txt
+User-agent: *
+Allow: /
+Allow: /properties
+Allow: /property
+Disallow: /api/
+Disallow: /admin/
+Disallow: /src/pages/auth/
+
+# Sitemaps
+Sitemap: https://aspiretowards.com/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1

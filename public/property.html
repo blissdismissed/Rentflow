@@ -3,21 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Property Details - AspireTowards</title>
+
+    <!-- Primary SEO Meta Tags -->
+    <title>Vermont Vacation Rental - Bromley Mountain Ski Condo | Book Direct & Save</title>
+    <meta name="title" content="Vermont Vacation Rental - Bromley Mountain Ski Condo | Book Direct & Save">
+    <meta name="description" content="Book our Bromley Village ski condo directly. Perfect for winter skiing, fall foliage, and summer hiking on the Appalachian Trail. Save 15% + 10% crypto discount. No booking fees!">
+    <meta name="keywords" content="Bromley Mountain rental, Vermont ski condo, Appalachian trail lodging, fall foliage Vermont, direct booking Vermont, crypto vacation rental, winter ski rental, Vermont hiking">
+    <link rel="canonical" href="https://aspiretowards.com/property">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="product">
+    <meta property="og:url" content="https://aspiretowards.com/property">
+    <meta property="og:title" content="Vermont Vacation Rental - Bromley Mountain Ski Condo">
+    <meta property="og:description" content="Book our Bromley Village ski condo directly. Perfect for winter skiing, fall foliage, and summer hiking. Save 15% + 10% crypto discount.">
+    <meta property="og:image" content="https://aspiretowards.com/images/property-og.jpg">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Vermont Vacation Rental - Bromley Mountain Ski Condo">
+    <meta name="twitter:description" content="Book directly and save 15% + 10% crypto discount. Perfect for skiing, fall foliage, and hiking.">
+    <meta name="twitter:image" content="https://aspiretowards.com/images/property-twitter.jpg">
+
+    <!-- Additional SEO -->
+    <meta name="robots" content="index, follow">
+    <meta name="geo.region" content="US-VT">
+    <meta name="geo.placename" content="Bromley Village, Vermont">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Web3 / Ethers.js -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-display { font-family: 'Playfair Display', serif; }
-        .gallery-main { height: 500px; border-radius: 16px 0 0 16px; overflow: hidden; }
-        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; height: 500px; }
+        .gallery-main { height: 400px; border-radius: 16px 16px 0 0; overflow: hidden; }
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; height: 400px; }
         .gallery-item { overflow: hidden; cursor: pointer; transition: all 0.3s; }
         .gallery-item:hover { opacity: 0.9; transform: scale(1.02); }
         .gallery-item:last-child { border-radius: 0 16px 16px 0; }
         .sticky-booking { position: sticky; top: 100px; }
         .amenity-icon { width: 24px; height: 24px; }
+
+        /* Mobile menu styles */
+        .mobile-menu { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        .mobile-menu.active { transform: translateX(0); }
+
+        /* Responsive gallery */
+        @media (max-width: 1023px) {
+            .gallery-main { height: 300px; border-radius: 16px; }
+            .gallery-grid { display: none !important; }
+        }
+
+        /* Prevent hover effects on touch devices */
+        @media (hover: none) {
+            .gallery-item:hover { opacity: 1; transform: none; }
+        }
+
+        /* Improved mobile spacing */
+        @media (max-width: 640px) {
+            .sticky-booking { position: relative; top: 0; }
+            button, a.btn, input[type="submit"] { min-height: 44px; }
+        }
+
+        /* Seasonal Theme Styles */
+        .seasonal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .seasonal-overlay.active {
+            opacity: 1;
+        }
+
+        /* Winter Theme */
+        .theme-winter .booking-card {
+            background: linear-gradient(135deg, rgba(219, 234, 254, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
+            border: 2px solid rgba(147, 197, 253, 0.3);
+        }
+
+        .theme-winter .primary-btn {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        }
+
+        .theme-winter .primary-btn:hover {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        }
+
+        .theme-winter .price-highlight {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        /* Autumn Theme */
+        .theme-autumn .booking-card {
+            background: linear-gradient(135deg, rgba(254, 243, 199, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
+            border: 2px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .theme-autumn .primary-btn {
+            background: linear-gradient(135deg, #92400e 0%, #d97706 100%);
+        }
+
+        .theme-autumn .primary-btn:hover {
+            background: linear-gradient(135deg, #78350f 0%, #b45309 100%);
+        }
+
+        .theme-autumn .price-highlight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        /* Summer Theme */
+        .theme-summer .booking-card {
+            background: linear-gradient(135deg, rgba(220, 252, 231, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
+            border: 2px solid rgba(134, 239, 172, 0.3);
+        }
+
+        .theme-summer .primary-btn {
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+        }
+
+        .theme-summer .primary-btn:hover {
+            background: linear-gradient(135deg, #166534 0%, #16a34a 100%);
+        }
+
+        .theme-summer .price-highlight {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #15803d;
+        }
+
+        /* Smooth transitions for theme changes */
+        .booking-card, .primary-btn, .price-highlight {
+            transition: all 0.8s ease-in-out;
+        }
+
+        /* Seasonal background patterns */
+        .season-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            pointer-events: none;
+        }
+
+        .season-bg.active {
+            opacity: 0.05;
+        }
+
+        /* Web3 Theme Styles */
+        .web3-gradient {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #3b82f6 100%);
+        }
+
+        .web3-glow {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(236, 72, 153, 0.2);
+        }
+
+        .theme-web3 .booking-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(17, 24, 39, 0.95) 100%);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            position: relative;
+            overflow: visible;
+        }
+
+        .theme-web3 .booking-card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 1rem;
+            padding: 2px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899, #3b82f6);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+            animation: border-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes border-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .theme-web3 .primary-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .theme-web3 .primary-btn:hover {
+            background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        .theme-web3 .price-highlight {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #e9d5ff;
+        }
+
+        /* Web3 Wallet Modal */
+        .wallet-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wallet-modal.active {
+            display: flex;
+        }
+
+        .wallet-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .wallet-option:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Crypto particle animation */
+        .crypto-particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            border-radius: 50%;
+            animation: float-particle 4s ease-in-out infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes float-particle {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(10px, -10px); }
+            50% { transform: translate(-5px, -20px); }
+            75% { transform: translate(-10px, -10px); }
+        }
+
+        /* Wallet connected badge */
+        .wallet-badge {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(139, 92, 246, 0.7); }
+        }
+
+        .web3-text {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        /* Web3 Discount Notification */
+        .discount-notification {
+            position: fixed;
+            top: 100px;
+            right: -400px;
+            width: 350px;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 2px solid rgba(139, 92, 246, 0.6);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.4);
+            z-index: 1000;
+            transition: right 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .discount-notification.show {
+            right: 20px;
+        }
+
+        .discount-notification::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 1rem;
+            padding: 2px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899, #3b82f6);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.8;
+            animation: border-pulse 3s ease-in-out infinite;
+        }
+
+        .confetti-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            border-radius: 50%;
+            animation: confetti-fall 3s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(400px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .discount-notification {
+                width: calc(100% - 40px);
+                right: -100%;
+                left: auto;
+            }
+            .discount-notification.show {
+                right: 20px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -25,15 +355,180 @@
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <a href="index.html" class="text-2xl font-display font-bold text-gray-900">AspireTowards</a>
+                <a href="index.html" class="text-xl sm:text-2xl font-display font-bold text-gray-900">AspireTowards</a>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="index.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
                     <a href="properties.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Properties</a>
                     <a href="/src/pages/auth/login.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Host Login</a>
+                    <button id="wallet-connect-btn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
+                            <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span id="wallet-btn-text">Connect Wallet</span>
+                    </button>
                 </div>
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu fixed inset-y-0 right-0 w-64 bg-white shadow-2xl z-50 md:hidden">
+        <div class="flex flex-col h-full">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 class="text-lg font-display font-bold text-gray-900">Menu</h2>
+                <button id="mobile-menu-close" class="p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <nav class="flex-1 overflow-y-auto p-4">
+                <a href="index.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Home</a>
+                <a href="properties.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Properties</a>
+                <a href="/src/pages/auth/login.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Host Login</a>
+                <button id="wallet-connect-mobile" class="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
+                        <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>Connect Wallet</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
+
+    <!-- Web3 Discount Notification -->
+    <div id="discount-notification" class="discount-notification">
+        <div class="relative z-10">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg">Discount Unlocked!</h3>
+                </div>
+                <button onclick="closeDiscountNotification()" class="text-gray-400 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="mb-4">
+                <div class="text-5xl font-bold mb-2">
+                    <span class="web3-text">10% OFF</span>
+                </div>
+                <p class="text-gray-300 text-sm leading-relaxed">
+                    🎉 You've unlocked an exclusive <strong class="text-purple-400">10% discount</strong> by connecting your Web3 wallet!
+                </p>
+            </div>
+
+            <div class="bg-gray-800/50 rounded-lg p-3 mb-3">
+                <div class="flex items-center gap-2 mb-1">
+                    <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-green-400 text-xs font-semibold">Active Now</span>
+                </div>
+                <p class="text-gray-400 text-xs">Pay with BTC or ETH to apply discount at checkout</p>
+            </div>
+
+            <div class="flex gap-2">
+                <div class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-2 rounded-lg text-sm font-semibold">
+                    ₿ Bitcoin
+                </div>
+                <div class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center py-2 rounded-lg text-sm font-semibold">
+                    Ξ Ethereum
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Web3 Wallet Connect Modal -->
+    <div id="wallet-modal" class="wallet-modal">
+        <div class="bg-gray-900 rounded-2xl p-8 max-w-md w-full mx-4 relative" style="border: 2px solid rgba(139, 92, 246, 0.5);">
+            <button id="wallet-modal-close" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <h2 class="text-2xl font-bold text-white mb-2">Connect Your Wallet</h2>
+            <p class="text-gray-400 mb-6 text-sm">Choose your preferred wallet to unlock Web3 payments</p>
+
+            <div class="space-y-3">
+                <!-- MetaMask -->
+                <div class="wallet-option bg-gray-800 p-4 rounded-xl border border-gray-700 flex items-center justify-between" onclick="connectWallet('metamask')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22.05 10.43l-3.75-3.75-1.5 1.5 3.75 3.75-3.75 3.75 1.5 1.5 3.75-3.75a1.5 1.5 0 000-2.12z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">MetaMask</h3>
+                            <p class="text-gray-400 text-xs">Most popular wallet</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+
+                <!-- WalletConnect -->
+                <div class="wallet-option bg-gray-800 p-4 rounded-xl border border-gray-700 flex items-center justify-between" onclick="connectWallet('walletconnect')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">WalletConnect</h3>
+                            <p class="text-gray-400 text-xs">Scan with mobile</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+
+                <!-- Coinbase Wallet -->
+                <div class="wallet-option bg-gray-800 p-4 rounded-xl border border-gray-700 flex items-center justify-between" onclick="connectWallet('coinbase')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">Coinbase Wallet</h3>
+                            <p class="text-gray-400 text-xs">Secure & easy</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <p class="text-gray-500 text-xs">By connecting, you agree to our Terms of Service</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Loading State -->
     <div id="loading" class="flex justify-center items-center min-h-screen">
@@ -69,8 +564,8 @@
         <!-- Photo Gallery -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-1">
-                <div id="main-image" class="gallery-main cursor-pointer"></div>
-                <div id="gallery-grid" class="gallery-grid hidden lg:grid"></div>
+                <div id="main-image" class="gallery-main cursor-pointer lg:rounded-l-2xl lg:rounded-tr-none"></div>
+                <div id="gallery-grid" class="gallery-grid hidden lg:grid lg:rounded-r-2xl"></div>
             </div>
         </div>
 
@@ -80,8 +575,8 @@
                 <!-- Left Column - Details -->
                 <div class="lg:col-span-2">
                     <!-- Quick Info -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-                        <div class="flex items-center space-x-8 text-gray-700">
+                    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
+                        <div class="flex flex-wrap items-center gap-4 sm:gap-8 text-gray-700">
                             <div class="flex items-center">
                                 <svg class="w-6 h-6 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -104,25 +599,25 @@
                     </div>
 
                     <!-- Description -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
                         <h2 class="text-2xl font-bold text-gray-900 mb-4">About This Property</h2>
                         <p id="property-description" class="text-gray-700 leading-relaxed whitespace-pre-line"></p>
                     </div>
 
                     <!-- Amenities -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
                         <h2 class="text-2xl font-bold text-gray-900 mb-4">Amenities</h2>
                         <div id="amenities-list" class="grid grid-cols-2 gap-4"></div>
                     </div>
 
                     <!-- House Rules -->
-                    <div id="house-rules-section" class="bg-white rounded-xl shadow-sm p-6 mb-6 hidden">
+                    <div id="house-rules-section" class="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6 hidden">
                         <h2 class="text-2xl font-bold text-gray-900 mb-4">House Rules</h2>
                         <div id="house-rules" class="text-gray-700 whitespace-pre-line"></div>
                     </div>
 
                     <!-- Cancellation Policy -->
-                    <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6">
                         <h2 class="text-2xl font-bold text-gray-900 mb-4">Cancellation Policy</h2>
                         <p id="cancellation-policy" class="text-gray-700"></p>
                     </div>
@@ -130,17 +625,72 @@
 
                 <!-- Right Column - Booking Card -->
                 <div class="lg:col-span-1">
-                    <div class="bg-white rounded-xl shadow-lg p-6 sticky-booking">
-                        <div class="mb-6">
+                    <div class="booking-card bg-white rounded-xl shadow-lg p-4 sm:p-6 sticky-booking relative overflow-hidden">
+                        <!-- Seasonal Background SVG Patterns -->
+                        <div id="winter-bg" class="season-bg">
+                            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <pattern id="snowflakes" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+                                        <path d="M50 20 L50 80 M20 50 L80 50 M30 30 L70 70 M70 30 L30 70" stroke="#3b82f6" stroke-width="2" fill="none"/>
+                                        <circle cx="50" cy="50" r="3" fill="#3b82f6"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#snowflakes)"/>
+                            </svg>
+                        </div>
+
+                        <div id="autumn-bg" class="season-bg">
+                            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <pattern id="leaves" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+                                        <path d="M40 10 Q30 20 40 40 Q50 20 40 10 M40 40 L40 50" stroke="#d97706" stroke-width="2" fill="none"/>
+                                        <path d="M20 30 Q15 35 20 45 Q25 35 20 30 M20 45 L20 52" stroke="#ea580c" stroke-width="1.5" fill="none"/>
+                                        <path d="M60 25 Q55 30 60 40 Q65 30 60 25 M60 40 L60 47" stroke="#f59e0b" stroke-width="1.5" fill="none"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#leaves)"/>
+                            </svg>
+                        </div>
+
+                        <div id="summer-bg" class="season-bg">
+                            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <pattern id="nature" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+                                        <path d="M30 60 Q30 40 40 40 Q40 50 45 50 Q45 40 50 40 Q60 40 60 60" stroke="#22c55e" stroke-width="2" fill="none"/>
+                                        <circle cx="70" cy="30" r="8" stroke="#fbbf24" stroke-width="2" fill="none"/>
+                                        <path d="M20 70 Q25 65 30 70" stroke="#16a34a" stroke-width="2" fill="none"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#nature)"/>
+                            </svg>
+                        </div>
+                        <div class="mb-6 relative z-10">
+                            <!-- Web3 Wallet Badge -->
+                            <div id="wallet-connected-badge" class="wallet-badge mb-3" style="display: none;">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
+                                    <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span id="wallet-address-display">0x1234...5678</span>
+                            </div>
+
+                            <div id="seasonal-message" class="text-sm font-medium mb-3 p-2 rounded-lg text-center" style="display: none;"></div>
                             <div class="flex items-baseline">
                                 <span class="text-3xl font-bold text-gray-900">$<span id="booking-price">0</span></span>
                                 <span class="text-gray-600 ml-2">/ night</span>
                             </div>
                             <p id="cleaning-fee-display" class="text-sm text-gray-500 mt-1 hidden"></p>
+
+                            <!-- Crypto Price Display -->
+                            <div id="crypto-price-display" class="mt-2 text-sm" style="display: none;">
+                                <span class="web3-text font-bold">≈ <span id="crypto-eth-price">0.00</span> ETH</span>
+                                <span class="text-gray-400 mx-2">|</span>
+                                <span class="web3-text font-bold">≈ <span id="crypto-btc-price">0.0000</span> BTC</span>
+                            </div>
                         </div>
 
                         <!-- Booking Form -->
-                        <form id="booking-form" class="space-y-4">
+                        <form id="booking-form" class="space-y-4 relative z-10">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Check-in</label>
                                 <input type="text" id="check-in" placeholder="Select date" readonly
@@ -161,7 +711,7 @@
                             </div>
 
                             <!-- Price Breakdown -->
-                            <div id="price-breakdown" class="hidden border-t border-gray-200 pt-4 space-y-2">
+                            <div id="price-breakdown" class="hidden border-t border-gray-200 pt-4 space-y-2 relative z-10">
                                 <div class="flex justify-between text-gray-700">
                                     <span>$<span id="breakdown-price">0</span> × <span id="breakdown-nights">0</span> nights</span>
                                     <span>$<span id="breakdown-base">0</span></span>
@@ -174,7 +724,7 @@
                                     <span>Total</span>
                                     <span>$<span id="breakdown-total">0</span></span>
                                 </div>
-                                <div class="bg-teal-50 rounded-lg p-3 text-sm">
+                                <div class="price-highlight bg-teal-50 rounded-lg p-3 text-sm">
                                     <div class="flex justify-between mb-1">
                                         <span class="text-gray-700">Deposit (10% now):</span>
                                         <span class="font-semibold text-teal-700">$<span id="breakdown-deposit">0</span></span>
@@ -187,9 +737,24 @@
                             </div>
 
                             <button type="submit" id="booking-button"
-                                    class="w-full bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed">
+                                    class="primary-btn w-full bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
                                 Check Availability
                             </button>
+
+                            <!-- Web3 Payment Option -->
+                            <div id="web3-payment-option" class="mt-4 p-4 rounded-lg border-2 border-dashed relative z-10" style="display: none; border-color: rgba(139, 92, 246, 0.5); background: rgba(139, 92, 246, 0.05);">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="web3-text text-sm font-bold">Pay with Crypto</span>
+                                    <div class="flex gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">₿</div>
+                                        <div class="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-bold">Ξ</div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-3">BTC & ETH accepted • <strong class="text-purple-600">10% discount applied</strong></p>
+                                <button type="button" id="crypto-payment-btn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition">
+                                    Book with Crypto
+                                </button>
+                            </div>
 
                             <p class="text-xs text-gray-500 text-center">
                                 You won't be charged yet. Card will be authorized but not charged until host approves.
@@ -206,6 +771,247 @@
         let currentProperty = null
         let checkInPicker, checkOutPicker
         let bookedDates = []
+        let currentSeason = null
+        let walletConnected = false
+        let userWalletAddress = null
+        let provider = null
+
+        // Seasonal theme configuration
+        const seasonalThemes = {
+            winter: {
+                name: 'Winter Wonderland',
+                message: '❄️ Perfect for skiing at Bromley Mountain!',
+                emoji: '⛷️',
+                gradient: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)'
+            },
+            autumn: {
+                name: 'Fall Foliage',
+                message: '🍂 Experience Vermont\'s stunning fall colors!',
+                emoji: '🍁',
+                gradient: 'linear-gradient(135deg, #92400e 0%, #d97706 100%)'
+            },
+            summer: {
+                name: 'Summer Adventure',
+                message: '🥾 Explore the Appalachian Trail & hiking!',
+                emoji: '🌲',
+                gradient: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)'
+            }
+        }
+
+        // Determine season based on check-in date
+        function getSeason(date) {
+            if (!date) return null
+
+            const month = date.getMonth() + 1 // 1-12
+
+            // Winter: December to April (12, 1, 2, 3, 4)
+            if (month === 12 || month >= 1 && month <= 4) {
+                return 'winter'
+            }
+            // Autumn: September to November (9, 10, 11)
+            else if (month >= 9 && month <= 11) {
+                return 'autumn'
+            }
+            // Summer: May to August (5, 6, 7, 8)
+            else {
+                return 'summer'
+            }
+        }
+
+        // Apply seasonal theme
+        function applySeasonalTheme(season) {
+            if (season === currentSeason) return
+
+            // Remove all theme classes
+            document.body.classList.remove('theme-winter', 'theme-autumn', 'theme-summer')
+
+            // Hide all season backgrounds
+            document.querySelectorAll('.season-bg').forEach(bg => bg.classList.remove('active'))
+
+            if (!season) {
+                currentSeason = null
+                document.getElementById('seasonal-message').style.display = 'none'
+                return
+            }
+
+            // Apply new theme
+            document.body.classList.add(`theme-${season}`)
+            currentSeason = season
+
+            // Show seasonal background
+            const bgElement = document.getElementById(`${season}-bg`)
+            if (bgElement) {
+                bgElement.classList.add('active')
+            }
+
+            // Update seasonal message
+            const theme = seasonalThemes[season]
+            const messageEl = document.getElementById('seasonal-message')
+            if (theme && messageEl) {
+                messageEl.textContent = theme.message
+                messageEl.style.display = 'block'
+                messageEl.className = `text-sm font-medium mb-3 p-2 rounded-lg text-center price-highlight`
+            }
+
+            console.log(`Applied ${season} theme`)
+        }
+
+        // Web3 Wallet Connection Functions
+        async function connectWallet(walletType) {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    alert('Please install MetaMask or another Web3 wallet to use crypto payments!')
+                    return
+                }
+
+                // Request account access
+                provider = new ethers.providers.Web3Provider(window.ethereum)
+                const accounts = await provider.send("eth_requestAccounts", [])
+
+                if (accounts.length > 0) {
+                    userWalletAddress = accounts[0]
+                    walletConnected = true
+
+                    // Apply Web3 theme
+                    applyWeb3Theme()
+
+                    // Close modal
+                    document.getElementById('wallet-modal').classList.remove('active')
+
+                    // Update UI
+                    updateWalletUI()
+
+                    // Show discount notification with celebration
+                    showDiscountNotification()
+
+                    console.log('Wallet connected:', userWalletAddress)
+                }
+            } catch (error) {
+                console.error('Wallet connection error:', error)
+                alert('Failed to connect wallet. Please try again.')
+            }
+        }
+
+        function applyWeb3Theme() {
+            // Add Web3 theme class
+            document.body.classList.add('theme-web3')
+
+            // Show wallet badge
+            const badge = document.getElementById('wallet-connected-badge')
+            const addressDisplay = document.getElementById('wallet-address-display')
+            if (badge && addressDisplay && userWalletAddress) {
+                addressDisplay.textContent = formatAddress(userWalletAddress)
+                badge.style.display = 'inline-flex'
+            }
+
+            // Show crypto price display
+            document.getElementById('crypto-price-display').style.display = 'block'
+
+            // Show Web3 payment option
+            document.getElementById('web3-payment-option').style.display = 'block'
+
+            // Create crypto particles
+            createCryptoParticles()
+        }
+
+        function formatAddress(address) {
+            return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
+        }
+
+        function updateWalletUI() {
+            const btnText = document.getElementById('wallet-btn-text')
+            if (btnText) {
+                btnText.textContent = formatAddress(userWalletAddress)
+            }
+        }
+
+        // Create animated crypto particles
+        function createCryptoParticles() {
+            const bookingCard = document.querySelector('.booking-card')
+            if (!bookingCard) return
+
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div')
+                particle.className = 'crypto-particle'
+                particle.style.left = `${Math.random() * 100}%`
+                particle.style.top = `${Math.random() * 100}%`
+                particle.style.animationDelay = `${Math.random() * 4}s`
+                bookingCard.appendChild(particle)
+            }
+        }
+
+        // Mock crypto price conversion (in production, use real-time API)
+        function updateCryptoPrice(usdAmount) {
+            if (!walletConnected || !usdAmount) return
+
+            // Mock conversion rates (use CoinGecko or similar API in production)
+            const ethPrice = 3000 // USD per ETH
+            const btcPrice = 60000 // USD per BTC
+
+            const ethAmount = (usdAmount / ethPrice).toFixed(4)
+            const btcAmount = (usdAmount / btcPrice).toFixed(6)
+
+            document.getElementById('crypto-eth-price').textContent = ethAmount
+            document.getElementById('crypto-btc-price').textContent = btcAmount
+        }
+
+        // Wallet modal controls
+        function openWalletModal() {
+            document.getElementById('wallet-modal').classList.add('active')
+        }
+
+        function closeWalletModal() {
+            document.getElementById('wallet-modal').classList.remove('active')
+        }
+
+        // Show discount notification with confetti
+        function showDiscountNotification() {
+            const notification = document.getElementById('discount-notification')
+
+            // Create confetti burst
+            createConfetti()
+
+            // Show notification after brief delay
+            setTimeout(() => {
+                notification.classList.add('show')
+            }, 300)
+
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                closeDiscountNotification()
+            }, 10000)
+        }
+
+        function closeDiscountNotification() {
+            const notification = document.getElementById('discount-notification')
+            notification.classList.remove('show')
+        }
+
+        // Create confetti celebration
+        function createConfetti() {
+            const colors = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b']
+
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div')
+                    confetti.className = 'confetti-particle'
+                    confetti.style.left = `${Math.random() * 100}%`
+                    confetti.style.top = '100px'
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)]
+                    confetti.style.animationDelay = `${Math.random() * 0.3}s`
+                    confetti.style.animationDuration = `${2 + Math.random() * 2}s`
+
+                    document.body.appendChild(confetti)
+
+                    setTimeout(() => confetti.remove(), 4000)
+                }, i * 50)
+            }
+        }
+
+        // Event listeners for wallet buttons
+        document.getElementById('wallet-connect-btn')?.addEventListener('click', openWalletModal)
+        document.getElementById('wallet-connect-mobile')?.addEventListener('click', openWalletModal)
+        document.getElementById('wallet-modal-close')?.addEventListener('click', closeWalletModal)
 
         // Get slug from URL
         const urlParams = new URLSearchParams(window.location.search)
@@ -328,9 +1134,16 @@
                 disable: disabledDates,
                 onChange: function(selectedDates) {
                     if (selectedDates.length > 0) {
+                        // Detect and apply seasonal theme
+                        const season = getSeason(selectedDates[0])
+                        applySeasonalTheme(season)
+
                         checkOutPicker.set('minDate', new Date(selectedDates[0].getTime() + 86400000))
                         checkOutPicker.open()
                         calculatePrice()
+                    } else {
+                        // Clear theme when date is cleared
+                        applySeasonalTheme(null)
                     }
                 }
             })
@@ -340,6 +1153,12 @@
                 dateFormat: 'Y-m-d',
                 disable: disabledDates,
                 onChange: function() {
+                    // Re-apply theme based on check-in date when checkout changes
+                    const checkInDate = checkInPicker.selectedDates[0]
+                    if (checkInDate) {
+                        const season = getSeason(checkInDate)
+                        applySeasonalTheme(season)
+                    }
                     calculatePrice()
                 }
             })
@@ -373,6 +1192,11 @@
                         document.getElementById('breakdown-cleaning').textContent = pricing.cleaningFee
                     }
 
+                    // Update crypto prices if wallet is connected
+                    if (walletConnected) {
+                        updateCryptoPrice(pricing.subtotal)
+                    }
+
                     document.getElementById('booking-button').textContent = 'Request to Book'
                     document.getElementById('booking-button').disabled = false
                 } else {
@@ -403,6 +1227,30 @@
 
         // Load property on page load
         document.addEventListener('DOMContentLoaded', loadProperty)
+
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button')
+        const mobileMenu = document.getElementById('mobile-menu')
+        const mobileMenuClose = document.getElementById('mobile-menu-close')
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay')
+
+        function openMobileMenu() {
+            mobileMenu.classList.add('active')
+            mobileMenuOverlay.classList.remove('hidden')
+            document.body.style.overflow = 'hidden'
+        }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active')
+            mobileMenuOverlay.classList.add('hidden')
+            document.body.style.overflow = ''
+        }
+
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', openMobileMenu)
+            mobileMenuClose.addEventListener('click', closeMobileMenu)
+            mobileMenuOverlay.addEventListener('click', closeMobileMenu)
+        }
     </script>
 </body>
 </html>
