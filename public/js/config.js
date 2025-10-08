@@ -24,7 +24,7 @@ const CONFIG = {
 
 // Production configuration
 const CONFIG = {
-  API_BASE_URL: 'http://54.145.250.158',
+  API_BASE_URL: 'http://34.229.40.26',
   ENV: 'production',
   ENABLE_ANALYTICS: true,
   ENABLE_DEBUG: false,
