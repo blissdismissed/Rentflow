@@ -105,6 +105,81 @@ Booking.init(
     cancellationReason: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    externalId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'External reservation ID from platforms like Airbnb, VRBO'
+    },
+    platform: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Source platform (airbnb, vrbo, booking_com, etc.)'
+    },
+    platformFee: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0,
+      comment: 'Fee charged by the platform'
+    },
+    netAmount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      comment: 'Net amount after platform fees'
+    },
+    metadata: {
+      type: DataTypes.JSONB,
+      defaultValue: {},
+      comment: 'Additional data from external platforms'
+    },
+    depositAmount: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0,
+      comment: '10% deposit amount'
+    },
+    depositPaid: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Whether deposit has been paid'
+    },
+    depositPaidAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'When deposit was paid'
+    },
+    balanceAmount: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0,
+      comment: 'Remaining balance (90%)'
+    },
+    balancePaid: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Whether balance has been paid'
+    },
+    balancePaidAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'When balance was paid'
+    },
+    stripePaymentIntentId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Stripe PaymentIntent ID for deposit'
+    },
+    bookingStatus: {
+      type: DataTypes.ENUM('requested', 'approved', 'declined', 'confirmed', 'completed', 'cancelled'),
+      defaultValue: 'requested',
+      comment: 'Booking request workflow status'
+    },
+    hostMessage: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'Message from host (decline reason, etc.)'
+    },
+    guestMessage: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'Message from guest with booking request'
     }
   },
   {
