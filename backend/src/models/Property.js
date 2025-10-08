@@ -121,6 +121,69 @@ Property.init(
     isListed: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
+    },
+    externalId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'External listing ID from platforms like Airbnb, VRBO'
+    },
+    platform: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Source platform (airbnb, vrbo, booking_com, etc.)'
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
+    propertyType: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Detailed property type from external platforms'
+    },
+    minNights: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1
+    },
+    maxNights: {
+      type: DataTypes.INTEGER,
+      defaultValue: 365
+    },
+    slug: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: true,
+      comment: 'URL-friendly slug for public booking page'
+    },
+    featuredImage: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'Main image for property listing'
+    },
+    houseRules: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'House rules for guests'
+    },
+    cancellationPolicy: {
+      type: DataTypes.STRING,
+      defaultValue: 'moderate',
+      comment: 'flexible, moderate, strict'
+    },
+    checkInInstructions: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'Instructions for guest check-in'
+    },
+    instantBook: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Allow instant booking without host approval'
+    },
+    publiclyVisible: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      comment: 'Show on public booking site'
     }
   },
   {

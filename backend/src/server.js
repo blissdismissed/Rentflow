@@ -13,13 +13,33 @@ const bookingRoutes = require('./routes/bookingRoutes')
 const paymentRoutes = require('./routes/paymentRoutes')
 const integrationRoutes = require('./routes/integrationRoutes')
 const financialRoutes = require('./routes/financialRoutes')
+const publicRoutes = require('./routes/publicRoutes')
 
 const app = express()
 
 // Security middleware
 app.use(helmet())
+
+// CORS - Allow S3 bucket and local development
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.S3_BUCKET_URL,
+  'http://localhost:8000',
+  'http://127.0.0.1:8000'
+].filter(Boolean) // Remove undefined values
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:8000',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true)
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`)
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
   credentials: true
 }))
 
@@ -62,6 +82,9 @@ app.use('/api/payments', paymentRoutes)
 app.use('/api/integrations', integrationRoutes)
 app.use('/api/financials', financialRoutes)
 
+// Public routes (no authentication required)
+app.use('/api/public', publicRoutes)
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
@@ -94,11 +117,15 @@ const startServer = async () => {
       console.log('✅ Database synchronized')
     }
 
-    // Start listening
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`)
+    // Start listening - bind to localhost only for security (use Nginx reverse proxy)
+    const host = process.env.NODE_ENV === 'production' ? '127.0.0.1' : '0.0.0.0'
+    app.listen(PORT, host, () => {
+      console.log(`🚀 Server running on ${host}:${PORT}`)
       console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`)
-      console.log(`🔗 API URL: http://localhost:${PORT}`)
+      console.log(`🔗 API URL: http://${host}:${PORT}`)
+      if (process.env.NODE_ENV === 'production') {
+        console.log(`⚠️  Server bound to localhost only - use Nginx reverse proxy for external access`)
+      }
     })
   } catch (error) {
     console.error('❌ Failed to start server:', error)

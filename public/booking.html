@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Booking - AspireTowards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+        .StripeElement {
+            padding: 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            background-color: white;
+        }
+        .StripeElement--focus {
+            border-color: #0F766E;
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+        .StripeElement--invalid {
+            border-color: #EF4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="text-2xl font-display font-bold text-gray-900">AspireTowards</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Back Button -->
+        <a id="back-link" href="#" class="text-teal-600 hover:text-teal-700 flex items-center mb-6">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Property
+        </a>
+
+        <h1 class="text-3xl font-display font-bold text-gray-900 mb-8">Request to Book</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Booking Form -->
+            <div class="lg:col-span-2">
+                <form id="booking-form" class="space-y-6">
+                    <!-- Property Summary -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">Your Trip</h2>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Dates</span>
+                                <span class="font-medium" id="trip-dates"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Guests</span>
+                                <span class="font-medium" id="trip-guests"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guest Information -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">Guest Information</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                                <input type="text" id="guest-name" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                       placeholder="John Doe">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                                <input type="email" id="guest-email" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                       placeholder="john@example.com">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                                <input type="tel" id="guest-phone"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                       placeholder="+1 (555) 123-4567">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Message to Host (Optional)</label>
+                                <textarea id="guest-message" rows="3"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                          placeholder="Tell the host about your trip..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Information -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">Payment Information</h2>
+                        <div class="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-4">
+                            <p class="text-sm text-teal-800">
+                                <strong>Secure Payment:</strong> Your card will be authorized for the deposit amount but <strong>not charged</strong> until the host approves your booking request.
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Card Information</label>
+                            <div id="card-element" class="mb-4"></div>
+                            <div id="card-errors" class="text-red-500 text-sm"></div>
+                        </div>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <label class="flex items-start">
+                            <input type="checkbox" id="agree-terms" required class="mt-1 mr-3 h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded">
+                            <span class="text-sm text-gray-600">
+                                I agree to the house rules, cancellation policy, and booking terms. I understand that my card will be authorized but not charged until the host approves my request.
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submit-button"
+                            class="w-full bg-teal-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-teal-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed">
+                        Submit Booking Request
+                    </button>
+
+                    <div id="error-message" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"></div>
+                </form>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+                    <div id="property-summary" class="mb-6">
+                        <div class="h-48 bg-gray-200 rounded-lg mb-4" id="property-image"></div>
+                        <h3 id="property-name" class="font-bold text-lg text-gray-900 mb-2"></h3>
+                        <p id="property-location" class="text-gray-600 text-sm"></p>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-4 space-y-3">
+                        <h3 class="font-bold text-gray-900 mb-3">Price Details</h3>
+                        <div class="flex justify-between text-gray-700">
+                            <span>$<span id="price-per-night">0</span> × <span id="num-nights">0</span> nights</span>
+                            <span>$<span id="base-amount">0</span></span>
+                        </div>
+                        <div id="cleaning-fee-row" class="flex justify-between text-gray-700 hidden">
+                            <span>Cleaning fee</span>
+                            <span>$<span id="cleaning-fee">0</span></span>
+                        </div>
+                        <div class="flex justify-between font-bold text-lg text-gray-900 border-t border-gray-200 pt-3">
+                            <span>Total</span>
+                            <span>$<span id="total-amount">0</span></span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 mt-4 pt-4">
+                        <div class="bg-teal-50 rounded-lg p-4 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700 font-medium">Due Today (10%):</span>
+                                <span class="text-2xl font-bold text-teal-700">$<span id="deposit-amount">0</span></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Balance at check-in:</span>
+                                <span class="font-semibold text-gray-700">$<span id="balance-amount">0</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-xs text-gray-500">
+                        <p>✓ Card authorized, not charged until approval</p>
+                        <p>✓ Host will respond within 24 hours</p>
+                        <p>✓ Full refund if declined</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api/public'
+        const stripe = Stripe('YOUR_STRIPE_PUBLISHABLE_KEY') // TODO: Replace with actual key
+        const elements = stripe.elements()
+        const cardElement = elements.create('card')
+        cardElement.mount('#card-element')
+
+        let currentProperty = null
+        let bookingDetails = {}
+
+        // Handle card errors
+        cardElement.on('change', function(event) {
+            const displayError = document.getElementById('card-errors')
+            if (event.error) {
+                displayError.textContent = event.error.message
+            } else {
+                displayError.textContent = ''
+            }
+        })
+
+        // Get booking details from URL
+        const urlParams = new URLSearchParams(window.location.search)
+        const slug = urlParams.get('slug')
+        const checkIn = urlParams.get('checkIn')
+        const checkOut = urlParams.get('checkOut')
+        const guests = urlParams.get('guests')
+
+        if (!slug || !checkIn || !checkOut) {
+            window.location.href = 'properties.html'
+        }
+
+        // Set back link
+        document.getElementById('back-link').href = `property.html?slug=${slug}`
+
+        // Load property and pricing
+        async function loadBookingDetails() {
+            try {
+                // Get property details
+                const propResponse = await fetch(`${API_URL}/properties/${slug}`)
+                const propData = await propResponse.json()
+
+                if (!propData.success) throw new Error('Property not found')
+
+                currentProperty = propData.property
+
+                // Get pricing
+                const priceResponse = await fetch(`${API_URL}/properties/${slug}/availability?checkIn=${checkIn}&checkOut=${checkOut}`)
+                const priceData = await priceResponse.json()
+
+                if (!priceData.success || !priceData.available) {
+                    alert('Property is not available for selected dates')
+                    window.location.href = `property.html?slug=${slug}`
+                    return
+                }
+
+                bookingDetails = {
+                    property: currentProperty,
+                    pricing: priceData.pricing,
+                    checkIn,
+                    checkOut,
+                    guests
+                }
+
+                displayBookingDetails()
+            } catch (error) {
+                console.error('Error loading booking details:', error)
+                alert('Error loading booking details')
+                window.location.href = 'properties.html'
+            }
+        }
+
+        // Display booking details
+        function displayBookingDetails() {
+            const { property, pricing, guests } = bookingDetails
+
+            // Trip details
+            document.getElementById('trip-dates').textContent = `${checkIn} → ${checkOut}`
+            document.getElementById('trip-guests').textContent = `${guests} guest${guests !== '1' ? 's' : ''}`
+
+            // Property summary
+            const propImage = document.getElementById('property-image')
+            propImage.style.backgroundImage = `url(${property.featuredImage || property.images?.[0] || 'https://via.placeholder.com/400x300'})`
+            propImage.style.backgroundSize = 'cover'
+            propImage.style.backgroundPosition = 'center'
+
+            document.getElementById('property-name').textContent = property.name
+            document.getElementById('property-location').textContent = `${property.city}, ${property.state}`
+
+            // Pricing
+            document.getElementById('price-per-night').textContent = pricing.pricePerNight
+            document.getElementById('num-nights').textContent = pricing.nights
+            document.getElementById('base-amount').textContent = pricing.baseAmount
+            document.getElementById('total-amount').textContent = pricing.subtotal
+            document.getElementById('deposit-amount').textContent = pricing.depositAmount
+            document.getElementById('balance-amount').textContent = pricing.balanceAmount
+
+            if (pricing.cleaningFee > 0) {
+                document.getElementById('cleaning-fee-row').classList.remove('hidden')
+                document.getElementById('cleaning-fee').textContent = pricing.cleaningFee
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('booking-form').addEventListener('submit', async function(e) {
+            e.preventDefault()
+
+            const submitButton = document.getElementById('submit-button')
+            const errorMessage = document.getElementById('error-message')
+
+            submitButton.disabled = true
+            submitButton.textContent = 'Processing...'
+            errorMessage.classList.add('hidden')
+
+            try {
+                // Create booking request
+                const bookingResponse = await fetch(`${API_URL}/bookings/request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        propertyId: currentProperty.id,
+                        checkIn: bookingDetails.checkIn,
+                        checkOut: bookingDetails.checkOut,
+                        guestName: document.getElementById('guest-name').value,
+                        guestEmail: document.getElementById('guest-email').value,
+                        guestPhone: document.getElementById('guest-phone').value || null,
+                        numberOfGuests: parseInt(bookingDetails.guests),
+                        guestMessage: document.getElementById('guest-message').value || null
+                    })
+                })
+
+                const bookingData = await bookingResponse.json()
+
+                if (!bookingData.success) {
+                    throw new Error(bookingData.message || 'Failed to create booking')
+                }
+
+                // If payment is required, confirm card payment
+                if (bookingData.payment && bookingData.payment.clientSecret) {
+                    const { error: stripeError } = await stripe.confirmCardPayment(
+                        bookingData.payment.clientSecret,
+                        {
+                            payment_method: {
+                                card: cardElement,
+                                billing_details: {
+                                    name: document.getElementById('guest-name').value,
+                                    email: document.getElementById('guest-email').value
+                                }
+                            }
+                        }
+                    )
+
+                    if (stripeError) {
+                        throw new Error(stripeError.message)
+                    }
+                }
+
+                // Success - redirect to confirmation
+                window.location.href = `confirmation.html?code=${bookingData.booking.confirmationCode}`
+
+            } catch (error) {
+                console.error('Booking error:', error)
+                errorMessage.textContent = error.message
+                errorMessage.classList.remove('hidden')
+                submitButton.disabled = false
+                submitButton.textContent = 'Submit Booking Request'
+            }
+        })
+
+        // Load on page load
+        document.addEventListener('DOMContentLoaded', loadBookingDetails)
+    </script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation - AspireTowards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+        .checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        .checkmark {
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+        @keyframes stroke {
+            100% { stroke-dashoffset: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="text-2xl font-display font-bold text-gray-900">AspireTowards</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-12">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-teal-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Loading your booking details...</p>
+        </div>
+
+        <!-- Success Content -->
+        <div id="confirmation-content" class="hidden">
+            <!-- Success Icon -->
+            <div class="text-center mb-8">
+                <svg class="checkmark-svg mx-auto mb-4" width="80" height="80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" stroke="#0F766E" stroke-width="2"/>
+                    <path class="checkmark" fill="none" stroke="#0F766E" stroke-width="3" d="M14 27l8 8 16-16"/>
+                </svg>
+                <h1 class="text-3xl font-display font-bold text-gray-900 mb-2">Booking Request Submitted!</h1>
+                <p class="text-lg text-gray-600">Your booking request has been sent to the host for approval</p>
+            </div>
+
+            <!-- Confirmation Details -->
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                <div class="border-b border-gray-200 pb-4 mb-4">
+                    <p class="text-sm text-gray-600 mb-1">Confirmation Code</p>
+                    <p id="confirmation-code" class="text-2xl font-bold text-teal-600"></p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Property</p>
+                        <p id="property-name" class="text-lg font-semibold text-gray-900"></p>
+                        <p id="property-location" class="text-gray-600"></p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600">Check-in</p>
+                            <p id="check-in-date" class="font-semibold text-gray-900"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Check-out</p>
+                            <p id="check-out-date" class="font-semibold text-gray-900"></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600">Nights</p>
+                            <p id="num-nights" class="font-semibold text-gray-900"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Status</p>
+                            <span id="booking-status" class="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-semibold rounded-full">
+                                Pending Approval
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-6 mb-6">
+                <h3 class="font-bold text-gray-900 mb-4">Payment Information</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-700">Total Amount</span>
+                        <span class="font-semibold text-gray-900">$<span id="total-amount">0</span></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-700">Deposit (10%)</span>
+                        <span class="font-semibold text-gray-900">$<span id="deposit-amount">0</span></span>
+                    </div>
+                    <div class="flex justify-between border-t border-teal-300 pt-3">
+                        <span class="text-gray-700">Balance Due at Check-in</span>
+                        <span class="font-bold text-gray-900 text-lg">$<span id="balance-amount">0</span></span>
+                    </div>
+                </div>
+                <div class="mt-4 text-sm text-gray-700">
+                    <p id="deposit-status" class="font-medium"></p>
+                </div>
+            </div>
+
+            <!-- What's Next -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <h3 class="font-bold text-gray-900 mb-4">What Happens Next?</h3>
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center font-bold mr-3">1</div>
+                        <div>
+                            <p class="font-semibold text-gray-900">Host Review</p>
+                            <p class="text-gray-600 text-sm">Your host will review your booking request and respond within 24 hours</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center font-bold mr-3">2</div>
+                        <div>
+                            <p class="font-semibold text-gray-900">Confirmation Email</p>
+                            <p class="text-gray-600 text-sm">You'll receive an email once your booking is approved. Your deposit will be charged at that time.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center font-bold mr-3">3</div>
+                        <div>
+                            <p class="font-semibold text-gray-900">Check-in Details</p>
+                            <p class="text-gray-600 text-sm">Before your arrival, you'll receive check-in instructions and bring the balance payment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Important Notes -->
+            <div class="bg-gray-100 rounded-xl p-6 mb-8">
+                <h3 class="font-bold text-gray-900 mb-3">Important Information</h3>
+                <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 mr-2 text-teal-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Your card has been authorized but <strong>not charged</strong> yet
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 mr-2 text-teal-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        If declined by host, the authorization will be released with no charge
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 mr-2 text-teal-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        A confirmation email has been sent to <span id="guest-email" class="font-semibold"></span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 mr-2 text-teal-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Keep your confirmation code for reference: <span id="confirmation-code-copy" class="font-mono font-semibold"></span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a href="properties.html" class="flex-1 bg-white text-gray-700 border border-gray-300 px-6 py-3 rounded-lg font-semibold text-center hover:bg-gray-50 transition">
+                    Browse More Properties
+                </a>
+                <a href="index.html" class="flex-1 bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold text-center hover:bg-teal-700 transition">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-content" class="hidden text-center py-12">
+            <svg class="w-20 h-20 mx-auto mb-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Booking Not Found</h2>
+            <p class="text-gray-600 mb-6">We couldn't find the booking you're looking for.</p>
+            <a href="properties.html" class="inline-block bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-700 transition">
+                Browse Properties
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api/public'
+
+        // Get confirmation code from URL
+        const urlParams = new URLSearchParams(window.location.search)
+        const confirmationCode = urlParams.get('code')
+
+        if (!confirmationCode) {
+            showError()
+        } else {
+            loadBookingDetails()
+        }
+
+        async function loadBookingDetails() {
+            try {
+                const response = await fetch(`${API_URL}/bookings/${confirmationCode}`)
+                const data = await response.json()
+
+                if (!data.success) {
+                    throw new Error('Booking not found')
+                }
+
+                displayBooking(data.booking)
+            } catch (error) {
+                console.error('Error loading booking:', error)
+                showError()
+            }
+        }
+
+        function displayBooking(booking) {
+            document.getElementById('loading').classList.add('hidden')
+            document.getElementById('confirmation-content').classList.remove('hidden')
+
+            // Confirmation code
+            document.getElementById('confirmation-code').textContent = booking.confirmationCode
+            document.getElementById('confirmation-code-copy').textContent = booking.confirmationCode
+
+            // Property details
+            document.getElementById('property-name').textContent = booking.propertyName
+            document.getElementById('property-location').textContent = booking.propertyLocation
+
+            // Dates
+            document.getElementById('check-in-date').textContent = formatDate(booking.checkIn)
+            document.getElementById('check-out-date').textContent = formatDate(booking.checkOut)
+            document.getElementById('num-nights').textContent = `${booking.nights} night${booking.nights !== 1 ? 's' : ''}`
+
+            // Status
+            const statusEl = document.getElementById('booking-status')
+            const statusMap = {
+                'requested': { text: 'Pending Approval', class: 'bg-yellow-100 text-yellow-800' },
+                'approved': { text: 'Approved', class: 'bg-green-100 text-green-800' },
+                'confirmed': { text: 'Confirmed', class: 'bg-green-100 text-green-800' },
+                'declined': { text: 'Declined', class: 'bg-red-100 text-red-800' }
+            }
+            const status = statusMap[booking.status] || statusMap['requested']
+            statusEl.textContent = status.text
+            statusEl.className = `inline-block px-3 py-1 ${status.class} text-sm font-semibold rounded-full`
+
+            // Payment
+            document.getElementById('total-amount').textContent = booking.totalAmount
+            document.getElementById('deposit-amount').textContent = booking.depositAmount
+            document.getElementById('balance-amount').textContent = booking.balanceAmount
+
+            const depositStatus = document.getElementById('deposit-status')
+            if (booking.depositPaid) {
+                depositStatus.textContent = '✓ Deposit paid'
+                depositStatus.className = 'text-green-700 font-medium'
+            } else {
+                depositStatus.textContent = 'Deposit will be charged once host approves'
+                depositStatus.className = 'text-gray-700 font-medium'
+            }
+
+            // Guest email (for confirmation message)
+            document.getElementById('guest-email').textContent = booking.guestEmail || 'your email'
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString)
+            return date.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            })
+        }
+
+        function showError() {
+            document.getElementById('loading').classList.add('hidden')
+            document.getElementById('error-content').classList.remove('hidden')
+        }
+    </script>
+</body>
+</html>
