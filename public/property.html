@@ -28,6 +28,13 @@
     <meta name="robots" content="index, follow">
     <meta name="geo.region" content="US-VT">
     <meta name="geo.placename" content="Bromley Village, Vermont">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/resources/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/resources/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/resources/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/resources/apple-touch-icon.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -354,12 +361,15 @@
     <!-- Navigation -->
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <a href="index.html" class="text-xl sm:text-2xl font-display font-bold text-gray-900">AspireTowards</a>
+            <div class="flex justify-between items-center h-20">
+                <a href="index.html" class="flex items-center space-x-3">
+                    <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo" class="h-16 w-16 sm:h-20 sm:w-20">
+                    <span class="text-2xl sm:text-3xl font-display font-bold text-gray-900 leading-none mt-0.5">AspireTowards</span>
+                </a>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="index.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
                     <a href="properties.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Properties</a>
-                    <a href="/src/pages/auth/login.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Host Login</a>
+                    <a href="/auth/login.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Host Login</a>
                     <button id="wallet-connect-btn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition flex items-center gap-2">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
@@ -392,7 +402,7 @@
             <nav class="flex-1 overflow-y-auto p-4">
                 <a href="index.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Home</a>
                 <a href="properties.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Properties</a>
-                <a href="/src/pages/auth/login.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Host Login</a>
+                <a href="/auth/login.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Host Login</a>
                 <button id="wallet-connect-mobile" class="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition flex items-center justify-center gap-2">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
