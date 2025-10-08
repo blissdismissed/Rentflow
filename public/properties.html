@@ -3,7 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browse Properties - AspireTowards</title>
+
+    <!-- Primary SEO Meta Tags -->
+    <title>Vermont Vacation Rentals | Direct Booking Properties | AspireTowards</title>
+    <meta name="title" content="Vermont Vacation Rentals | Direct Booking Properties | AspireTowards">
+    <meta name="description" content="Browse Vermont vacation rentals for direct booking. Ski condos, mountain homes, and fall foliage retreats. Save 15-20% with no booking fees. BTC & ETH accepted.">
+    <meta name="keywords" content="Vermont rentals, vacation homes Vermont, ski condos, direct booking properties, Bromley Mountain, crypto rental payment, Vermont lodging">
+    <link rel="canonical" href="https://aspiretowards.com/properties">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aspiretowards.com/properties">
+    <meta property="og:title" content="Vermont Vacation Rentals | Direct Booking Properties">
+    <meta property="og:description" content="Browse Vermont vacation rentals for direct booking. Save 15-20% with no booking fees. BTC & ETH accepted.">
+    <meta property="og:image" content="https://aspiretowards.com/images/properties-og.jpg">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Vermont Vacation Rentals | Direct Booking">
+    <meta name="twitter:description" content="Browse Vermont vacation rentals. Save 15-20% with no booking fees.">
+
+    <!-- Additional SEO -->
+    <meta name="robots" content="index, follow">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -15,6 +36,20 @@
         .property-card:hover { transform: translateY(-8px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
         .filter-tag { cursor: pointer; transition: all 0.2s; }
         .filter-tag:hover { transform: scale(1.05); }
+
+        /* Mobile menu styles */
+        .mobile-menu { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        .mobile-menu.active { transform: translateX(0); }
+
+        /* Mobile filters */
+        .mobile-filters { transform: translateY(100%); transition: transform 0.3s ease-in-out; }
+        .mobile-filters.active { transform: translateY(0); }
+
+        /* Prevent hover effects on touch devices */
+        @media (hover: none) {
+            .card-hover:hover { transform: none; }
+            .property-card:hover { transform: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -23,7 +58,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <a href="index.html" class="text-2xl font-display font-bold text-gray-900">AspireTowards</a>
+                    <a href="index.html" class="text-xl sm:text-2xl font-display font-bold text-gray-900">AspireTowards</a>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="index.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
@@ -31,12 +66,44 @@
                     <a href="index.html#why-direct" class="text-gray-600 hover:text-teal-600 font-medium transition">Why Book Direct</a>
                     <a href="index.html#contact" class="text-gray-600 hover:text-teal-600 font-medium transition">Contact</a>
                 </div>
-                <a href="/src/pages/auth/login.html" class="text-gray-600 hover:text-teal-600 font-medium transition">
-                    Host Login
-                </a>
+                <div class="hidden md:block">
+                    <a href="/src/pages/auth/login.html" class="text-gray-600 hover:text-teal-600 font-medium transition">
+                        Host Login
+                    </a>
+                </div>
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu fixed inset-y-0 right-0 w-64 bg-white shadow-2xl z-50 md:hidden">
+        <div class="flex flex-col h-full">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 class="text-lg font-display font-bold text-gray-900">Menu</h2>
+                <button id="mobile-menu-close" class="p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <nav class="flex-1 overflow-y-auto p-4">
+                <a href="index.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Home</a>
+                <a href="properties.html" class="block py-3 px-4 text-teal-600 bg-teal-50 rounded-lg font-medium">Properties</a>
+                <a href="index.html#why-direct" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Why Book Direct</a>
+                <a href="index.html#contact" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Contact</a>
+                <a href="/src/pages/auth/login.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Host Login</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
 
     <!-- Header -->
     <div class="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-12">
@@ -47,9 +114,19 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Mobile Filter Button -->
+        <div class="lg:hidden mb-4">
+            <button id="mobile-filters-button" class="w-full bg-white text-gray-700 px-4 py-3 rounded-lg font-medium shadow-sm border border-gray-200 flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                </svg>
+                Filters
+            </button>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <!-- Filters Sidebar -->
-            <div class="lg:col-span-1">
+            <!-- Filters Sidebar (Desktop) / Bottom Sheet (Mobile) -->
+            <div class="lg:col-span-1 hidden lg:block">
                 <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
                     <h2 class="text-lg font-bold text-gray-900 mb-4">Filters</h2>
 
@@ -142,6 +219,74 @@
             </div>
         </div>
     </div>
+
+    <!-- Mobile Filters Bottom Sheet -->
+    <div id="mobile-filters" class="mobile-filters fixed inset-x-0 bottom-0 bg-white rounded-t-2xl shadow-2xl z-50 lg:hidden max-h-[90vh] overflow-hidden">
+        <div class="flex flex-col h-full max-h-[90vh]">
+            <div class="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
+                <h2 class="text-lg font-bold text-gray-900">Filters</h2>
+                <button id="mobile-filters-close" class="p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6">
+                <!-- Price Range -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Price Range</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" id="mobile-minPrice" placeholder="Min" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <span class="text-gray-500">-</span>
+                        <input type="number" id="mobile-maxPrice" placeholder="Max" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                </div>
+
+                <!-- Bedrooms -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Bedrooms</label>
+                    <select id="mobile-bedrooms" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <option value="">Any</option>
+                        <option value="1">1+</option>
+                        <option value="2">2+</option>
+                        <option value="3">3+</option>
+                        <option value="4">4+</option>
+                    </select>
+                </div>
+
+                <!-- Guests -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Guests</label>
+                    <select id="mobile-maxGuests" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <option value="">Any</option>
+                        <option value="2">2+</option>
+                        <option value="4">4+</option>
+                        <option value="6">6+</option>
+                        <option value="8">8+</option>
+                    </select>
+                </div>
+
+                <!-- Location -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                    <input type="text" id="mobile-city" placeholder="City name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+            </div>
+            <div class="p-4 border-t bg-white sticky bottom-0">
+                <div class="flex gap-2">
+                    <button onclick="clearMobileFilters()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-200 transition">
+                        Clear All
+                    </button>
+                    <button onclick="applyMobileFilters()" class="flex-1 bg-teal-600 text-white py-3 rounded-lg font-medium hover:bg-teal-700 transition">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Filters Overlay -->
+    <div id="mobile-filters-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"></div>
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-gray-300 py-12 mt-12">
@@ -311,6 +456,80 @@
 
         // Load on page load
         document.addEventListener('DOMContentLoaded', loadProperties)
+
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button')
+        const mobileMenu = document.getElementById('mobile-menu')
+        const mobileMenuClose = document.getElementById('mobile-menu-close')
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay')
+
+        function openMobileMenu() {
+            mobileMenu.classList.add('active')
+            mobileMenuOverlay.classList.remove('hidden')
+            document.body.style.overflow = 'hidden'
+        }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active')
+            mobileMenuOverlay.classList.add('hidden')
+            document.body.style.overflow = ''
+        }
+
+        mobileMenuButton.addEventListener('click', openMobileMenu)
+        mobileMenuClose.addEventListener('click', closeMobileMenu)
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu)
+
+        // Mobile filters functionality
+        const mobileFiltersButton = document.getElementById('mobile-filters-button')
+        const mobileFilters = document.getElementById('mobile-filters')
+        const mobileFiltersClose = document.getElementById('mobile-filters-close')
+        const mobileFiltersOverlay = document.getElementById('mobile-filters-overlay')
+
+        function openMobileFilters() {
+            // Sync desktop filter values to mobile
+            document.getElementById('mobile-minPrice').value = document.getElementById('minPrice').value
+            document.getElementById('mobile-maxPrice').value = document.getElementById('maxPrice').value
+            document.getElementById('mobile-bedrooms').value = document.getElementById('bedrooms').value
+            document.getElementById('mobile-maxGuests').value = document.getElementById('maxGuests').value
+            document.getElementById('mobile-city').value = document.getElementById('city').value
+
+            mobileFilters.classList.add('active')
+            mobileFiltersOverlay.classList.remove('hidden')
+            document.body.style.overflow = 'hidden'
+        }
+
+        function closeMobileFilters() {
+            mobileFilters.classList.remove('active')
+            mobileFiltersOverlay.classList.add('hidden')
+            document.body.style.overflow = ''
+        }
+
+        function applyMobileFilters() {
+            // Sync mobile filter values to desktop
+            document.getElementById('minPrice').value = document.getElementById('mobile-minPrice').value
+            document.getElementById('maxPrice').value = document.getElementById('mobile-maxPrice').value
+            document.getElementById('bedrooms').value = document.getElementById('mobile-bedrooms').value
+            document.getElementById('maxGuests').value = document.getElementById('mobile-maxGuests').value
+            document.getElementById('city').value = document.getElementById('mobile-city').value
+
+            applyFilters()
+            closeMobileFilters()
+        }
+
+        function clearMobileFilters() {
+            document.getElementById('mobile-minPrice').value = ''
+            document.getElementById('mobile-maxPrice').value = ''
+            document.getElementById('mobile-bedrooms').value = ''
+            document.getElementById('mobile-maxGuests').value = ''
+            document.getElementById('mobile-city').value = ''
+
+            clearFilters()
+            closeMobileFilters()
+        }
+
+        mobileFiltersButton.addEventListener('click', openMobileFilters)
+        mobileFiltersClose.addEventListener('click', closeMobileFilters)
+        mobileFiltersOverlay.addEventListener('click', closeMobileFilters)
     </script>
 </body>
 </html>

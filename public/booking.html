@@ -23,6 +23,86 @@
         .StripeElement--invalid {
             border-color: #EF4444;
         }
+
+        /* Mobile menu styles */
+        .mobile-menu { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        .mobile-menu.active { transform: translateX(0); }
+
+        /* Seasonal Theme Styles */
+        /* Winter Theme */
+        .theme-winter .booking-summary {
+            background: linear-gradient(135deg, rgba(219, 234, 254, 0.3) 0%, rgba(255, 255, 255, 0.8) 100%);
+            border: 2px solid rgba(147, 197, 253, 0.5);
+        }
+
+        .theme-winter .primary-btn {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%) !important;
+        }
+
+        .theme-winter .primary-btn:hover {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
+        }
+
+        .theme-winter .price-highlight {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        /* Autumn Theme */
+        .theme-autumn .booking-summary {
+            background: linear-gradient(135deg, rgba(254, 243, 199, 0.3) 0%, rgba(255, 255, 255, 0.8) 100%);
+            border: 2px solid rgba(251, 191, 36, 0.5);
+        }
+
+        .theme-autumn .primary-btn {
+            background: linear-gradient(135deg, #92400e 0%, #d97706 100%) !important;
+        }
+
+        .theme-autumn .primary-btn:hover {
+            background: linear-gradient(135deg, #78350f 0%, #b45309 100%) !important;
+        }
+
+        .theme-autumn .price-highlight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        /* Summer Theme */
+        .theme-summer .booking-summary {
+            background: linear-gradient(135deg, rgba(220, 252, 231, 0.3) 0%, rgba(255, 255, 255, 0.8) 100%);
+            border: 2px solid rgba(134, 239, 172, 0.5);
+        }
+
+        .theme-summer .primary-btn {
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%) !important;
+        }
+
+        .theme-summer .primary-btn:hover {
+            background: linear-gradient(135deg, #166534 0%, #16a34a 100%) !important;
+        }
+
+        .theme-summer .price-highlight {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #15803d;
+        }
+
+        /* Smooth transitions */
+        .booking-summary, .primary-btn, .price-highlight {
+            transition: all 0.8s ease-in-out;
+        }
+
+        .seasonal-banner {
+            padding: 1rem;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+
+        .seasonal-banner.active {
+            display: block;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -30,10 +110,41 @@
     <nav class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <a href="index.html" class="text-2xl font-display font-bold text-gray-900">AspireTowards</a>
+                <a href="index.html" class="text-xl sm:text-2xl font-display font-bold text-gray-900">AspireTowards</a>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
+                    <a href="properties.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Properties</a>
+                </div>
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu fixed inset-y-0 right-0 w-64 bg-white shadow-2xl z-50 md:hidden">
+        <div class="flex flex-col h-full">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 class="text-lg font-display font-bold text-gray-900">Menu</h2>
+                <button id="mobile-menu-close" class="p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <nav class="flex-1 overflow-y-auto p-4">
+                <a href="index.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Home</a>
+                <a href="properties.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Properties</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
 
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <!-- Back Button -->
@@ -45,6 +156,9 @@
         </a>
 
         <h1 class="text-3xl font-display font-bold text-gray-900 mb-8">Request to Book</h1>
+
+        <!-- Seasonal Banner -->
+        <div id="seasonal-banner" class="seasonal-banner"></div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Booking Form -->
@@ -123,7 +237,7 @@
 
                     <!-- Submit Button -->
                     <button type="submit" id="submit-button"
-                            class="w-full bg-teal-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-teal-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed">
+                            class="primary-btn w-full bg-teal-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-teal-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed">
                         Submit Booking Request
                     </button>
 
@@ -133,7 +247,7 @@
 
             <!-- Price Summary -->
             <div class="lg:col-span-1">
-                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+                <div class="booking-summary bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:sticky lg:top-24">
                     <div id="property-summary" class="mb-6">
                         <div class="h-48 bg-gray-200 rounded-lg mb-4" id="property-image"></div>
                         <h3 id="property-name" class="font-bold text-lg text-gray-900 mb-2"></h3>
@@ -157,7 +271,7 @@
                     </div>
 
                     <div class="border-t border-gray-200 mt-4 pt-4">
-                        <div class="bg-teal-50 rounded-lg p-4 space-y-2">
+                        <div class="price-highlight bg-teal-50 rounded-lg p-4 space-y-2">
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-700 font-medium">Due Today (10%):</span>
                                 <span class="text-2xl font-bold text-teal-700">$<span id="deposit-amount">0</span></span>
@@ -188,6 +302,69 @@
 
         let currentProperty = null
         let bookingDetails = {}
+
+        // Seasonal theme configuration
+        const seasonalThemes = {
+            winter: {
+                name: 'Winter Wonderland',
+                message: '❄️ Perfect for skiing at Bromley Mountain!',
+                bannerClass: 'theme-winter'
+            },
+            autumn: {
+                name: 'Fall Foliage',
+                message: '🍂 Experience Vermont\'s stunning fall colors!',
+                bannerClass: 'theme-autumn'
+            },
+            summer: {
+                name: 'Summer Adventure',
+                message: '🥾 Explore the Appalachian Trail & hiking!',
+                bannerClass: 'theme-summer'
+            }
+        }
+
+        // Determine season based on check-in date
+        function getSeason(dateString) {
+            if (!dateString) return null
+
+            const date = new Date(dateString)
+            const month = date.getMonth() + 1 // 1-12
+
+            // Winter: December to April (12, 1, 2, 3, 4)
+            if (month === 12 || month >= 1 && month <= 4) {
+                return 'winter'
+            }
+            // Autumn: September to November (9, 10, 11)
+            else if (month >= 9 && month <= 11) {
+                return 'autumn'
+            }
+            // Summer: May to August (5, 6, 7, 8)
+            else {
+                return 'summer'
+            }
+        }
+
+        // Apply seasonal theme
+        function applySeasonalTheme(season) {
+            // Remove all theme classes
+            document.body.classList.remove('theme-winter', 'theme-autumn', 'theme-summer')
+
+            const banner = document.getElementById('seasonal-banner')
+            banner.classList.remove('active', 'price-highlight')
+
+            if (!season) return
+
+            // Apply new theme
+            document.body.classList.add(`theme-${season}`)
+
+            // Update banner
+            const theme = seasonalThemes[season]
+            if (theme && banner) {
+                banner.textContent = theme.message
+                banner.classList.add('active', 'price-highlight')
+            }
+
+            console.log(`Applied ${season} theme to booking page`)
+        }
 
         // Handle card errors
         cardElement.on('change', function(event) {
@@ -253,6 +430,10 @@
         // Display booking details
         function displayBookingDetails() {
             const { property, pricing, guests } = bookingDetails
+
+            // Apply seasonal theme based on check-in date
+            const season = getSeason(checkIn)
+            applySeasonalTheme(season)
 
             // Trip details
             document.getElementById('trip-dates').textContent = `${checkIn} → ${checkOut}`
@@ -349,6 +530,30 @@
 
         // Load on page load
         document.addEventListener('DOMContentLoaded', loadBookingDetails)
+
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button')
+        const mobileMenu = document.getElementById('mobile-menu')
+        const mobileMenuClose = document.getElementById('mobile-menu-close')
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay')
+
+        function openMobileMenu() {
+            mobileMenu.classList.add('active')
+            mobileMenuOverlay.classList.remove('hidden')
+            document.body.style.overflow = 'hidden'
+        }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active')
+            mobileMenuOverlay.classList.add('hidden')
+            document.body.style.overflow = ''
+        }
+
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', openMobileMenu)
+            mobileMenuClose.addEventListener('click', closeMobileMenu)
+            mobileMenuOverlay.addEventListener('click', closeMobileMenu)
+        }
     </script>
 </body>
 </html>
