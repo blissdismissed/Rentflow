@@ -24,7 +24,7 @@ const CONFIG = {
 
 // Production configuration
 const CONFIG = {
-  API_BASE_URL: 'http://34.229.40.26',
+  API_BASE_URL: 'https://api.aspiretowards.com',
   ENV: 'production',
   ENABLE_ANALYTICS: true,
   ENABLE_DEBUG: false,
