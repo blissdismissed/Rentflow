@@ -776,8 +776,9 @@
         </div>
     </div>
 
+    <script src="/js/config.js"></script>
     <script>
-        const API_URL = 'http://localhost:5000/api/public'
+        const API_URL = `${window.CONFIG.API_BASE_URL}/api/public`
         let currentProperty = null
         let checkInPicker, checkOutPicker
         let bookedDates = []
