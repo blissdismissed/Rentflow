@@ -1,14 +1,20 @@
-const { sequelize } = require('./backend/src/config/database')
-const Property = require('./backend/src/models/Property')
-const User = require('./backend/src/models/User')
+const path = require('path')
+
+// Get the project root directory (parent of scripts folder)
+const projectRoot = path.join(__dirname, '..')
+
+// Load modules using absolute paths
+const { sequelize } = require(path.join(projectRoot, 'backend/src/config/database'))
+const Property = require(path.join(projectRoot, 'backend/src/models/Property'))
+const User = require(path.join(projectRoot, 'backend/src/models/User'))
 
 /**
  * Script to create the Bromley Condo test property
  * Run this to populate your database with the property
  *
- * Usage:
- *   node create-test-property.js                    # Uses first user in database
- *   node create-test-property.js your@email.com     # Uses specific user email
+ * Usage (from project root):
+ *   node scripts/create-test-property.js                    # Uses first user in database
+ *   node scripts/create-test-property.js your@email.com     # Uses specific user email
  */
 
 async function createBromleyProperty() {
