@@ -83,6 +83,7 @@
                                 id="firstName"
                                 name="firstName"
                                 type="text"
+                                autocomplete="given-name"
                                 required
                                 class="form-input appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm"
                                 placeholder="John"
@@ -96,6 +97,7 @@
                                 id="lastName"
                                 name="lastName"
                                 type="text"
+                                autocomplete="family-name"
                                 required
                                 class="form-input appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm"
                                 placeholder="Doe"
@@ -126,6 +128,7 @@
                             id="phoneNumber"
                             name="phoneNumber"
                             type="tel"
+                            autocomplete="tel"
                             class="form-input appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm"
                             placeholder="+1 (555) 123-4567"
                         >
@@ -140,6 +143,7 @@
                                 id="password"
                                 name="password"
                                 type="password"
+                                autocomplete="new-password"
                                 required
                                 class="form-input appearance-none relative block w-full px-3 py-3 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm"
                                 placeholder="••••••••"
@@ -171,6 +175,7 @@
                                 id="confirmPassword"
                                 name="confirmPassword"
                                 type="password"
+                                autocomplete="new-password"
                                 required
                                 class="form-input appearance-none relative block w-full px-3 py-3 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm"
                                 placeholder="••••••••"
@@ -250,7 +255,7 @@
 
             <p class="mt-6 text-center text-sm text-gray-600">
                 Already have an account?
-                <a href="/src/pages/auth/login.html" class="font-medium text-teal-600 hover:text-teal-500">
+                <a href="/auth/login.html" class="font-medium text-teal-600 hover:text-teal-500">
                     Sign in
                 </a>
             </p>
@@ -362,9 +367,9 @@
                     localStorage.setItem('refreshToken', data.data.refreshToken);
                     localStorage.setItem('user', JSON.stringify(data.data.user));
 
-                    // Redirect to dashboard after delay
+                    // Redirect to home page after delay
                     setTimeout(() => {
-                        window.location.href = '/src/pages/dashboard/dashboard.html';
+                        window.location.href = '/index.html';
                     }, 1500);
                 } else {
                     showMessage(data.message || 'Registration failed');
