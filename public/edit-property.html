@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Property - AspireTowards</title>
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/resources/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/resources/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/resources/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/resources/apple-touch-icon.png">
+
+    <script src="/js/config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+        .form-section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); }
+        .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem; }
+        .form-input { width: 100%; padding: 0.625rem 0.875rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; }
+        .form-input:focus { outline: none; border-color: #0F766E; ring: 2px; ring-color: #0F766E; }
+        .image-preview { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-3">
+                    <a href="/dashboard.html" class="flex items-center space-x-3">
+                        <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo" class="h-16 w-16 sm:h-20 sm:w-20">
+                        <h1 class="text-2xl sm:text-3xl font-display font-bold text-gray-900 leading-none mt-0.5">AspireTowards</h1>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard.html" class="text-gray-600 hover:text-gray-900 font-medium">
+                        ← Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h2 class="text-3xl font-display font-bold text-gray-900">Edit Property</h2>
+            <p class="mt-2 text-gray-600">Update your property details, photos, and pricing</p>
+        </div>
+
+        <form id="edit-property-form">
+            <!-- Basic Information -->
+            <div class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Basic Information</h3>
+
+                <div class="mb-4">
+                    <label for="name" class="form-label">Property Name</label>
+                    <input type="text" id="name" name="name" class="form-input" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="type" class="form-label">Property Type</label>
+                    <select id="type" name="type" class="form-input">
+                        <option value="house">House</option>
+                        <option value="condo">Condo</option>
+                        <option value="apartment">Apartment</option>
+                        <option value="villa">Villa</option>
+                        <option value="cabin">Cabin</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" name="description" rows="8" class="form-input"></textarea>
+                    <p class="mt-1 text-sm text-gray-500">Use emojis and markdown formatting for better presentation</p>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Location</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="address" class="form-label">Street Address</label>
+                        <input type="text" id="address" name="address" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" id="city" name="city" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="state" class="form-label">State</label>
+                        <input type="text" id="state" name="state" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="zipCode" class="form-label">Zip Code</label>
+                        <input type="text" id="zipCode" name="zipCode" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="country" class="form-label">Country</label>
+                        <input type="text" id="country" name="country" class="form-input" value="USA">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property Details -->
+            <div class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Property Details</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label for="bedrooms" class="form-label">Bedrooms</label>
+                        <input type="number" id="bedrooms" name="bedrooms" min="1" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="bathrooms" class="form-label">Bathrooms</label>
+                        <input type="number" id="bathrooms" name="bathrooms" min="0.5" step="0.5" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="maxGuests" class="form-label">Max Guests</label>
+                        <input type="number" id="maxGuests" name="maxGuests" min="1" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="squareFeet" class="form-label">Square Feet</label>
+                        <input type="number" id="squareFeet" name="squareFeet" class="form-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Pricing</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="basePrice" class="form-label">Base Price per Night ($)</label>
+                        <input type="number" id="basePrice" name="basePrice" min="0" step="0.01" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="cleaningFee" class="form-label">Cleaning Fee ($)</label>
+                        <input type="number" id="cleaningFee" name="cleaningFee" min="0" step="0.01" class="form-input">
+                    </div>
+                    <div>
+                        <label for="securityDeposit" class="form-label">Security Deposit ($)</label>
+                        <input type="number" id="securityDeposit" name="securityDeposit" min="0" step="0.01" class="form-input">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label for="minNights" class="form-label">Minimum Nights</label>
+                        <input type="number" id="minNights" name="minNights" min="1" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="maxNights" class="form-label">Maximum Nights</label>
+                        <input type="number" id="maxNights" name="maxNights" min="1" class="form-input" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Images -->
+            <div class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Images</h3>
+                <div id="property-id-display" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-sm font-medium text-blue-900">Property ID: <span id="property-id-text">Loading...</span></p>
+                    <p class="text-sm text-blue-700 mt-2">Upload your images to S3 at:</p>
+                    <code class="text-xs bg-white px-2 py-1 rounded mt-1 inline-block">/assets/properties/<span id="property-id-path">...</span>/</code>
+                    <ul class="text-xs text-blue-700 mt-2 space-y-1">
+                        <li>• main.jpg (required - hero image)</li>
+                        <li>• living-room.jpg</li>
+                        <li>• bedroom.jpg</li>
+                        <li>• kitchen.jpg</li>
+                        <li>• Add more images as needed</li>
+                    </ul>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="image-previews">
+                    <!-- Image previews will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Amenities -->
+            <div class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Amenities</h3>
+                <div id="amenities-container" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <!-- Will be populated dynamically -->
+                </div>
+                <div class="mt-4">
+                    <input type="text" id="new-amenity" placeholder="Add custom amenity..." class="form-input">
+                    <button type="button" onclick="addCustomAmenity()" class="mt-2 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                        Add Amenity
+                    </button>
+                </div>
+            </div>
+
+            <!-- House Rules -->
+            <div class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">House Rules</h3>
+                <textarea id="houseRules" name="houseRules" rows="6" class="form-input" placeholder="• No smoking inside&#10;• No parties or events&#10;• Quiet hours: 10 PM - 8 AM"></textarea>
+            </div>
+
+            <!-- Check-in Instructions -->
+            <div class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Check-in Instructions</h3>
+                <textarea id="checkInInstructions" name="checkInInstructions" rows="8" class="form-input" placeholder="Check-in time: 3:00 PM&#10;Check-out time: 11:00 AM&#10;&#10;Access Instructions:&#10;..."></textarea>
+            </div>
+
+            <!-- Cancellation Policy -->
+            <div class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Cancellation Policy</h3>
+                <select id="cancellationPolicy" name="cancellationPolicy" class="form-input">
+                    <option value="flexible">Flexible - Free cancellation up to 24 hours before check-in</option>
+                    <option value="moderate">Moderate - Free cancellation up to 5 days before check-in</option>
+                    <option value="strict">Strict - Free cancellation up to 14 days before check-in</option>
+                </select>
+            </div>
+
+            <!-- Visibility -->
+            <div class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Visibility</h3>
+                <div class="flex items-center space-x-4">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="publiclyVisible" name="publiclyVisible" class="mr-2">
+                        <span>Publicly visible (show on properties page)</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="isActive" name="isActive" class="mr-2">
+                        <span>Active (accepting bookings)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex space-x-4">
+                <button type="submit" class="flex-1 bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-700 transition">
+                    Save Changes
+                </button>
+                <a href="/dashboard.html" class="flex-1 text-center bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        const API_URL = `${window.CONFIG.API_BASE_URL}/api`;
+        let propertyId = null;
+        let currentProperty = null;
+
+        // Common amenities
+        const commonAmenities = [
+            'WiFi', 'TV', 'Kitchen', 'Washer', 'Dryer', 'Free Parking', 'Air Conditioning',
+            'Heating', 'Workspace', 'Pool', 'Hot Tub', 'Gym', 'BBQ Grill', 'Fireplace',
+            'Coffee Maker', 'Dishwasher', 'Microwave', 'Hair Dryer', 'Iron', 'Linens & Towels'
+        ];
+
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/auth/login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Get property ID from URL
+        function getPropertyId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        // Load property data
+        async function loadProperty() {
+            propertyId = getPropertyId();
+
+            if (!propertyId) {
+                alert('Property ID not found');
+                window.location.href = '/dashboard.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/properties/${propertyId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data && data.data.property) {
+                    currentProperty = data.data.property;
+                    populateForm(currentProperty);
+                } else {
+                    alert('Failed to load property');
+                    window.location.href = '/dashboard.html';
+                }
+            } catch (error) {
+                console.error('Error loading property:', error);
+                alert('Failed to load property');
+                window.location.href = '/dashboard.html';
+            }
+        }
+
+        // Populate form with property data
+        function populateForm(property) {
+            // Basic info
+            document.getElementById('name').value = property.name || '';
+            document.getElementById('type').value = property.type || 'house';
+            document.getElementById('description').value = property.description || '';
+
+            // Location
+            document.getElementById('address').value = property.address || '';
+            document.getElementById('city').value = property.city || '';
+            document.getElementById('state').value = property.state || '';
+            document.getElementById('zipCode').value = property.zipCode || '';
+            document.getElementById('country').value = property.country || 'USA';
+
+            // Property details
+            document.getElementById('bedrooms').value = property.bedrooms || 1;
+            document.getElementById('bathrooms').value = property.bathrooms || 1;
+            document.getElementById('maxGuests').value = property.maxGuests || 2;
+            document.getElementById('squareFeet').value = property.squareFeet || '';
+
+            // Pricing
+            document.getElementById('basePrice').value = property.basePrice || 0;
+            document.getElementById('cleaningFee').value = property.cleaningFee || 0;
+            document.getElementById('securityDeposit').value = property.securityDeposit || 0;
+            document.getElementById('minNights').value = property.minNights || 1;
+            document.getElementById('maxNights').value = property.maxNights || 30;
+
+            // Other
+            document.getElementById('houseRules').value = property.houseRules || '';
+            document.getElementById('checkInInstructions').value = property.checkInInstructions || '';
+            document.getElementById('cancellationPolicy').value = property.cancellationPolicy || 'moderate';
+            document.getElementById('publiclyVisible').checked = property.publiclyVisible || false;
+            document.getElementById('isActive').checked = property.isActive || false;
+
+            // Property ID display
+            document.getElementById('property-id-text').textContent = property.id;
+            document.getElementById('property-id-path').textContent = property.id;
+
+            // Load amenities
+            loadAmenities(property.amenities || []);
+
+            // Load image previews
+            loadImagePreviews(property.images || []);
+        }
+
+        // Load amenities checkboxes
+        function loadAmenities(selectedAmenities) {
+            const container = document.getElementById('amenities-container');
+            const allAmenities = [...new Set([...commonAmenities, ...selectedAmenities])];
+
+            container.innerHTML = allAmenities.map(amenity => `
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" name="amenity" value="${amenity}" ${selectedAmenities.includes(amenity) ? 'checked' : ''} class="mr-2">
+                    <span class="text-sm">${amenity}</span>
+                </label>
+            `).join('');
+        }
+
+        // Add custom amenity
+        function addCustomAmenity() {
+            const input = document.getElementById('new-amenity');
+            const amenity = input.value.trim();
+
+            if (!amenity) return;
+
+            const container = document.getElementById('amenities-container');
+            const newCheckbox = document.createElement('label');
+            newCheckbox.className = 'flex items-center cursor-pointer';
+            newCheckbox.innerHTML = `
+                <input type="checkbox" name="amenity" value="${amenity}" checked class="mr-2">
+                <span class="text-sm">${amenity}</span>
+            `;
+            container.appendChild(newCheckbox);
+            input.value = '';
+        }
+
+        // Load image previews
+        function loadImagePreviews(images) {
+            const container = document.getElementById('image-previews');
+
+            if (images.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 col-span-2">No images uploaded yet. Upload images to S3 following the path shown above.</p>';
+                return;
+            }
+
+            container.innerHTML = images.map((img, index) => `
+                <div class="border rounded-lg p-2">
+                    <img src="${img}" alt="Property image ${index + 1}" class="image-preview">
+                    <p class="text-xs text-gray-600 mt-2 text-center">Image ${index + 1}</p>
+                </div>
+            `).join('');
+        }
+
+        // Handle form submission
+        document.getElementById('edit-property-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            // Collect amenities
+            const amenities = Array.from(document.querySelectorAll('input[name="amenity"]:checked'))
+                .map(cb => cb.value);
+
+            // Build update object
+            const updateData = {
+                name: formData.get('name'),
+                type: formData.get('type'),
+                description: formData.get('description'),
+                address: formData.get('address'),
+                city: formData.get('city'),
+                state: formData.get('state'),
+                zipCode: formData.get('zipCode'),
+                country: formData.get('country'),
+                bedrooms: parseInt(formData.get('bedrooms')),
+                bathrooms: parseFloat(formData.get('bathrooms')),
+                maxGuests: parseInt(formData.get('maxGuests')),
+                squareFeet: parseInt(formData.get('squareFeet')) || null,
+                basePrice: parseFloat(formData.get('basePrice')),
+                cleaningFee: parseFloat(formData.get('cleaningFee')) || 0,
+                securityDeposit: parseFloat(formData.get('securityDeposit')) || 0,
+                minNights: parseInt(formData.get('minNights')),
+                maxNights: parseInt(formData.get('maxNights')),
+                houseRules: formData.get('houseRules'),
+                checkInInstructions: formData.get('checkInInstructions'),
+                cancellationPolicy: formData.get('cancellationPolicy'),
+                publiclyVisible: document.getElementById('publiclyVisible').checked,
+                isActive: document.getElementById('isActive').checked,
+                amenities: amenities
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/properties/${propertyId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    alert('Property updated successfully!');
+                    window.location.href = '/dashboard.html';
+                } else {
+                    alert(data.message || 'Failed to update property');
+                }
+            } catch (error) {
+                console.error('Error updating property:', error);
+                alert('Failed to update property. Please try again.');
+            }
+        });
+
+        // Initialize
+        if (checkAuth()) {
+            loadProperty();
+        }
+    </script>
+</body>
+</html>
