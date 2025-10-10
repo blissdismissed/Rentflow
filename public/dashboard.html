@@ -233,23 +233,39 @@
             });
         }
 
+        // Fetch user's properties
+        async function loadProperties() {
+            try {
+                const response = await fetch(`${API_URL}/properties`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.properties) {
+                    const properties = data.properties;
+
+                    // Update stats
+                    document.getElementById('total-properties').textContent = properties.length;
+
+                    // TODO: Calculate actual stats from bookings
+                    // For now, showing property count
+                    console.log('Properties loaded:', properties);
+                }
+            } catch (error) {
+                console.error('Error loading properties:', error);
+            }
+        }
+
         // Initialize dashboard
         async function initDashboard() {
             if (!checkAuth()) return;
 
             loadUserData();
             animateStats();
-
-            // TODO: Fetch actual dashboard data from API
-            // This would be connected to your backend endpoints
-            // Example:
-            // const response = await fetch(`${API_URL}/dashboard/stats`, {
-            //     headers: {
-            //         'Authorization': `Bearer ${localStorage.getItem('token')}`
-            //     }
-            // });
-            // const data = await response.json();
-            // Update stats with real data...
+            await loadProperties();
         }
 
         // Run on page load
