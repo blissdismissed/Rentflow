@@ -208,11 +208,21 @@ const getCurrentUser = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, phoneNumber } = req.body
+    const { firstName, lastName, name, phoneNumber } = req.body
+
+    // If 'name' is provided (single field), parse it into firstName/lastName
+    let updatedFirstName = firstName || req.user.firstName
+    let updatedLastName = lastName || req.user.lastName
+
+    if (name && !firstName && !lastName) {
+      const nameParts = name.trim().split(' ')
+      updatedFirstName = nameParts[0]
+      updatedLastName = nameParts.slice(1).join(' ') || ''
+    }
 
     await req.user.update({
-      firstName: firstName || req.user.firstName,
-      lastName: lastName || req.user.lastName,
+      firstName: updatedFirstName,
+      lastName: updatedLastName,
       phoneNumber: phoneNumber || req.user.phoneNumber
     })
 

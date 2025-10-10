@@ -24,7 +24,7 @@ const CONFIG = {
 
 // Production configuration
 const CONFIG = {
-  API_BASE_URL: 'https://api.aspiretowards.com',  // TODO: Change to https:// after SSL setup
+  API_BASE_URL: 'https://api.aspiretowards.com',
   ENV: 'production',
   ENABLE_ANALYTICS: true,
   ENABLE_DEBUG: false,

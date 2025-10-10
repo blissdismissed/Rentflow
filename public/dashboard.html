@@ -54,10 +54,20 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Welcome Section -->
         <div class="mb-8" id="welcome-section">
-            <h2 class="text-3xl font-display font-bold text-gray-900">
-                Welcome back, <span id="user-greeting"></span>!
-            </h2>
-            <p class="mt-2 text-gray-600">Here's an overview of your properties and activity</p>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-display font-bold text-gray-900">
+                        Welcome back, <span id="user-greeting"></span>!
+                    </h2>
+                    <p class="mt-2 text-gray-600">Here's an overview of your properties and activity</p>
+                </div>
+                <button onclick="openEditNameModal()" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                    <span>Edit Name</span>
+                </button>
+            </div>
         </div>
 
         <!-- Stats Grid -->
@@ -185,6 +195,101 @@
         </div>
     </main>
 
+    <!-- Edit Name Modal -->
+    <div id="edit-name-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-display font-bold text-gray-900">Edit Display Name</h3>
+                <button onclick="closeEditNameModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="edit-name-form" onsubmit="updateName(event)">
+                <div class="mb-4">
+                    <label for="display-name" class="block text-sm font-medium text-gray-700 mb-2">
+                        Display Name
+                    </label>
+                    <input
+                        type="text"
+                        id="display-name"
+                        name="name"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        placeholder="Enter your name"
+                        required
+                    >
+                    <p class="mt-2 text-sm text-gray-500">This name will be displayed on your dashboard and profile</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button
+                        type="submit"
+                        class="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition"
+                    >
+                        Save Changes
+                    </button>
+                    <button
+                        type="button"
+                        onclick="closeEditNameModal()"
+                        class="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo" class="h-12 w-12">
+                        <h3 class="text-xl font-display font-bold text-white">AspireTowards</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Manage your vacation rental properties with ease. Direct booking platform with no hidden fees.
+                    </p>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/index.html" class="hover:text-white transition">View Homepage</a></li>
+                        <li><a href="/properties.html" class="hover:text-white transition">Browse Properties</a></li>
+                        <li><a href="/dashboard.html" class="hover:text-white transition">Dashboard</a></li>
+                    </ul>
+                </div>
+
+                <!-- Account -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Account</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" onclick="openEditNameModal(); return false;" class="hover:text-white transition">Edit Profile</a></li>
+                        <li><a href="#" onclick="logout(); return false;" class="hover:text-white transition">Sign Out</a></li>
+                        <li><a href="/index.html#contact" class="hover:text-white transition">Support</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm text-gray-500">
+                    © 2025 AspireTowards. All rights reserved.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-sm hover:text-white transition">Privacy Policy</a>
+                    <a href="#" class="text-sm hover:text-white transition">Terms of Service</a>
+                    <a href="/index.html#contact" class="text-sm hover:text-white transition">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
     <script>
         const API_URL = `${window.CONFIG.API_BASE_URL}/api`;
 
@@ -236,26 +341,33 @@
         // Fetch user's properties
         async function loadProperties() {
             try {
-                const response = await fetch(`${API_URL}/properties`, {
+                const url = `${API_URL}/properties`;
+                console.log('🔍 Fetching properties from:', url);
+
+                const response = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
 
+                console.log('📡 Response status:', response.status);
                 const data = await response.json();
+                console.log('📊 Properties data:', data);
 
-                if (data.success && data.properties) {
-                    const properties = data.properties;
+                if (data.success && data.data && data.data.properties) {
+                    const properties = data.data.properties;
 
                     // Update stats
                     document.getElementById('total-properties').textContent = properties.length;
 
-                    // TODO: Calculate actual stats from bookings
-                    // For now, showing property count
-                    console.log('Properties loaded:', properties);
+                    console.log(`✅ Loaded ${properties.length} properties:`, properties);
+                } else {
+                    console.warn('⚠️ No properties found or request failed:', data);
+                    document.getElementById('total-properties').textContent = '0';
                 }
             } catch (error) {
-                console.error('Error loading properties:', error);
+                console.error('❌ Error loading properties:', error);
+                document.getElementById('total-properties').textContent = '0';
             }
         }
 
@@ -267,6 +379,79 @@
             animateStats();
             await loadProperties();
         }
+
+        // Modal functions
+        function openEditNameModal() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    document.getElementById('display-name').value = user.name || '';
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
+            }
+            document.getElementById('edit-name-modal').classList.remove('hidden');
+        }
+
+        function closeEditNameModal() {
+            document.getElementById('edit-name-modal').classList.add('hidden');
+            document.getElementById('edit-name-form').reset();
+        }
+
+        // Update user name
+        async function updateName(event) {
+            event.preventDefault();
+
+            const newName = document.getElementById('display-name').value.trim();
+
+            if (!newName) {
+                alert('Please enter a valid name');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/auth/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ name: newName })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Update localStorage with new user data
+                    const userStr = localStorage.getItem('user');
+                    if (userStr) {
+                        const user = JSON.parse(userStr);
+                        user.name = newName;
+                        localStorage.setItem('user', JSON.stringify(user));
+                    }
+
+                    // Update UI
+                    loadUserData();
+                    closeEditNameModal();
+
+                    // Show success message
+                    alert('Name updated successfully!');
+                } else {
+                    alert(data.message || 'Failed to update name');
+                }
+            } catch (error) {
+                console.error('Error updating name:', error);
+                alert('Failed to update name. Please try again.');
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('edit-name-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditNameModal();
+            }
+        });
 
         // Run on page load
         initDashboard();
