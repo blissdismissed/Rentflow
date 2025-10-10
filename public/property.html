@@ -92,12 +92,14 @@
 
         /* Winter Theme */
         .theme-winter {
-            background: linear-gradient(to bottom, #f0f9ff 0%, #e0f2fe 100%);
+            background: linear-gradient(to bottom, #e0f2fe 0%, #dbeafe 50%, #e0f2fe 100%);
+            transition: background 0.8s ease;
         }
 
         .theme-winter .booking-card {
             background: linear-gradient(135deg, rgba(219, 234, 254, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
-            border: 2px solid rgba(147, 197, 253, 0.3);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.15);
         }
 
         .theme-winter .primary-btn {
@@ -106,7 +108,12 @@
 
         .theme-winter nav {
             background: rgba(255, 255, 255, 0.95);
-            border-bottom: 1px solid rgba(147, 197, 253, 0.3);
+            border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-winter h1, .theme-winter h2 {
+            color: #1e40af !important;
         }
 
         .theme-winter .primary-btn:hover {
@@ -120,12 +127,14 @@
 
         /* Autumn Theme */
         .theme-autumn {
-            background: linear-gradient(to bottom, #fffbeb 0%, #fef3c7 100%);
+            background: linear-gradient(to bottom, #fef3c7 0%, #fed7aa 50%, #fef3c7 100%);
+            transition: background 0.8s ease;
         }
 
         .theme-autumn .booking-card {
             background: linear-gradient(135deg, rgba(254, 243, 199, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
-            border: 2px solid rgba(251, 191, 36, 0.3);
+            border: 2px solid rgba(251, 146, 60, 0.4);
+            box-shadow: 0 10px 40px rgba(251, 146, 60, 0.15);
         }
 
         .theme-autumn .primary-btn {
@@ -134,7 +143,12 @@
 
         .theme-autumn nav {
             background: rgba(255, 255, 255, 0.95);
-            border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+            border-bottom: 2px solid rgba(251, 146, 60, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-autumn h1, .theme-autumn h2 {
+            color: #92400e !important;
         }
 
         .theme-autumn .primary-btn:hover {
@@ -148,12 +162,14 @@
 
         /* Summer Theme */
         .theme-summer {
-            background: linear-gradient(to bottom, #f0fdf4 0%, #dcfce7 100%);
+            background: linear-gradient(to bottom, #dcfce7 0%, #bbf7d0 50%, #dcfce7 100%);
+            transition: background 0.8s ease;
         }
 
         .theme-summer .booking-card {
             background: linear-gradient(135deg, rgba(220, 252, 231, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
-            border: 2px solid rgba(134, 239, 172, 0.3);
+            border: 2px solid rgba(34, 197, 94, 0.4);
+            box-shadow: 0 10px 40px rgba(34, 197, 94, 0.15);
         }
 
         .theme-summer .primary-btn {
@@ -162,7 +178,12 @@
 
         .theme-summer nav {
             background: rgba(255, 255, 255, 0.95);
-            border-bottom: 1px solid rgba(134, 239, 172, 0.3);
+            border-bottom: 2px solid rgba(34, 197, 94, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-summer h1, .theme-summer h2 {
+            color: #15803d !important;
         }
 
         .theme-summer .primary-btn:hover {
@@ -951,18 +972,35 @@
         // Web3 Wallet Connection Functions
         async function connectWallet(walletType) {
             try {
+                console.log('🔗 Attempting to connect wallet:', walletType)
+
+                // Check if ethereum provider exists
                 if (typeof window.ethereum === 'undefined') {
                     alert('Please install MetaMask or another Web3 wallet to use crypto payments!')
+                    window.open('https://metamask.io/download/', '_blank')
                     return
                 }
+
+                // Check if ethers is loaded
+                if (typeof ethers === 'undefined') {
+                    console.error('❌ Ethers.js not loaded!')
+                    alert('Web3 library not loaded. Please refresh the page.')
+                    return
+                }
+
+                console.log('✅ Ethereum provider found, requesting accounts...')
 
                 // Request account access
                 provider = new ethers.providers.Web3Provider(window.ethereum)
                 const accounts = await provider.send("eth_requestAccounts", [])
 
+                console.log('📝 Accounts received:', accounts)
+
                 if (accounts.length > 0) {
                     userWalletAddress = accounts[0]
                     walletConnected = true
+
+                    console.log('✅ Wallet connected:', userWalletAddress)
 
                     // Apply Web3 theme
                     applyWeb3Theme()
@@ -975,12 +1013,21 @@
 
                     // Show discount notification with celebration
                     showDiscountNotification()
-
-                    console.log('Wallet connected:', userWalletAddress)
+                } else {
+                    console.error('❌ No accounts returned')
+                    alert('No wallet accounts found. Please unlock your wallet.')
                 }
             } catch (error) {
-                console.error('Wallet connection error:', error)
-                alert('Failed to connect wallet. Please try again.')
+                console.error('❌ Wallet connection error:', error)
+
+                // Provide specific error messages
+                if (error.code === 4001) {
+                    alert('Connection rejected. Please approve the connection in your wallet.')
+                } else if (error.code === -32002) {
+                    alert('Connection request pending. Please check your wallet.')
+                } else {
+                    alert(`Failed to connect wallet: ${error.message || 'Unknown error'}`)
+                }
             }
         }
 
