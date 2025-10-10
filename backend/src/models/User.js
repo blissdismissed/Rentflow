@@ -12,6 +12,8 @@ class User extends Model {
     delete values.password
     delete values.resetPasswordToken
     delete values.resetPasswordExpires
+    // Add full name as 'name' field
+    values.name = `${this.firstName} ${this.lastName}`.trim()
     return values
   }
 }

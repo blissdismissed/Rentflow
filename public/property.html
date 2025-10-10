@@ -39,8 +39,9 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Web3 / Ethers.js -->
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+    <!-- Web3 / Ethers.js - Using unpkg for better reliability -->
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"
+            onerror="console.error('Failed to load ethers.js from unpkg, trying jsdelivr...'); this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js'"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-display { font-family: 'Playfair Display', serif; }
@@ -1277,8 +1278,17 @@
                         const season = getSeason(selectedDates[0])
                         applySeasonalTheme(season)
 
-                        checkOutPicker.set('minDate', new Date(selectedDates[0].getTime() + 86400000))
+                        const checkInDate = selectedDates[0]
+                        const nextDay = new Date(checkInDate.getTime() + 86400000)
+
+                        // Set min date and default month to check-in date
+                        checkOutPicker.set('minDate', nextDay)
+                        checkOutPicker.set('defaultDate', nextDay)
+
+                        // Jump to the check-in month before opening
+                        checkOutPicker.jumpTo(checkInDate)
                         checkOutPicker.open()
+
                         calculatePrice()
                     } else {
                         // Clear theme when date is cleared
@@ -1310,11 +1320,17 @@
 
             if (!checkIn || !checkOut) return
 
-            try {
-                const response = await fetch(`${API_URL}/properties/${slug}/availability?checkIn=${checkIn}&checkOut=${checkOut}`)
-                const data = await response.json()
+            const url = `${API_URL}/properties/${slug}/availability?checkIn=${checkIn}&checkOut=${checkOut}`
+            console.log('🔍 Checking availability:', url)
 
-                if (data.success && data.available) {
+            try {
+                const response = await fetch(url)
+                console.log('📡 Response status:', response.status)
+
+                const data = await response.json()
+                console.log('📊 Response data:', data)
+
+                if (response.ok && data.success && data.available) {
                     const pricing = data.pricing
 
                     // Show breakdown
@@ -1338,13 +1354,17 @@
 
                     document.getElementById('booking-button').textContent = 'Request to Book'
                     document.getElementById('booking-button').disabled = false
+
+                    console.log('✅ Availability check successful')
                 } else {
-                    alert(data.message || 'Property not available for selected dates')
+                    const message = data.message || 'Property not available for selected dates'
+                    console.warn('⚠️ Property not available:', message)
+                    alert(message)
                     document.getElementById('booking-button').disabled = true
                 }
             } catch (error) {
-                console.error('Error checking availability:', error)
-                alert('Failed to check availability. Please try again.')
+                console.error('❌ Error checking availability:', error)
+                alert(`Failed to check availability: ${error.message}. Please check console for details.`)
                 document.getElementById('booking-button').disabled = true
             }
         }

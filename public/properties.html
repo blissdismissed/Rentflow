@@ -330,8 +330,18 @@
 
     <script src="/js/config.js"></script>
     <script>
-        const API_URL = `${window.CONFIG.API_BASE_URL}/api/public/properties`
+        // Debug: Check if config is loaded
+        if (!window.CONFIG) {
+            console.error('❌ CONFIG not loaded!')
+            alert('Configuration error. Please refresh the page.')
+        } else {
+            console.log('✅ CONFIG loaded:', window.CONFIG)
+        }
+
+        const API_URL = `${window.CONFIG?.API_BASE_URL || 'https://api.aspiretowards.com'}/api/public/properties`
         let allProperties = []
+
+        console.log('🔧 Properties API URL:', API_URL)
 
         // Load all properties
         async function loadProperties() {
@@ -379,7 +389,7 @@
             noResults.classList.add('hidden')
 
             grid.innerHTML = properties.map(property => `
-                <div class="property-card card-hover">
+                <a href="property.html?slug=${property.slug}" class="property-card card-hover block">
                     <div class="relative h-64 overflow-hidden">
                         <img src="${property.featuredImage || property.images?.[0] || 'https://via.placeholder.com/600x400?text=Property+Image'}"
                              alt="${property.name}"
@@ -417,11 +427,11 @@
                                 <span class="text-gray-500 text-xs">+${property.amenities.length - 3} more</span>
                             ` : ''}
                         </div>
-                        <a href="property.html?slug=${property.slug}" class="block w-full bg-teal-600 text-white text-center py-2 rounded-lg font-medium hover:bg-teal-700 transition">
+                        <div class="w-full bg-teal-600 text-white text-center py-2 rounded-lg font-medium group-hover:bg-teal-700 transition">
                             View Details & Book
-                        </a>
+                        </div>
                     </div>
-                </div>
+                </a>
             `).join('')
         }
 
