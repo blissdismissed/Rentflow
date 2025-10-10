@@ -91,6 +91,10 @@
         }
 
         /* Winter Theme */
+        .theme-winter {
+            background: linear-gradient(to bottom, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
         .theme-winter .booking-card {
             background: linear-gradient(135deg, rgba(219, 234, 254, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
             border: 2px solid rgba(147, 197, 253, 0.3);
@@ -98,6 +102,11 @@
 
         .theme-winter .primary-btn {
             background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        }
+
+        .theme-winter nav {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid rgba(147, 197, 253, 0.3);
         }
 
         .theme-winter .primary-btn:hover {
@@ -110,6 +119,10 @@
         }
 
         /* Autumn Theme */
+        .theme-autumn {
+            background: linear-gradient(to bottom, #fffbeb 0%, #fef3c7 100%);
+        }
+
         .theme-autumn .booking-card {
             background: linear-gradient(135deg, rgba(254, 243, 199, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
             border: 2px solid rgba(251, 191, 36, 0.3);
@@ -117,6 +130,11 @@
 
         .theme-autumn .primary-btn {
             background: linear-gradient(135deg, #92400e 0%, #d97706 100%);
+        }
+
+        .theme-autumn nav {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.3);
         }
 
         .theme-autumn .primary-btn:hover {
@@ -129,6 +147,10 @@
         }
 
         /* Summer Theme */
+        .theme-summer {
+            background: linear-gradient(to bottom, #f0fdf4 0%, #dcfce7 100%);
+        }
+
         .theme-summer .booking-card {
             background: linear-gradient(135deg, rgba(220, 252, 231, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
             border: 2px solid rgba(134, 239, 172, 0.3);
@@ -136,6 +158,11 @@
 
         .theme-summer .primary-btn {
             background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+        }
+
+        .theme-summer nav {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid rgba(134, 239, 172, 0.3);
         }
 
         .theme-summer .primary-btn:hover {
@@ -369,7 +396,6 @@
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="index.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
                     <a href="properties.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Properties</a>
-                    <a href="/auth/login.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Host Login</a>
                     <button id="wallet-connect-btn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition flex items-center gap-2">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
@@ -775,6 +801,61 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo" class="h-12 w-12">
+                        <h3 class="text-xl font-display font-bold text-white">AspireTowards</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Book directly and save. No platform fees, just great properties at better prices.
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        Book direct • Save 15% • Crypto payments accepted
+                    </p>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">For Guests</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/index.html" class="hover:text-white transition">Home</a></li>
+                        <li><a href="/properties.html" class="hover:text-white transition">Browse Properties</a></li>
+                        <li><a href="#" class="hover:text-white transition">How It Works</a></li>
+                        <li><a href="#" class="hover:text-white transition">FAQs</a></li>
+                    </ul>
+                </div>
+
+                <!-- Property Owners -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">For Property Owners</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/auth/login.html" id="footer-auth-link" class="hover:text-teal-400 transition">Host Login</a></li>
+                        <li><a href="/auth/signup.html" class="hover:text-white transition">List Your Property</a></li>
+                        <li><a href="#" class="hover:text-white transition">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white transition">Resources</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm text-gray-500">
+                    © 2025 AspireTowards. All rights reserved.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-sm hover:text-white transition">Privacy Policy</a>
+                    <a href="#" class="text-sm hover:text-white transition">Terms of Service</a>
+                    <a href="#" class="text-sm hover:text-white transition">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script src="/js/config.js"></script>
     <script>
@@ -1216,6 +1297,8 @@
                 }
             } catch (error) {
                 console.error('Error checking availability:', error)
+                alert('Failed to check availability. Please try again.')
+                document.getElementById('booking-button').disabled = true
             }
         }
 
@@ -1236,8 +1319,22 @@
             window.location.href = `booking.html?slug=${slug}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`
         })
 
+        // Check if user is logged in and update nav
+        function updateNavigation() {
+            const token = localStorage.getItem('token')
+            const footerAuthLink = document.getElementById('footer-auth-link')
+
+            if (token && footerAuthLink) {
+                footerAuthLink.href = '/dashboard.html'
+                footerAuthLink.textContent = 'Dashboard'
+            }
+        }
+
         // Load property on page load
-        document.addEventListener('DOMContentLoaded', loadProperty)
+        document.addEventListener('DOMContentLoaded', () => {
+            updateNavigation()
+            loadProperty()
+        })
 
         // Mobile menu functionality
         const mobileMenuButton = document.getElementById('mobile-menu-button')
