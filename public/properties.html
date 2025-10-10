@@ -336,18 +336,27 @@
         // Load all properties
         async function loadProperties() {
             try {
+                console.log('🔍 Fetching properties from:', API_URL)
                 const response = await fetch(API_URL)
+                console.log('📡 Response status:', response.status, response.statusText)
+
                 const data = await response.json()
+                console.log('📦 Response data:', data)
 
                 if (data.success) {
                     allProperties = data.properties
+                    console.log('✅ Loaded', allProperties.length, 'properties')
                     displayProperties(allProperties)
+                } else {
+                    console.error('❌ API returned success: false')
+                    throw new Error(data.message || 'Failed to load properties')
                 }
             } catch (error) {
-                console.error('Error loading properties:', error)
+                console.error('❌ Error loading properties:', error)
                 document.getElementById('properties-grid').innerHTML = `
                     <div class="col-span-2 text-center py-12">
-                        <p class="text-red-500">Error loading properties. Please try again later.</p>
+                        <p class="text-red-500">Error loading properties: ${error.message}</p>
+                        <p class="text-sm text-gray-500 mt-2">Check console for details</p>
                     </div>
                 `
             }

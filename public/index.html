@@ -86,7 +86,6 @@
                     <a href="#properties" class="text-gray-600 hover:text-teal-600 font-medium transition">Properties</a>
                     <a href="#why-direct" class="text-gray-600 hover:text-teal-600 font-medium transition">Why Book Direct</a>
                     <a href="#contact" class="text-gray-600 hover:text-teal-600 font-medium transition">Contact</a>
-                    <a href="/auth/login.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Host Login</a>
                 </div>
                 <div class="hidden md:block">
                     <a href="#properties" class="bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700 transition">
@@ -500,5 +499,60 @@
         mobileMenuOverlay.addEventListener('click', closeMobileMenu)
         mobileMenuLinks.forEach(link => link.addEventListener('click', closeMobileMenu))
     </script>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo" class="h-12 w-12">
+                        <h3 class="text-xl font-display font-bold text-white">AspireTowards</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Book directly and save. No platform fees, just great properties at better prices.
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        Book direct • Save 15% • Crypto payments accepted
+                    </p>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">For Guests</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#properties" class="hover:text-white transition">Browse Properties</a></li>
+                        <li><a href="#why-direct" class="hover:text-white transition">Why Book Direct</a></li>
+                        <li><a href="#contact" class="hover:text-white transition">Contact</a></li>
+                        <li><a href="/properties.html" class="hover:text-white transition">All Properties</a></li>
+                    </ul>
+                </div>
+
+                <!-- Property Owners -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">For Property Owners</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/auth/login.html" class="hover:text-teal-400 transition">Host Login</a></li>
+                        <li><a href="/auth/signup.html" class="hover:text-white transition">List Your Property</a></li>
+                        <li><a href="#" class="hover:text-white transition">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white transition">Resources</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm text-gray-500">
+                    © 2025 AspireTowards. All rights reserved.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-sm hover:text-white transition">Privacy Policy</a>
+                    <a href="#" class="text-sm hover:text-white transition">Terms of Service</a>
+                    <a href="#contact" class="text-sm hover:text-white transition">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
