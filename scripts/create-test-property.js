@@ -12,6 +12,7 @@ require(path.join(projectRoot, 'backend/node_modules/dotenv')).config({
 const { sequelize } = require(path.join(projectRoot, 'backend/src/config/database'))
 const Property = require(path.join(projectRoot, 'backend/src/models/Property'))
 const User = require(path.join(projectRoot, 'backend/src/models/User'))
+const { generatePropertyImagePaths } = require('./helpers/imagePathHelper')
 
 /**
  * Script to create the Bromley Condo test property
@@ -56,6 +57,11 @@ async function createBromleyProperty() {
 
     if (existing) {
       console.log('⚠ Property already exists. Updating...')
+      console.log(`   Property ID: ${existing.id}`)
+
+      // Generate image paths based on property ID
+      const imageFiles = ['main.jpg', 'living-room.jpg', 'bedroom.jpg', 'kitchen.jpg']
+      const imagePaths = generatePropertyImagePaths(existing.id, imageFiles)
 
       await existing.update({
         name: 'Bromley Village Ski Condo - Vermont Vacation Rental',
@@ -107,13 +113,8 @@ Book Direct & Save:
           'Iron & Ironing Board',
           'Linens & Towels'
         ],
-        images: [
-          'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800',
-          'https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800',
-          'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800',
-          'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800'
-        ],
-        featuredImage: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200',
+        images: imagePaths.images,
+        featuredImage: imagePaths.featuredImage,
         basePrice: 250,
         cleaningFee: 100,
         securityDeposit: 300,
@@ -156,7 +157,14 @@ Enjoy your stay!`,
       })
 
       console.log('✅ Property updated successfully!')
+      console.log(`\n📁 Upload your images to S3 at:`)
+      console.log(`   /assets/properties/${existing.id}/`)
+      console.log(`   - main.jpg`)
+      console.log(`   - living-room.jpg`)
+      console.log(`   - bedroom.jpg`)
+      console.log(`   - kitchen.jpg`)
     } else {
+      // Create property without images first
       const property = await Property.create({
         userId: user.id,
         name: 'Bromley Village Ski Condo - Vermont Vacation Rental',
@@ -208,13 +216,8 @@ Book Direct & Save:
           'Iron & Ironing Board',
           'Linens & Towels'
         ],
-        images: [
-          'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800',
-          'https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800',
-          'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800',
-          'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800'
-        ],
-        featuredImage: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200',
+        images: imagePaths.images,
+        featuredImage: imagePaths.featuredImage,
         basePrice: 250,
         cleaningFee: 100,
         securityDeposit: 300,
@@ -256,13 +259,30 @@ Enjoy your stay!`,
         instantBook: false
       })
 
+      // Now update with properly indexed images
+      const imageFiles = ['main.jpg', 'living-room.jpg', 'bedroom.jpg', 'kitchen.jpg']
+      const imagePaths = generatePropertyImagePaths(property.id, imageFiles)
+
+      await property.update({
+        images: imagePaths.images,
+        featuredImage: imagePaths.featuredImage
+      })
+
       console.log('✅ Bromley Condo property created successfully!')
       console.log(`\nProperty Details:`)
       console.log(`- ID: ${property.id}`)
+      console.log(`- User ID: ${user.id}`)
       console.log(`- Name: ${property.name}`)
       console.log(`- Slug: ${property.slug}`)
       console.log(`- Price: $${property.basePrice}/night`)
       console.log(`- Cleaning Fee: $${property.cleaningFee}`)
+
+      console.log(`\n📁 Upload your images to S3 at:`)
+      console.log(`   /assets/properties/${property.id}/`)
+      console.log(`   - main.jpg`)
+      console.log(`   - living-room.jpg`)
+      console.log(`   - bedroom.jpg`)
+      console.log(`   - kitchen.jpg`)
     }
 
     console.log(`\n🌐 View your property at:`)
