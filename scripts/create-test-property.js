@@ -1,8 +1,12 @@
 const path = require('path')
-require('dotenv').config({ path: path.join(__dirname, '../backend/.env') })
 
 // Get the project root directory (parent of scripts folder)
 const projectRoot = path.join(__dirname, '..')
+
+// Load dotenv from backend's node_modules
+require(path.join(projectRoot, 'backend/node_modules/dotenv')).config({
+  path: path.join(projectRoot, 'backend/.env')
+})
 
 // Load modules using absolute paths
 const { sequelize } = require(path.join(projectRoot, 'backend/src/config/database'))
