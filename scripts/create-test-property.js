@@ -1,4 +1,5 @@
 const path = require('path')
+require('dotenv').config({ path: path.join(__dirname, '../backend/.env') })
 
 // Get the project root directory (parent of scripts folder)
 const projectRoot = path.join(__dirname, '..')
