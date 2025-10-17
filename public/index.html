@@ -407,43 +407,42 @@
                     // Show first 2 properties
                     const featured = data.properties.slice(0, 2)
 
-                    container.innerHTML = featured.map(property => `
-                        <div class="property-card card-hover">
-                            <div class="relative h-64 overflow-hidden">
-                                <img src="${property.featuredImage || property.images?.[0] || 'https://via.placeholder.com/600x400?text=Property+Image'}"
-                                     alt="${property.name}"
-                                     class="w-full h-full object-cover">
-                                <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-semibold text-teal-600">
-                                    $${property.basePrice}/night
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">${property.name}</h3>
-                                <p class="text-gray-600 mb-4 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    ${property.city}, ${property.state}
-                                </p>
-                                <div class="flex items-center justify-between text-sm text-gray-600 mb-4">
-                                    <span>${property.bedrooms} bed</span>
-                                    <span>${property.bathrooms} bath</span>
-                                    <span>Sleeps ${property.maxGuests}</span>
-                                </div>
-                                <a href="property.html?slug=${property.slug}" class="block w-full bg-teal-600 text-white text-center py-2 rounded-lg font-medium hover:bg-teal-700 transition">
-                                    View Details
-                                </a>
-                            </div>
-                        </div>
-                    `).join('')
+                    const propertyCards = featured.map(function(property) {
+                        // iOS Safari compatible - avoid optional chaining
+                        const firstImage = property.featuredImage || (property.images && property.images[0]) || 'https://via.placeholder.com/600x400?text=Property+Image'
+
+                        return '<div class="property-card card-hover">' +
+                            '<div class="relative h-64 overflow-hidden">' +
+                                '<img src="' + firstImage + '" alt="' + property.name + '" class="w-full h-full object-cover">' +
+                                '<div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-semibold text-teal-600">' +
+                                    '$' + property.basePrice + '/night' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="p-6">' +
+                                '<h3 class="text-xl font-bold text-gray-900 mb-2">' + property.name + '</h3>' +
+                                '<p class="text-gray-600 mb-4 flex items-center">' +
+                                    '<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">' +
+                                        '<path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>' +
+                                    '</svg>' +
+                                    property.city + ', ' + property.state +
+                                '</p>' +
+                                '<div class="flex items-center justify-between text-sm text-gray-600 mb-4">' +
+                                    '<span>' + property.bedrooms + ' bed</span>' +
+                                    '<span>' + property.bathrooms + ' bath</span>' +
+                                    '<span>Sleeps ' + property.maxGuests + '</span>' +
+                                '</div>' +
+                                '<a href="property.html?slug=' + property.slug + '" class="block w-full bg-teal-600 text-white text-center py-2 rounded-lg font-medium hover:bg-teal-700 transition">' +
+                                    'View Details' +
+                                '</a>' +
+                            '</div>' +
+                        '</div>'
+                    })
+
+                    container.innerHTML = propertyCards.join('')
                 }
             } catch (error) {
                 console.error('Error loading properties:', error)
-                document.getElementById('featured-properties').innerHTML = `
-                    <div class="col-span-2 text-center py-12">
-                        <p class="text-gray-500">Unable to load properties. Please try again later.</p>
-                    </div>
-                `
+                document.getElementById('featured-properties').innerHTML = '<div class="col-span-2 text-center py-12"><p class="text-gray-500">Unable to load properties. Please try again later.</p></div>'
             }
         }
 
