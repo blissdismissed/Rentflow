@@ -117,6 +117,8 @@ const startServer = async () => {
 
     // Sync database (use migrations in production)
     if (process.env.NODE_ENV === 'development') {
+      // Use { alter: false } to avoid schema modification errors
+      // Run node reset-db.js if you need to reset the schema
       await sequelize.sync({ alter: false })
       console.log('✅ Database synchronized')
     }
