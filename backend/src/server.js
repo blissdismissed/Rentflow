@@ -4,6 +4,7 @@ const helmet = require('helmet')
 const compression = require('compression')
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
+const passport = require('./config/passport')
 require('dotenv').config()
 
 const { testConnection, sequelize } = require('./config/database')
@@ -16,6 +17,9 @@ const financialRoutes = require('./routes/financialRoutes')
 const publicRoutes = require('./routes/publicRoutes')
 
 const app = express()
+
+// Initialize Passport
+app.use(passport.initialize())
 
 // Security middleware
 app.use(helmet())
