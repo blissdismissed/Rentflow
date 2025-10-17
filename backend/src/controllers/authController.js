@@ -130,7 +130,7 @@ const googleCallback = async (req, res) => {
 
     // Redirect to frontend with token
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8000'
-    res.redirect(`${frontendUrl}/src/pages/auth/callback.html?token=${token}&refreshToken=${refreshToken}`)
+    res.redirect(`${frontendUrl}/auth/callback.html?token=${token}&refreshToken=${refreshToken}`)
   } catch (error) {
     console.error('Google OAuth error:', error)
     res.status(500).json({
