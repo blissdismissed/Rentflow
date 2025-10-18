@@ -207,6 +207,9 @@
                             </div>
                         </div>
                     </div>
+                    <div class="bg-teal-50 border border-teal-200 rounded-lg p-3 text-sm text-teal-800">
+                        💡 <strong>Tip:</strong> Drag and drop images to reorder them. The first image will be your featured photo!
+                    </div>
                     <div id="image-previews" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <!-- Image previews will be loaded here -->
                     </div>
@@ -514,7 +517,7 @@
             }
         }
 
-        // Load image previews
+        // Load image previews with drag and drop
         function loadImagePreviews(images) {
             const container = document.getElementById('image-previews');
 
@@ -532,8 +535,21 @@
                 console.log(`Image ${index}:`, { img, imageUrl, imageId, isFeatured });
 
                 return `
-                    <div class="relative border rounded-lg overflow-hidden group">
+                    <div
+                        class="relative border rounded-lg overflow-hidden group cursor-move"
+                        draggable="true"
+                        data-index="${index}"
+                        ondragstart="handleDragStart(event)"
+                        ondragover="handleDragOver(event)"
+                        ondrop="handleDrop(event)"
+                        ondragend="handleDragEnd(event)"
+                    >
                         <img src="${imageUrl}" alt="Property image ${index + 1}" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 left-2 bg-gray-900 bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+                            <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </div>
                         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition flex items-center justify-center">
                             <button type="button" onclick="deleteImageByIndex(${index})" class="opacity-0 group-hover:opacity-100 bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
                                 Delete
@@ -545,6 +561,104 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        // Drag and drop variables
+        let draggedElement = null;
+        let draggedIndex = null;
+
+        function handleDragStart(e) {
+            draggedElement = e.currentTarget;
+            draggedIndex = parseInt(e.currentTarget.dataset.index);
+            e.currentTarget.style.opacity = '0.5';
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+
+            const targetElement = e.currentTarget;
+            if (targetElement !== draggedElement) {
+                targetElement.style.borderColor = '#0F766E';
+                targetElement.style.borderWidth = '3px';
+            }
+
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            e.currentTarget.style.opacity = '1';
+
+            // Reset all border styles
+            document.querySelectorAll('#image-previews > div').forEach(div => {
+                div.style.borderColor = '';
+                div.style.borderWidth = '';
+            });
+        }
+
+        async function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+
+            const dropIndex = parseInt(e.currentTarget.dataset.index);
+
+            if (draggedIndex !== dropIndex) {
+                // Reorder the images array
+                const newImages = [...currentProperty.images];
+                const draggedImage = newImages[draggedIndex];
+
+                // Remove from old position
+                newImages.splice(draggedIndex, 1);
+
+                // Insert at new position
+                newImages.splice(dropIndex, 0, draggedImage);
+
+                // Update the property
+                await reorderImages(newImages);
+            }
+
+            return false;
+        }
+
+        // Reorder images and update backend
+        async function reorderImages(newImages) {
+            try {
+                const response = await fetch(`${API_URL}/properties/${propertyId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        images: newImages,
+                        featuredImage: typeof newImages[0] === 'string' ? newImages[0] : newImages[0].url
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Show success message
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                    toast.textContent = '✓ Images reordered! First image is now featured.';
+                    document.body.appendChild(toast);
+
+                    setTimeout(() => toast.remove(), 3000);
+
+                    // Reload property to show updated order
+                    await loadProperty();
+                } else {
+                    alert(`Failed to reorder images: ${data.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Error reordering images:', error);
+                alert('Failed to reorder images. Please try again.');
+            }
         }
 
         // Delete image by index (for when images are stored as strings)
