@@ -37,9 +37,9 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-display { font-family: 'Playfair Display', serif; }
-        .card-hover { transition: all 0.3s ease; }
+        .card-hover { transition: all 0.3s ease; cursor: pointer; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-        .property-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .property-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); cursor: pointer; }
         .property-card:hover { transform: translateY(-8px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
         .filter-tag { cursor: pointer; transition: all 0.2s; }
         .filter-tag:hover { transform: scale(1.05); }
@@ -436,7 +436,7 @@
                         '</div>' +
                         descriptionHtml +
                         '<div class="flex flex-wrap gap-2 mb-4">' + amenitiesHtml + '</div>' +
-                        '<div class="w-full bg-teal-600 text-white text-center py-2 rounded-lg font-medium group-hover:bg-teal-700 transition">View Details &amp; Book</div>' +
+                        '<div class="w-full bg-teal-600 text-white text-center py-3 rounded-lg font-medium hover:bg-teal-700 transition">View Details &amp; Book</div>' +
                     '</div>' +
                 '</a>'
             })

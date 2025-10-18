@@ -1312,11 +1312,6 @@
                         if (checkOutPicker) {
                             checkOutPicker.set('minDate', nextDay)
                             checkOutPicker.set('defaultDate', nextDay)
-
-                            // Jump to the check-in month if jumpTo method exists
-                            if (typeof checkOutPicker.jumpTo === 'function') {
-                                checkOutPicker.jumpTo(checkInDate)
-                            }
                             checkOutPicker.open()
                         }
 
