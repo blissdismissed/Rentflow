@@ -281,16 +281,21 @@ const deleteImage = async (req, res) => {
     if (!imageToDelete) {
       return res.status(404).json({
         success: false,
-        message: 'Image not found'
+        message: 'Image not found in property'
       });
     }
 
-    // Delete from S3
-    try {
-      await imageService.deleteImage(imageToDelete.key);
-    } catch (err) {
-      console.error('Failed to delete from S3:', err);
-      // Continue even if S3 delete fails
+    // Delete from S3 only if the image has an S3 key (not a stock photo or external URL)
+    if (imageToDelete.key && imageToDelete.key.startsWith('properties/')) {
+      try {
+        await imageService.deleteImage(imageToDelete.key);
+        console.log(`✅ Deleted image from S3: ${imageToDelete.key}`);
+      } catch (err) {
+        console.error('⚠️  Failed to delete from S3:', err);
+        // Continue even if S3 delete fails (image might not exist in S3)
+      }
+    } else {
+      console.log(`ℹ️  Skipping S3 deletion for external/stock image: ${imageToDelete.url || imageToDelete.id}`);
     }
 
     // Remove from database
