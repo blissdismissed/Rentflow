@@ -49,7 +49,7 @@
         .hero-gradient { background: linear-gradient(135deg, #0F766E 0%, #14B8A6 50%, #0EA5E9 100%); }
         .card-hover { transition: all 0.3s ease; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-        .property-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .property-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); cursor: pointer; }
         .property-card:hover { transform: translateY(-8px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
         .feature-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%); }
         .floating { animation: floating 3s ease-in-out infinite; }
@@ -411,7 +411,7 @@
                         // iOS Safari compatible - avoid optional chaining
                         const firstImage = property.featuredImage || (property.images && property.images[0]) || 'https://via.placeholder.com/600x400?text=Property+Image'
 
-                        return '<div class="property-card card-hover">' +
+                        return '<a href="property.html?slug=' + property.slug + '" class="property-card card-hover block">' +
                             '<div class="relative h-64 overflow-hidden">' +
                                 '<img src="' + firstImage + '" alt="' + property.name + '" class="w-full h-full object-cover">' +
                                 '<div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-semibold text-teal-600">' +
@@ -431,11 +431,11 @@
                                     '<span>' + property.bathrooms + ' bath</span>' +
                                     '<span>Sleeps ' + property.maxGuests + '</span>' +
                                 '</div>' +
-                                '<a href="property.html?slug=' + property.slug + '" class="block w-full bg-teal-600 text-white text-center py-2 rounded-lg font-medium hover:bg-teal-700 transition">' +
-                                    'View Details' +
-                                '</a>' +
+                                '<div class="w-full bg-teal-600 text-white text-center py-3 rounded-lg font-medium hover:bg-teal-700 transition">' +
+                                    'View Details &amp; Book' +
+                                '</div>' +
                             '</div>' +
-                        '</div>'
+                        '</a>'
                     })
 
                     container.innerHTML = propertyCards.join('')

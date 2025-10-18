@@ -501,7 +501,16 @@
                     })
                 })
 
+                console.log('📊 Booking response status:', bookingResponse.status)
+
+                if (!bookingResponse.ok) {
+                    const errorText = await bookingResponse.text()
+                    console.error('❌ Booking error response:', errorText)
+                    throw new Error(`Server error (${bookingResponse.status}): ${errorText}`)
+                }
+
                 const bookingData = await bookingResponse.json()
+                console.log('📊 Booking data:', bookingData)
 
                 if (!bookingData.success) {
                     throw new Error(bookingData.message || 'Failed to create booking')
