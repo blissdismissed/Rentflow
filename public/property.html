@@ -1200,12 +1200,24 @@
             // Description
             document.getElementById('property-description').textContent = property.description || 'No description available'
 
-            // Gallery
-            const images = property.images || [property.featuredImage]
+            // Gallery - Handle both string URLs and image objects
+            const rawImages = property.images || [property.featuredImage]
+            const images = rawImages.map(img => {
+                // Handle both string URLs and image objects
+                if (typeof img === 'string') return img
+                if (img && img.url) return img.url
+                return 'https://via.placeholder.com/800x600?text=Property'
+            }).filter(Boolean) // Remove any null/undefined values
+
+            console.log('📸 Processed images:', images)
+
             const mainImage = document.getElementById('main-image')
-            mainImage.style.backgroundImage = `url(${images[0] || 'https://via.placeholder.com/800x600?text=Property'})`
+            const firstImageUrl = images[0] || 'https://via.placeholder.com/800x600?text=Property'
+            mainImage.style.backgroundImage = `url(${firstImageUrl})`
             mainImage.style.backgroundSize = 'cover'
             mainImage.style.backgroundPosition = 'center'
+
+            console.log('🖼️  Main image URL:', firstImageUrl)
 
             if (images.length > 1) {
                 const galleryGrid = document.getElementById('gallery-grid')
