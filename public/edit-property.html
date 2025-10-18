@@ -447,16 +447,25 @@
                     return;
                 }
 
-                const data = await response.json();
-                console.log('📊 Response data:', data);
+                let data;
+                try {
+                    data = await response.json();
+                    console.log('📊 Response data:', JSON.stringify(data, null, 2));
+                } catch (e) {
+                    console.error('❌ Could not parse response as JSON:', e);
+                    alert('Server returned an invalid response. Please try again.');
+                    return;
+                }
 
                 if (response.ok && data.success) {
                     alert(`Successfully uploaded ${files.length} image(s)!`);
                     // Reload property to get updated images
                     await loadProperty();
                 } else {
-                    alert(`Failed to upload images: ${data.message || 'Unknown error'}`);
-                    console.error('❌ Upload failed:', data);
+                    // Show detailed error message
+                    const errorMsg = data.message || data.error || 'Unknown error';
+                    console.error('❌ Upload failed - Full error object:', JSON.stringify(data, null, 2));
+                    alert(`Failed to upload images:\n\n${errorMsg}\n\nPlease check the console for more details.`);
                 }
             } catch (error) {
                 console.error('❌ Error uploading images:', error);
