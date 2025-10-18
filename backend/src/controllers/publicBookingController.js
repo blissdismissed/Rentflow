@@ -60,11 +60,11 @@ class PublicBookingController {
       // Calculate nights
       const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24))
 
-      // Check for conflicts
+      // Check for conflicts using bookingStatus (not status)
       const conflictingBooking = await Booking.findOne({
         where: {
           propertyId: property.id,
-          status: { [Op.in]: ['confirmed', 'checked_in', 'requested', 'approved'] },
+          bookingStatus: { [Op.in]: ['confirmed', 'requested', 'approved'] },
           [Op.or]: [
             {
               checkIn: {
