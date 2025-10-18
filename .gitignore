@@ -92,3 +92,4 @@ __pycache__/         # if Python backend
 *.pid
 *.seed
 *.tgz
+docs/

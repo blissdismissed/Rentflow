@@ -78,18 +78,18 @@
                 if (data.success && data.data && data.data.user) {
                     localStorage.setItem('user', JSON.stringify(data.data.user))
                 }
-                // Redirect to home page for public site
-                console.log('Redirecting to home page...')
-                window.location.href = '/index.html'
+                // Redirect to dashboard
+                console.log('Redirecting to dashboard...')
+                window.location.href = '/dashboard.html'
             })
             .catch(function(error) {
                 console.error('Error fetching user data:', error)
                 document.getElementById('error-message').textContent = 'Error loading user data: ' + error.message
                 document.getElementById('error-message').classList.remove('hidden')
 
-                // Still redirect after showing error
+                // Still redirect to dashboard after showing error
                 setTimeout(function() {
-                    window.location.href = '/index.html'
+                    window.location.href = '/dashboard.html'
                 }, 3000)
             })
         } else {
