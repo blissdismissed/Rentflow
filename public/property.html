@@ -1202,28 +1202,43 @@
 
             // Gallery - Handle both string URLs and image objects
             const rawImages = property.images || [property.featuredImage]
-            const images = rawImages.map(img => {
+            console.log('📦 Raw images from API:', rawImages)
+
+            const images = rawImages.filter(Boolean).map(img => {
                 // Handle both string URLs and image objects
-                if (typeof img === 'string') return img
-                if (img && img.url) return img.url
-                return 'https://via.placeholder.com/800x600?text=Property'
+                if (typeof img === 'string') {
+                    console.log('  ✓ String image:', img)
+                    return img
+                }
+                if (img && img.url) {
+                    console.log('  ✓ Object image with URL:', img.url)
+                    return img.url
+                }
+                console.warn('  ⚠️  Invalid image format:', img)
+                return null
             }).filter(Boolean) // Remove any null/undefined values
 
             console.log('📸 Processed images:', images)
 
             const mainImage = document.getElementById('main-image')
-            const firstImageUrl = images[0] || 'https://via.placeholder.com/800x600?text=Property'
-            mainImage.style.backgroundImage = `url(${firstImageUrl})`
-            mainImage.style.backgroundSize = 'cover'
-            mainImage.style.backgroundPosition = 'center'
+            const firstImageUrl = images[0] || property.featuredImage || 'https://via.placeholder.com/800x600?text=Property'
 
             console.log('🖼️  Main image URL:', firstImageUrl)
 
+            mainImage.style.backgroundImage = `url("${firstImageUrl}")`
+            mainImage.style.backgroundSize = 'cover'
+            mainImage.style.backgroundPosition = 'center'
+            mainImage.style.minHeight = '300px'
+
+            // Show gallery grid on desktop
             if (images.length > 1) {
                 const galleryGrid = document.getElementById('gallery-grid')
                 galleryGrid.innerHTML = images.slice(1, 5).map(img => `
-                    <div class="gallery-item" style="background-image: url(${img}); background-size: cover; background-position: center;"></div>
+                    <div class="gallery-item" style="background-image: url('${img}'); background-size: cover; background-position: center;"></div>
                 `).join('')
+                console.log(`✅ Gallery grid populated with ${images.length - 1} additional images`)
+            } else {
+                console.log('ℹ️  Only one image available, no gallery grid needed')
             }
 
             // Amenities
