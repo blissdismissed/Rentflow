@@ -1308,13 +1308,17 @@
                         const checkInDate = selectedDates[0]
                         const nextDay = new Date(checkInDate.getTime() + 86400000)
 
-                        // Set min date and default month to check-in date
-                        checkOutPicker.set('minDate', nextDay)
-                        checkOutPicker.set('defaultDate', nextDay)
+                        // Set min date and default for checkout picker if it exists
+                        if (checkOutPicker) {
+                            checkOutPicker.set('minDate', nextDay)
+                            checkOutPicker.set('defaultDate', nextDay)
 
-                        // Jump to the check-in month before opening
-                        checkOutPicker.jumpTo(checkInDate)
-                        checkOutPicker.open()
+                            // Jump to the check-in month if jumpTo method exists
+                            if (typeof checkOutPicker.jumpTo === 'function') {
+                                checkOutPicker.jumpTo(checkInDate)
+                            }
+                            checkOutPicker.open()
+                        }
 
                         calculatePrice()
                     } else {
@@ -1354,10 +1358,16 @@
                 const response = await fetch(url)
                 console.log('📡 Response status:', response.status)
 
-                const data = await response.json()
-                console.log('📊 Response data:', data)
+                if (!response.ok) {
+                    const errorText = await response.text()
+                    console.error('❌ Server error response:', errorText)
+                    throw new Error(`Server returned ${response.status}: ${errorText}`)
+                }
 
-                if (response.ok && data.success && data.available) {
+                const data = await response.json()
+                console.log('📊 Response data:', JSON.stringify(data, null, 2))
+
+                if (data.success && data.available) {
                     const pricing = data.pricing
 
                     // Show breakdown

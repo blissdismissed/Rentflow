@@ -112,7 +112,7 @@ class PublicPropertyController {
       const bookings = await Booking.findAll({
         where: {
           propertyId: property.id,
-          status: { [Op.in]: ['confirmed', 'checked_in'] },
+          bookingStatus: { [Op.in]: ['confirmed', 'approved'] },
           checkOut: { [Op.gte]: today },
           checkIn: { [Op.lte]: sixMonthsLater }
         },
@@ -215,10 +215,11 @@ class PublicPropertyController {
       }
 
       // Check for conflicting bookings
+      // Use bookingStatus for workflow states (requested, approved, confirmed, etc.)
       const conflictingBooking = await Booking.findOne({
         where: {
           propertyId: property.id,
-          status: { [Op.in]: ['confirmed', 'checked_in', 'requested', 'approved'] },
+          bookingStatus: { [Op.in]: ['requested', 'approved', 'confirmed'] },
           [Op.or]: [
             {
               checkIn: {
@@ -270,11 +271,13 @@ class PublicPropertyController {
         }
       })
     } catch (error) {
-      console.error('Error checking availability:', error)
+      console.error('❌ Error checking availability:', error)
+      console.error('Error stack:', error.stack)
       res.status(500).json({
         success: false,
         message: 'Failed to check availability',
-        error: error.message
+        error: error.message,
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       })
     }
   }
