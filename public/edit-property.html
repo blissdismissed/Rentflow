@@ -182,7 +182,8 @@
                                     Click to upload images
                                 </span>
                                 <span class="mt-1 block text-xs text-gray-500">
-                                    PNG, JPG, WEBP up to 10MB each
+                                    PNG, JPG, WEBP up to 10MB each<br>
+                                    Maximum 10 images per upload
                                 </span>
                                 <input id="image-upload" type="file" class="hidden" accept="image/*" multiple onchange="handleImageUpload(event)">
                             </label>
@@ -418,6 +419,13 @@
 
             if (files.length === 0) return;
 
+            // Check file limit (backend allows max 10 files per upload)
+            if (files.length > 10) {
+                alert(`⚠️ Too many files!\n\nYou selected ${files.length} images, but the maximum is 10 per upload.\n\nPlease select fewer images or upload in multiple batches.`);
+                event.target.value = ''; // Reset file input
+                return;
+            }
+
             console.log('📸 Uploading images:', files);
             console.log('🔑 Property ID:', propertyId);
 
@@ -468,7 +476,13 @@
                     // Show detailed error message
                     const errorMsg = data.message || data.error || 'Unknown error';
                     console.error('❌ Upload failed - Full error object:', JSON.stringify(data, null, 2));
-                    alert(`Failed to upload images:\n\n${errorMsg}\n\nPlease check the console for more details.`);
+
+                    // Provide helpful message based on error type
+                    if (errorMsg.toLowerCase().includes('too many files')) {
+                        alert(`⚠️ Too many files!\n\nThe server rejected the upload because you tried to upload too many images at once.\n\nMaximum: 10 images per upload\nYou tried: ${files.length} images\n\nPlease select 10 or fewer images and try again.`);
+                    } else {
+                        alert(`Failed to upload images:\n\n${errorMsg}\n\nPlease check the console for more details.`);
+                    }
                 }
             } catch (error) {
                 console.error('❌ Error uploading images:', error);
