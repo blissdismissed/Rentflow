@@ -847,30 +847,30 @@ class PropertyManagerUI {
                 </div>
                 <div class="p-6">
                     <div class="flex justify-between items-start mb-2">
-                        <h3 class="text-lg font-semibold text-gray-900">${property.name}</h3>
-                        <div class="flex items-center">
+                        <h3 class="text-lg font-semibold text-gray-900 truncate flex-1 mr-2">${property.name}</h3>
+                        <div class="flex items-center flex-shrink-0">
                             <svg class="h-4 w-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
                             </svg>
-                            <span class="text-sm text-gray-600">${property.rating}</span>
+                            <span class="text-sm text-gray-600 whitespace-nowrap">${property.rating}</span>
                         </div>
                     </div>
-                    <p class="text-gray-600 text-sm mb-4">${property.location}</p>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase tracking-wide">Revenue</p>
-                            <p class="text-lg font-semibold text-gray-900">$${property.revenue.toLocaleString()}</p>
+                    <p class="text-gray-600 text-sm mb-4 truncate">${property.location}</p>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="min-w-0">
+                            <p class="text-xs text-gray-500 uppercase tracking-wide mb-1 truncate">Revenue</p>
+                            <p class="text-base font-semibold text-gray-900 truncate">$${property.revenue.toLocaleString()}</p>
                         </div>
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase tracking-wide">Occupancy</p>
-                            <p class="text-lg font-semibold text-gray-900">${property.occupancy}%</p>
+                        <div class="min-w-0">
+                            <p class="text-xs text-gray-500 uppercase tracking-wide mb-1 truncate">Occupancy</p>
+                            <p class="text-base font-semibold text-gray-900 truncate">${property.occupancy}%</p>
                         </div>
                     </div>
-                    <div class="flex space-x-2">
-                        <button class="flex-1 bg-teal-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors" onclick="propertyUI.editProperty(${property.id})">
+                    <div class="flex gap-2">
+                        <button class="flex-1 bg-teal-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors whitespace-nowrap" onclick="propertyUI.editProperty(${property.id})">
                             Manage
                         </button>
-                        <button class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" onclick="propertyUI.viewCalendar(${property.id})">
+                        <button class="flex-shrink-0 px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap" onclick="propertyUI.viewCalendar(${property.id})">
                             Calendar
                         </button>
                     </div>

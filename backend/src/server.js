@@ -15,6 +15,7 @@ const paymentRoutes = require('./routes/paymentRoutes')
 const integrationRoutes = require('./routes/integrationRoutes')
 const financialRoutes = require('./routes/financialRoutes')
 const publicRoutes = require('./routes/publicRoutes')
+const webhookRoutes = require('./routes/webhookRoutes')
 
 const app = express()
 
@@ -55,7 +56,10 @@ const limiter = rateLimit({
 })
 app.use('/api/', limiter)
 
-// Body parsing middleware
+// Webhook routes (BEFORE body parsing - Stripe needs raw body)
+app.use('/api/webhooks', webhookRoutes)
+
+// Body parsing middleware (AFTER webhook routes)
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
@@ -88,6 +92,8 @@ app.use('/api/financials', financialRoutes)
 
 // Public routes (no authentication required)
 app.use('/api/public', publicRoutes)
+
+// Note: Webhook routes are registered before body parsing middleware
 
 // 404 handler
 app.use((req, res) => {

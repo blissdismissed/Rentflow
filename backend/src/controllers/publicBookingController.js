@@ -1,8 +1,10 @@
 const Booking = require('../models/Booking')
 const Property = require('../models/Property')
+const User = require('../models/User')
 const { Op } = require('sequelize')
 const crypto = require('crypto')
 const stripeService = require('../services/stripeService')
+const emailService = require('../services/emailService')
 
 /**
  * Public Booking Controller
@@ -134,7 +136,16 @@ class PublicBookingController {
         // Continue without Stripe - host can still approve manually
       }
 
-      // TODO: Send email notification to host
+      // Send email notification to host
+      try {
+        const host = await User.findByPk(property.userId)
+        if (host && host.email) {
+          await emailService.sendBookingRequestToHost(booking, property, host)
+        }
+      } catch (emailError) {
+        console.error('Failed to send email to host:', emailError)
+        // Continue - don't fail the booking if email fails
+      }
 
       res.status(201).json({
         success: true,

@@ -3,6 +3,7 @@ const { body } = require('express-validator')
 const propertyController = require('../controllers/propertyController')
 const { authenticate } = require('../middleware/auth')
 const { validate } = require('../middleware/validator')
+const upload = require('../middleware/upload')
 
 const router = express.Router()
 
@@ -27,8 +28,11 @@ router.put('/:id', propertyController.updateProperty)
 router.delete('/:id', propertyController.deleteProperty)
 
 // Property images
-router.post('/:id/images', propertyController.uploadImages)
+router.post('/:id/images', upload.multiple, propertyController.uploadImages)
 router.delete('/:id/images/:imageId', propertyController.deleteImage)
+router.put('/:id/images/reorder', propertyController.reorderImages)
+router.put('/:id/images/:imageId/featured', propertyController.setFeaturedImage)
+router.put('/:id/images/:imageId/caption', propertyController.updateImageCaption)
 
 // Property availability
 router.get('/:id/availability', propertyController.getAvailability)

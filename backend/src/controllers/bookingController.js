@@ -2,6 +2,7 @@ const Booking = require('../models/Booking');
 const Property = require('../models/Property');
 const { Op } = require('sequelize');
 const stripeService = require('../services/stripeService');
+const emailService = require('../services/emailService');
 
 class BookingController {
   /**
@@ -360,35 +361,46 @@ class BookingController {
       }
 
       // Capture deposit via Stripe
+      let paymentSuccess = false;
+      let captureResult = null;
       try {
-        const captureResult = await stripeService.captureDeposit(booking.id);
-
-        res.json({
-          success: true,
-          message: 'Booking approved and deposit charged successfully',
-          data: {
-            booking: await Booking.findByPk(booking.id),
-            payment: captureResult
-          }
-        });
+        captureResult = await stripeService.captureDeposit(booking.id);
+        paymentSuccess = true;
       } catch (stripeError) {
         // If Stripe fails, still approve but flag payment issue
         await booking.update({
           bookingStatus: 'approved',
           status: 'confirmed'
         });
-
-        res.json({
-          success: true,
-          message: 'Booking approved but payment capture failed. Please collect manually.',
-          data: {
-            booking,
-            paymentError: stripeError.message
-          }
-        });
+        console.error('Payment capture failed:', stripeError);
       }
 
-      // TODO: Send confirmation email to guest
+      // Reload booking to get updated data
+      const updatedBooking = await Booking.findByPk(booking.id, {
+        include: [{
+          model: Property,
+          as: 'property'
+        }]
+      });
+
+      // Send confirmation email to guest
+      try {
+        await emailService.sendBookingApprovalToGuest(updatedBooking, updatedBooking.property);
+      } catch (emailError) {
+        console.error('Failed to send approval email to guest:', emailError);
+        // Continue - don't fail the approval if email fails
+      }
+
+      res.json({
+        success: true,
+        message: paymentSuccess
+          ? 'Booking approved and deposit charged successfully'
+          : 'Booking approved but payment capture failed. Please collect manually.',
+        data: {
+          booking: updatedBooking,
+          payment: captureResult
+        }
+      });
     } catch (error) {
       console.error('Error approving booking:', error);
       res.status(500).json({
@@ -444,7 +456,13 @@ class BookingController {
         hostMessage: reason || 'Booking request declined'
       });
 
-      // TODO: Send decline email to guest
+      // Send decline email to guest
+      try {
+        await emailService.sendBookingDeclineToGuest(booking, booking.property, reason);
+      } catch (emailError) {
+        console.error('Failed to send decline email to guest:', emailError);
+        // Continue - don't fail the decline if email fails
+      }
 
       res.json({
         success: true,
