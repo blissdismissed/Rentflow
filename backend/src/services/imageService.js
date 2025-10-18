@@ -60,7 +60,6 @@ class ImageService {
         Key: s3Key,
         Body: optimizedBuffer,
         ContentType: this.getContentType(ext),
-        ACL: 'public-read',
         CacheControl: 'max-age=31536000', // 1 year cache
         Metadata: {
           propertyId,
@@ -78,7 +77,6 @@ class ImageService {
         Key: thumbnailKey,
         Body: thumbnailBuffer,
         ContentType: this.getContentType(ext),
-        ACL: 'public-read',
         CacheControl: 'max-age=31536000'
       };
 
@@ -253,7 +251,6 @@ class ImageService {
       Bucket: this.bucket,
       Key: s3Key,
       ContentType: contentType,
-      ACL: 'public-read',
       Expires: 300 // 5 minutes
     };
 
