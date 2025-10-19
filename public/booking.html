@@ -204,7 +204,17 @@
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
                                 <input type="email" id="guest-email" required
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                       placeholder="john@example.com">
+                                       placeholder="john@example.com"
+                                       onblur="validateEmail()">
+                                <p id="email-error" class="text-red-600 text-sm mt-1 hidden">Please enter a valid email address</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Confirm Email *</label>
+                                <input type="email" id="guest-email-confirm" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                       placeholder="john@example.com"
+                                       onblur="validateEmailMatch()">
+                                <p id="email-match-error" class="text-red-600 text-sm mt-1 hidden">Emails do not match</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
@@ -305,11 +315,34 @@
     </div>
 
     <script>
+        // Ensure config is loaded
+        if (!window.CONFIG || !window.CONFIG.STRIPE_PUBLISHABLE_KEY) {
+            console.error('Configuration not loaded! Make sure config.js is loaded first.')
+            alert('Configuration error. Please refresh the page.')
+        }
+
         const API_URL = `${window.CONFIG.API_BASE_URL}/api/public`
-        const stripe = Stripe(window.CONFIG.STRIPE_PUBLISHABLE_KEY)
-        const elements = stripe.elements()
-        const cardElement = elements.create('card')
-        cardElement.mount('#card-element')
+
+        // Initialize Stripe with error handling
+        let stripe, elements, cardElement
+        try {
+            console.log('Initializing Stripe with key:', window.CONFIG.STRIPE_PUBLISHABLE_KEY)
+            stripe = Stripe(window.CONFIG.STRIPE_PUBLISHABLE_KEY)
+            elements = stripe.elements()
+            cardElement = elements.create('card')
+
+            // Mount card element after DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    cardElement.mount('#card-element')
+                })
+            } else {
+                cardElement.mount('#card-element')
+            }
+        } catch (error) {
+            console.error('Stripe initialization error:', error)
+            alert('Payment system initialization failed. Please refresh the page.')
+        }
 
         let currentProperty = null
         let bookingDetails = {}
@@ -375,6 +408,43 @@
             }
 
             console.log(`Applied ${season} theme to booking page`)
+        }
+
+        // Email validation functions
+        function validateEmail() {
+            const emailInput = document.getElementById('guest-email')
+            const errorElement = document.getElementById('email-error')
+            const email = emailInput.value.trim()
+
+            // Basic email regex
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+            if (email && !emailRegex.test(email)) {
+                errorElement.classList.remove('hidden')
+                emailInput.classList.add('border-red-500')
+                return false
+            } else {
+                errorElement.classList.add('hidden')
+                emailInput.classList.remove('border-red-500')
+                return true
+            }
+        }
+
+        function validateEmailMatch() {
+            const email = document.getElementById('guest-email').value.trim()
+            const emailConfirm = document.getElementById('guest-email-confirm').value.trim()
+            const errorElement = document.getElementById('email-match-error')
+            const confirmInput = document.getElementById('guest-email-confirm')
+
+            if (emailConfirm && email !== emailConfirm) {
+                errorElement.classList.remove('hidden')
+                confirmInput.classList.add('border-red-500')
+                return false
+            } else {
+                errorElement.classList.add('hidden')
+                confirmInput.classList.remove('border-red-500')
+                return true
+            }
         }
 
         // Handle card errors
@@ -479,6 +549,16 @@
 
             const submitButton = document.getElementById('submit-button')
             const errorMessage = document.getElementById('error-message')
+
+            // Validate emails before submitting
+            const emailValid = validateEmail()
+            const emailsMatch = validateEmailMatch()
+
+            if (!emailValid || !emailsMatch) {
+                errorMessage.textContent = 'Please correct the email errors before submitting'
+                errorMessage.classList.remove('hidden')
+                return
+            }
 
             submitButton.disabled = true
             submitButton.textContent = 'Processing...'

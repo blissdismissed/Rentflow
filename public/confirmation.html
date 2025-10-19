@@ -22,6 +22,86 @@
         @keyframes stroke {
             100% { stroke-dashoffset: 0; }
         }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white !important;
+            }
+
+            /* Hide elements that shouldn't be printed */
+            nav, .no-print, #loading, #error-content {
+                display: none !important;
+            }
+
+            /* Show only confirmation content */
+            #confirmation-content {
+                display: block !important;
+            }
+
+            /* Remove shadows and backgrounds for clean print */
+            .shadow-lg, .shadow-sm, .rounded-xl {
+                box-shadow: none !important;
+            }
+
+            /* Make confirmation code very prominent */
+            #confirmation-code {
+                font-size: 2.5rem !important;
+                color: black !important;
+            }
+
+            /* Remove gradients for print */
+            .bg-gradient-to-r {
+                background: #f0f9ff !important;
+                color: black !important;
+                border: 2px solid #0F766E !important;
+            }
+
+            /* Adjust button area */
+            .flex-col.sm\\:flex-row.gap-4 {
+                display: none !important;
+            }
+
+            /* Page break controls */
+            .page-break-before {
+                page-break-before: always;
+            }
+
+            /* Clean borders for print */
+            .border-gray-200, .border-teal-200, .border-teal-300 {
+                border-color: #ccc !important;
+            }
+
+            /* Make text darker for better print */
+            .text-gray-600, .text-gray-700 {
+                color: #333 !important;
+            }
+
+            /* Add border to main container */
+            .max-w-3xl {
+                border: 2px solid #0F766E;
+                padding: 20px;
+            }
+
+            /* Print header */
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 20px;
+                border-bottom: 2px solid #0F766E;
+                padding-bottom: 10px;
+            }
+
+            .print-header img {
+                max-width: 150px;
+                margin: 0 auto 10px;
+            }
+        }
+
+        /* Print header - hidden on screen */
+        .print-header {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -43,8 +123,25 @@
 
         <!-- Success Content -->
         <div id="confirmation-content" class="hidden">
+            <!-- Print Header (only visible when printing) -->
+            <div class="print-header">
+                <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo">
+                <h1 class="text-2xl font-display font-bold">AspireTowards</h1>
+                <p class="text-sm">Booking Confirmation</p>
+            </div>
+
+            <!-- Print Button (hidden when printing) -->
+            <div class="no-print mb-6 flex justify-end">
+                <button onclick="window.print()" class="bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    Print Confirmation
+                </button>
+            </div>
+
             <!-- Success Icon -->
-            <div class="text-center mb-8">
+            <div class="text-center mb-8 no-print">
                 <svg class="checkmark-svg mx-auto mb-4" width="80" height="80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
                     <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" stroke="#0F766E" stroke-width="2"/>
                     <path class="checkmark" fill="none" stroke="#0F766E" stroke-width="3" d="M14 27l8 8 16-16"/>
@@ -53,12 +150,30 @@
                 <p class="text-lg text-gray-600">Your booking request has been sent to the host for approval</p>
             </div>
 
+            <!-- Confirmation Code - Prominent -->
+            <div class="bg-gradient-to-r from-teal-600 to-teal-700 rounded-xl shadow-lg p-6 mb-6 text-white">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <p class="text-teal-100 text-sm font-medium mb-1">Your Confirmation Code</p>
+                        <p id="confirmation-code" class="text-3xl font-bold tracking-wider"></p>
+                    </div>
+                    <button onclick="copyConfirmationCode()" id="copy-button" class="bg-white text-teal-600 px-4 py-2 rounded-lg font-semibold hover:bg-teal-50 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Copy
+                    </button>
+                </div>
+                <div class="flex items-start gap-2 bg-teal-800 bg-opacity-30 rounded-lg p-3 text-sm">
+                    <svg class="w-5 h-5 text-yellow-300 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <p class="text-teal-50"><strong>Save this code!</strong> You'll need it to check your booking status or contact us about your reservation.</p>
+                </div>
+            </div>
+
             <!-- Confirmation Details -->
             <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
-                <div class="border-b border-gray-200 pb-4 mb-4">
-                    <p class="text-sm text-gray-600 mb-1">Confirmation Code</p>
-                    <p id="confirmation-code" class="text-2xl font-bold text-teal-600"></p>
-                </div>
 
                 <div class="space-y-4">
                     <div>
@@ -175,13 +290,27 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex flex-col sm:flex-row gap-4 no-print">
+                <button onclick="window.print()" class="flex-1 bg-white text-gray-700 border border-gray-300 px-6 py-3 rounded-lg font-semibold text-center hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    Print Confirmation
+                </button>
                 <a href="properties.html" class="flex-1 bg-white text-gray-700 border border-gray-300 px-6 py-3 rounded-lg font-semibold text-center hover:bg-gray-50 transition">
                     Browse More Properties
                 </a>
                 <a href="index.html" class="flex-1 bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold text-center hover:bg-teal-700 transition">
                     Back to Home
                 </a>
+            </div>
+
+            <!-- Print Footer (only visible when printing) -->
+            <div class="print-header" style="margin-top: 40px; border-top: 2px solid #0F766E; border-bottom: none; padding-top: 20px;">
+                <p class="text-xs text-gray-600">
+                    AspireTowards Direct Booking • https://aspiretowards.com<br>
+                    Questions? Contact us with your confirmation code
+                </p>
             </div>
         </div>
 
@@ -198,8 +327,9 @@
         </div>
     </div>
 
+    <script src="/js/config.js"></script>
     <script>
-        const API_URL = 'http://localhost:5000/api/public'
+        const API_URL = `${window.CONFIG.API_BASE_URL}/api/public`
 
         // Get confirmation code from URL
         const urlParams = new URLSearchParams(window.location.search)
@@ -209,6 +339,27 @@
             showError()
         } else {
             loadBookingDetails()
+        }
+
+        // Copy confirmation code to clipboard
+        function copyConfirmationCode() {
+            const code = document.getElementById('confirmation-code').textContent
+            navigator.clipboard.writeText(code).then(() => {
+                const button = document.getElementById('copy-button')
+                const originalText = button.innerHTML
+                button.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Copied!
+                `
+                setTimeout(() => {
+                    button.innerHTML = originalText
+                }, 2000)
+            }).catch(err => {
+                console.error('Failed to copy:', err)
+                alert('Failed to copy. Please write down your confirmation code: ' + code)
+            })
         }
 
         async function loadBookingDetails() {
