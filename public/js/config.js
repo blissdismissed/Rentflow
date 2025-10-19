@@ -28,6 +28,9 @@ const CONFIG = {
   ENV: 'production',
   ENABLE_ANALYTICS: true,
   ENABLE_DEBUG: false,
+
+  // Stripe Configuration
+  STRIPE_PUBLISHABLE_KEY: 'pk_test_51SJcTTRof35cBGM2T9MlBeLRq3W6AJSaFPx4NjWYuG04K1wznZmAa87XZOLm4dutCrzlFgmptPsfbVKPsfbVK2cE67hFET00bbrf6xXD',
 }
 
 

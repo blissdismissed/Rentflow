@@ -622,8 +622,29 @@
         <!-- Photo Gallery -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-1">
-                <div id="main-image" class="gallery-main cursor-pointer lg:rounded-l-2xl lg:rounded-tr-none"></div>
+                <div id="main-image" class="gallery-main cursor-pointer lg:rounded-l-2xl lg:rounded-tr-none" onclick="openLightbox(0)"></div>
                 <div id="gallery-grid" class="gallery-grid hidden lg:grid lg:rounded-r-2xl"></div>
+            </div>
+        </div>
+
+        <!-- Image Lightbox Modal -->
+        <div id="lightbox" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden flex items-center justify-center">
+            <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white text-4xl font-light hover:text-gray-300 z-10">
+                &times;
+            </button>
+
+            <!-- Previous/Next buttons -->
+            <button onclick="changeLightboxImage(-1)" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-5xl font-light hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center">
+                ‹
+            </button>
+            <button onclick="changeLightboxImage(1)" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white text-5xl font-light hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center">
+                ›
+            </button>
+
+            <!-- Image container -->
+            <div class="max-w-7xl max-h-screen p-8 w-full h-full flex flex-col items-center justify-center">
+                <img id="lightbox-image" src="" alt="Property image" class="max-w-full max-h-full object-contain">
+                <p id="lightbox-caption" class="text-white text-center mt-4 text-lg"></p>
             </div>
         </div>
 
@@ -1230,11 +1251,14 @@
             mainImage.style.backgroundPosition = 'center'
             mainImage.style.minHeight = '300px'
 
+            // Store images globally for lightbox
+            window.propertyImages = images
+
             // Show gallery grid on desktop
             if (images.length > 1) {
                 const galleryGrid = document.getElementById('gallery-grid')
-                galleryGrid.innerHTML = images.slice(1, 5).map(img => `
-                    <div class="gallery-item" style="background-image: url('${img}'); background-size: cover; background-position: center;"></div>
+                galleryGrid.innerHTML = images.slice(1, 5).map((img, index) => `
+                    <div class="gallery-item" style="background-image: url('${img}'); background-size: cover; background-position: center;" onclick="openLightbox(${index + 1})"></div>
                 `).join('')
                 console.log(`✅ Gallery grid populated with ${images.length - 1} additional images`)
             } else {
@@ -1428,6 +1452,66 @@
                 footerAuthLink.textContent = 'Dashboard'
             }
         }
+
+        // Lightbox functionality
+        let currentLightboxIndex = 0
+
+        function openLightbox(index) {
+            currentLightboxIndex = index
+            const lightbox = document.getElementById('lightbox')
+            const lightboxImage = document.getElementById('lightbox-image')
+            const lightboxCaption = document.getElementById('lightbox-caption')
+
+            if (window.propertyImages && window.propertyImages[index]) {
+                lightboxImage.src = window.propertyImages[index]
+                lightboxCaption.textContent = `Image ${index + 1} of ${window.propertyImages.length}`
+                lightbox.classList.remove('hidden')
+                document.body.style.overflow = 'hidden'
+            }
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox')
+            lightbox.classList.add('hidden')
+            document.body.style.overflow = 'auto'
+        }
+
+        function changeLightboxImage(direction) {
+            if (!window.propertyImages) return
+
+            currentLightboxIndex += direction
+
+            // Loop around
+            if (currentLightboxIndex < 0) {
+                currentLightboxIndex = window.propertyImages.length - 1
+            } else if (currentLightboxIndex >= window.propertyImages.length) {
+                currentLightboxIndex = 0
+            }
+
+            const lightboxImage = document.getElementById('lightbox-image')
+            const lightboxCaption = document.getElementById('lightbox-caption')
+
+            lightboxImage.src = window.propertyImages[currentLightboxIndex]
+            lightboxCaption.textContent = `Image ${currentLightboxIndex + 1} of ${window.propertyImages.length}`
+        }
+
+        // Close lightbox on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeLightbox()
+            } else if (e.key === 'ArrowLeft') {
+                changeLightboxImage(-1)
+            } else if (e.key === 'ArrowRight') {
+                changeLightboxImage(1)
+            }
+        })
+
+        // Close lightbox when clicking outside the image
+        document.getElementById('lightbox')?.addEventListener('click', (e) => {
+            if (e.target.id === 'lightbox') {
+                closeLightbox()
+            }
+        })
 
         // Load property on page load
         document.addEventListener('DOMContentLoaded', () => {

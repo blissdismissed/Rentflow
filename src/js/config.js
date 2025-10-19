@@ -16,7 +16,11 @@ const CONFIG = {
 const CONFIG = {
   API_BASE_URL: 'https://api.aspiretowards.com',
   ENV: 'production',
-  ENABLE_DEBUG: false
+  ENABLE_DEBUG: false,
+
+  // Stripe Publishable Key (safe to expose in frontend)
+  // Get from: https://dashboard.stripe.com/test/apikeys
+  STRIPE_PUBLISHABLE_KEY: 'pk_test_YOUR_STRIPE_PUBLISHABLE_KEY_HERE'
 }
 
 // Make config available globally

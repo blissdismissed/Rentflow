@@ -306,7 +306,7 @@
 
     <script>
         const API_URL = `${window.CONFIG.API_BASE_URL}/api/public`
-        const stripe = Stripe('YOUR_STRIPE_PUBLISHABLE_KEY') // TODO: Replace with actual key
+        const stripe = Stripe(window.CONFIG.STRIPE_PUBLISHABLE_KEY)
         const elements = stripe.elements()
         const cardElement = elements.create('card')
         cardElement.mount('#card-element')
