@@ -434,6 +434,27 @@
         .flatpickr-day.flatpickr-disabled {
             font-weight: 500;
         }
+
+        /* Calendar legend that appears below the flatpickr calendar */
+        .flatpickr-calendar-legend {
+            margin-top: 8px;
+            padding: 10px 12px;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .flatpickr-calendar-legend svg {
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+            color: #dc2626;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -810,14 +831,6 @@
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Check-out</label>
                                 <input type="text" id="check-out" placeholder="Select date" readonly
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
-                            </div>
-
-                            <!-- Calendar Legend -->
-                            <div class="flex items-center gap-2 text-xs text-gray-600 bg-red-50 border border-red-200 rounded-lg p-3">
-                                <svg class="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span>Dates marked with <span class="font-semibold text-red-600">✕</span> are already booked and unavailable</span>
                             </div>
 
                             <div>
@@ -1361,6 +1374,10 @@
                 minDate: today,
                 dateFormat: 'Y-m-d',
                 disable: disabledDates,
+                onOpen: function(selectedDates, dateStr, instance) {
+                    // Add legend below the calendar when it opens
+                    addCalendarLegend(instance)
+                },
                 onChange: function(selectedDates) {
                     if (selectedDates.length > 0) {
                         // Detect and apply seasonal theme
@@ -1392,6 +1409,10 @@
                 minDate: new Date(today.getTime() + 86400000),
                 dateFormat: 'Y-m-d',
                 disable: disabledDates,
+                onOpen: function(selectedDates, dateStr, instance) {
+                    // Add legend below the calendar when it opens
+                    addCalendarLegend(instance)
+                },
                 onChange: function() {
                     // Re-apply theme based on check-in date when checkout changes
                     const checkInDate = checkInPicker.selectedDates[0]
@@ -1402,6 +1423,28 @@
                     calculatePrice()
                 }
             })
+        }
+
+        // Add legend below the flatpickr calendar
+        function addCalendarLegend(instance) {
+            // Remove any existing legend first
+            const existingLegend = instance.calendarContainer.querySelector('.flatpickr-calendar-legend')
+            if (existingLegend) {
+                existingLegend.remove()
+            }
+
+            // Create new legend
+            const legend = document.createElement('div')
+            legend.className = 'flatpickr-calendar-legend'
+            legend.innerHTML = `
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Dates marked with <span style="font-weight: 600; color: #dc2626;">✕</span> are already booked or unavailable</span>
+            `
+
+            // Append legend below the calendar
+            instance.calendarContainer.appendChild(legend)
         }
 
         // Calculate price
