@@ -460,17 +460,31 @@ class BookingController {
       }
 
       // Cancel Stripe PaymentIntent (release authorization)
+      // This will also update the booking status to 'declined'
+      let stripeSuccess = false;
       try {
         await stripeService.cancelDeposit(booking.id, reason);
+        stripeSuccess = true;
       } catch (stripeError) {
         console.error('Stripe cancellation error:', stripeError);
-        // Continue even if Stripe fails
+        // Continue even if Stripe fails - still decline the booking
       }
 
-      // Update booking with host message
-      await booking.update({
-        hostMessage: reason || 'Booking request declined'
-      });
+      // If Stripe call failed or no payment intent exists, manually update booking
+      if (!stripeSuccess || !booking.stripePaymentIntentId) {
+        await booking.update({
+          bookingStatus: 'declined',
+          status: 'cancelled',
+          cancelledAt: new Date(),
+          cancellationReason: reason || 'Booking request declined',
+          hostMessage: reason || 'Booking request declined'
+        });
+      } else {
+        // Stripe service already updated status, just add host message
+        await booking.update({
+          hostMessage: reason || 'Booking request declined'
+        });
+      }
 
       // Send decline email to guest
       try {

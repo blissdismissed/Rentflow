@@ -211,10 +211,10 @@
             </div>
 
             <!-- Pending Tasks -->
-            <div class="stat-card card-hover">
+            <div class="stat-card card-hover cursor-pointer" onclick="viewPendingBookings()">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-600">Pending Tasks</p>
+                        <p class="text-sm font-medium text-gray-600">Pending Booking Requests</p>
                         <p class="mt-2 text-3xl font-semibold text-gray-900" id="pending-tasks">0</p>
                     </div>
                     <div class="p-3 bg-amber-100 rounded-lg">
@@ -634,6 +634,48 @@
             `).join('');
         }
 
+        // Load pending booking requests
+        async function loadPendingTasks() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load bookings');
+
+                const data = await response.json();
+                const bookings = data.bookings || [];
+
+                // Count pending booking requests (status = 'requested')
+                const pendingBookings = bookings.filter(b => b.bookingStatus === 'requested');
+                const pendingCount = pendingBookings.length;
+
+                // Update pending tasks display
+                document.getElementById('pending-tasks').textContent = pendingCount;
+
+                console.log(`✅ Found ${pendingCount} pending booking requests`);
+            } catch (error) {
+                console.error('❌ Error loading pending tasks:', error);
+                document.getElementById('pending-tasks').textContent = '0';
+            }
+        }
+
+        // View pending bookings - switch to Bookings tab and filter to requested
+        function viewPendingBookings() {
+            switchTab('bookings');
+            // Set filter to requested after a brief delay to ensure tab has loaded
+            setTimeout(() => {
+                const filterSelect = document.getElementById('booking-filter');
+                if (filterSelect) {
+                    filterSelect.value = 'requested';
+                    filterBookings();
+                }
+            }, 100);
+        }
+
         // Initialize dashboard
         async function initDashboard() {
             if (!checkAuth()) return;
@@ -641,6 +683,7 @@
             loadUserData();
             animateStats();
             await loadProperties();
+            await loadPendingTasks();
         }
 
         // Modal functions
@@ -755,9 +798,16 @@
                 if (!response.ok) throw new Error('Failed to load bookings');
 
                 const data = await response.json();
-                const bookings = data.bookings || [];
+                const allBookings = data.bookings || [];
 
-                console.log('📅 Loading calendar with', bookings.length, 'bookings');
+                // Filter out declined/rejected bookings
+                const bookings = allBookings.filter(booking =>
+                    booking.bookingStatus !== 'declined' &&
+                    booking.bookingStatus !== 'rejected' &&
+                    booking.bookingStatus !== 'cancelled'
+                );
+
+                console.log('📅 Loading calendar with', bookings.length, 'bookings (filtered from', allBookings.length, 'total)');
 
                 // Convert bookings to FullCalendar events
                 const events = bookings.map(booking => {
@@ -989,6 +1039,7 @@ Total: $${props.totalAmount}`);
                 if (data.success) {
                     alert('✅ Booking approved! Deposit charged successfully. Guest has been notified via email.');
                     loadBookings(); // Reload bookings
+                    loadPendingTasks(); // Update pending tasks count
                 } else {
                     alert('❌ Error: ' + (data.message || 'Failed to approve booking'));
                 }
@@ -1019,6 +1070,7 @@ Total: $${props.totalAmount}`);
                 if (data.success) {
                     alert('✅ Booking declined. Guest has been notified via email.');
                     loadBookings(); // Reload bookings
+                    loadPendingTasks(); // Update pending tasks count
                 } else {
                     alert('❌ Error: ' + (data.message || 'Failed to decline booking'));
                 }
