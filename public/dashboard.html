@@ -14,6 +14,10 @@
     <script src="/js/config.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <!-- FullCalendar -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -26,6 +30,75 @@
             border-radius: 1rem;
             padding: 1.5rem;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        /* FullCalendar Custom Styles */
+        #calendar {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .fc {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .fc-toolbar-title {
+            font-size: 1.5rem !important;
+            font-weight: 600 !important;
+            color: #111827;
+        }
+
+        .fc-button {
+            background-color: #0F766E !important;
+            border-color: #0F766E !important;
+            text-transform: capitalize !important;
+            font-weight: 500 !important;
+        }
+
+        .fc-button:hover {
+            background-color: #0d635c !important;
+            border-color: #0d635c !important;
+        }
+
+        .fc-button-active {
+            background-color: #14B8A6 !important;
+            border-color: #14B8A6 !important;
+        }
+
+        .fc-event {
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .fc-daygrid-event {
+            white-space: normal;
+        }
+
+        /* Color coding for booking statuses */
+        .fc-event.status-requested {
+            background-color: #FEF3C7;
+            border-color: #F59E0B;
+            color: #92400E;
+        }
+
+        .fc-event.status-approved {
+            background-color: #DBEAFE;
+            border-color: #3B82F6;
+            color: #1E40AF;
+        }
+
+        .fc-event.status-confirmed {
+            background-color: #D1FAE5;
+            border-color: #10B981;
+            color: #065F46;
+        }
+
+        .fc-event.status-declined {
+            background-color: #FEE2E2;
+            border-color: #EF4444;
+            color: #991B1B;
         }
     </style>
 </head>
@@ -242,10 +315,24 @@
         <!-- Calendar Content -->
         <div id="calendar-content" class="tab-content hidden">
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Booking Calendar</h3>
-                <div id="calendar-view" class="space-y-4">
-                    <p class="text-gray-600">Loading calendar...</p>
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900">Booking Calendar</h3>
+                    <div class="flex gap-4 text-sm">
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded" style="background-color: #FEF3C7; border: 1px solid #F59E0B;"></div>
+                            <span class="text-gray-600">Requested</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded" style="background-color: #DBEAFE; border: 1px solid #3B82F6;"></div>
+                            <span class="text-gray-600">Approved</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded" style="background-color: #D1FAE5; border: 1px solid #10B981;"></div>
+                            <span class="text-gray-600">Confirmed</span>
+                        </div>
+                    </div>
                 </div>
+                <div id="calendar"></div>
             </div>
         </div>
 
@@ -654,8 +741,9 @@
         }
 
         // Load calendar view with bookings
+        let calendar = null;
+
         async function loadCalendarView() {
-            const calendarView = document.getElementById('calendar-view');
             try {
                 const token = localStorage.getItem('token');
                 const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings`, {
@@ -669,37 +757,120 @@
                 const data = await response.json();
                 const bookings = data.bookings || [];
 
-                // Simple calendar display with bookings
-                calendarView.innerHTML = bookings.length === 0 ?
-                    '<p class="text-gray-600 text-center py-8">No bookings found</p>' :
-                    bookings.map(booking => `
-                        <div class="border border-gray-200 rounded-lg p-4 hover:border-teal-500 transition">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h4 class="font-semibold text-gray-900">${booking.guestName || 'Guest'}</h4>
-                                    <p class="text-sm text-gray-600 mt-1">
-                                        ${new Date(booking.checkIn).toLocaleDateString()} - ${new Date(booking.checkOut).toLocaleDateString()}
-                                    </p>
-                                    <p class="text-sm text-gray-500 mt-1">${booking.nights} night(s)</p>
-                                </div>
-                                <div class="text-right">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                        booking.bookingStatus === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                        booking.bookingStatus === 'requested' ? 'bg-yellow-100 text-yellow-800' :
-                                        booking.bookingStatus === 'approved' ? 'bg-blue-100 text-blue-800' :
-                                        'bg-gray-100 text-gray-800'
-                                    }">
-                                        ${booking.bookingStatus || booking.status}
-                                    </span>
-                                    <p class="text-sm font-semibold text-gray-900 mt-2">$${booking.totalAmount}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
+                console.log('📅 Loading calendar with', bookings.length, 'bookings');
+
+                // Convert bookings to FullCalendar events
+                const events = bookings.map(booking => {
+                    const propertyName = booking.property?.name || 'Property';
+                    return {
+                        id: booking.id,
+                        title: `${booking.guestName} - ${propertyName}`,
+                        start: booking.checkIn,
+                        end: booking.checkOut,
+                        backgroundColor: getEventColor(booking.bookingStatus),
+                        borderColor: getEventBorderColor(booking.bookingStatus),
+                        textColor: getEventTextColor(booking.bookingStatus),
+                        classNames: [`status-${booking.bookingStatus}`],
+                        extendedProps: {
+                            guestName: booking.guestName,
+                            guestEmail: booking.guestEmail,
+                            confirmationCode: booking.confirmationCode,
+                            status: booking.bookingStatus,
+                            totalAmount: booking.totalAmount,
+                            nights: booking.nights,
+                            property: propertyName
+                        }
+                    };
+                });
+
+                // Initialize or update calendar
+                const calendarEl = document.getElementById('calendar');
+
+                if (calendar) {
+                    // Update existing calendar
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(events);
+                } else {
+                    // Create new calendar
+                    calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek,listWeek'
+                        },
+                        events: events,
+                        height: 'auto',
+                        eventClick: function(info) {
+                            showBookingDetails(info.event);
+                        },
+                        eventDidMount: function(info) {
+                            // Add tooltip on hover
+                            info.el.title = `${info.event.extendedProps.guestName}\n${info.event.extendedProps.confirmationCode}\nStatus: ${info.event.extendedProps.status}`;
+                        }
+                    });
+                    calendar.render();
+                }
+
+                console.log('✅ Calendar loaded successfully');
             } catch (error) {
-                console.error('Error loading calendar:', error);
-                calendarView.innerHTML = '<p class="text-red-600 text-center py-8">Error loading calendar</p>';
+                console.error('❌ Error loading calendar:', error);
+                document.getElementById('calendar').innerHTML = '<p class="text-red-600 text-center py-8">Error loading calendar. Please try again.</p>';
             }
+        }
+
+        function getEventColor(status) {
+            const colors = {
+                'requested': '#FEF3C7',
+                'approved': '#DBEAFE',
+                'confirmed': '#D1FAE5',
+                'declined': '#FEE2E2'
+            };
+            return colors[status] || '#F3F4F6';
+        }
+
+        function getEventBorderColor(status) {
+            const colors = {
+                'requested': '#F59E0B',
+                'approved': '#3B82F6',
+                'confirmed': '#10B981',
+                'declined': '#EF4444'
+            };
+            return colors[status] || '#9CA3AF';
+        }
+
+        function getEventTextColor(status) {
+            const colors = {
+                'requested': '#92400E',
+                'approved': '#1E40AF',
+                'confirmed': '#065F46',
+                'declined': '#991B1B'
+            };
+            return colors[status] || '#1F2937';
+        }
+
+        function showBookingDetails(event) {
+            const props = event.extendedProps;
+            const startDate = new Date(event.start).toLocaleDateString('en-US', {
+                weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+            });
+            const endDate = new Date(event.end).toLocaleDateString('en-US', {
+                weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+            });
+
+            alert(`📅 Booking Details
+
+Guest: ${props.guestName}
+Email: ${props.guestEmail}
+Property: ${props.property}
+Confirmation: ${props.confirmationCode}
+
+Check-in: ${startDate}
+Check-out: ${endDate}
+Nights: ${props.nights}
+
+Status: ${props.status}
+Total: $${props.totalAmount}`);
         }
 
         // Load bookings list
