@@ -742,17 +742,19 @@
                             <div>
                                 <h4 class="font-semibold text-lg text-gray-900">${booking.confirmationCode || 'N/A'}</h4>
                                 <p class="text-sm text-gray-600 mt-1">${booking.guestName || 'Guest'} • ${booking.guestEmail || ''}</p>
+                                ${booking.property?.name ? `<p class="text-sm text-gray-500 mt-1">📍 ${booking.property.name}</p>` : ''}
                             </div>
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                                 booking.bookingStatus === 'confirmed' ? 'bg-green-100 text-green-800' :
                                 booking.bookingStatus === 'requested' ? 'bg-yellow-100 text-yellow-800' :
                                 booking.bookingStatus === 'approved' ? 'bg-blue-100 text-blue-800' :
+                                booking.bookingStatus === 'declined' ? 'bg-red-100 text-red-800' :
                                 'bg-gray-100 text-gray-800'
                             }">
                                 ${booking.bookingStatus || booking.status}
                             </span>
                         </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
                             <div>
                                 <p class="text-gray-500">Check-in</p>
                                 <p class="font-medium">${new Date(booking.checkIn).toLocaleDateString()}</p>
@@ -770,8 +772,89 @@
                                 <p class="font-medium">$${booking.totalAmount}</p>
                             </div>
                         </div>
+                        ${booking.guestMessage ? `
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                <p class="text-sm text-gray-700"><strong>Guest Message:</strong> ${booking.guestMessage}</p>
+                            </div>
+                        ` : ''}
+                        ${booking.bookingStatus === 'requested' ? `
+                            <div class="flex gap-3 mt-4 pt-4 border-t border-gray-200">
+                                <button onclick="approveBooking('${booking.id}')" class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Approve & Charge Deposit
+                                </button>
+                                <button onclick="declineBooking('${booking.id}')" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Decline
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
                 `).join('');
+        }
+
+        // Approve booking
+        async function approveBooking(bookingId) {
+            if (!confirm('Approve this booking? The guest\'s deposit will be charged.')) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings/${bookingId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Booking approved! Deposit charged successfully. Guest has been notified via email.');
+                    loadBookings(); // Reload bookings
+                } else {
+                    alert('❌ Error: ' + (data.message || 'Failed to approve booking'));
+                }
+            } catch (error) {
+                console.error('Error approving booking:', error);
+                alert('❌ Failed to approve booking. Please try again.');
+            }
+        }
+
+        // Decline booking
+        async function declineBooking(bookingId) {
+            const reason = prompt('Enter a reason for declining (optional - will be sent to guest):');
+            if (reason === null) return; // User cancelled
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings/${bookingId}/decline`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Booking declined. Guest has been notified via email.');
+                    loadBookings(); // Reload bookings
+                } else {
+                    alert('❌ Error: ' + (data.message || 'Failed to decline booking'));
+                }
+            } catch (error) {
+                console.error('Error declining booking:', error);
+                alert('❌ Failed to decline booking. Please try again.');
+            }
         }
 
         // Load finances

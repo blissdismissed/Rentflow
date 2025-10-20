@@ -350,7 +350,7 @@ We'll notify you as soon as the host responds to your request.
                 </div>
 
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="${FRONTEND_URL}/dashboard/bookings.html" class="button" style="display: inline-block; background: #2563eb; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                  <a href="${FRONTEND_URL}/dashboard.html" class="button" style="display: inline-block; background: #2563eb; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
                     ✓ View in Dashboard
                   </a>
                 </div>
