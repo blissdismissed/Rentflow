@@ -414,7 +414,7 @@
             cursor: not-allowed !important;
             position: relative;
             text-decoration: line-through;
-            opacity: 0.6;
+            opacity: 0.7 !important;
         }
 
         /* Add X mark over disabled dates */
@@ -424,15 +424,40 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 18px;
+            font-size: 20px;
             color: #dc2626;
             font-weight: bold;
             pointer-events: none;
+            z-index: 10;
         }
 
         /* Ensure the date number is still visible behind the X */
         .flatpickr-day.flatpickr-disabled {
-            font-weight: 500;
+            font-weight: 600;
+        }
+
+        /* Mobile-specific calendar styling */
+        @media (max-width: 640px) {
+            .flatpickr-calendar {
+                font-size: 16px !important;
+                width: 100% !important;
+                max-width: 340px !important;
+            }
+
+            .flatpickr-day {
+                height: 42px !important;
+                line-height: 42px !important;
+                max-width: 42px !important;
+            }
+
+            .flatpickr-day.flatpickr-disabled::after {
+                font-size: 22px !important;
+                font-weight: 900 !important;
+            }
+
+            .flatpickr-months {
+                padding-top: 12px !important;
+            }
         }
 
         /* Calendar legend that appears below the flatpickr calendar */
@@ -454,6 +479,14 @@
             width: 16px;
             height: 16px;
             color: #dc2626;
+        }
+
+        /* Mobile legend */
+        @media (max-width: 640px) {
+            .flatpickr-calendar-legend {
+                font-size: 11px;
+                padding: 8px 10px;
+            }
         }
     </style>
 </head>
@@ -1364,21 +1397,41 @@
             const today = new Date()
             today.setHours(0, 0, 0, 0)
 
+            console.log('📅 Initializing date pickers with booked dates:', bookedDates)
+
             // Disable booked dates
             const disabledDates = bookedDates.map(range => ({
                 from: new Date(range.start),
                 to: new Date(range.end)
             }))
 
+            console.log('🚫 Disabled date ranges:', disabledDates)
+
+            // Common flatpickr options for better mobile support
+            const commonOptions = {
+                disableMobile: false, // Allow native mobile calendar as fallback
+                allowInput: false, // Prevent manual input to avoid invalid dates
+                clickOpens: true,
+                static: false, // Let flatpickr choose positioning
+                onValueUpdate: function(selectedDates, dateStr, instance) {
+                    // Ensure input is readonly on mobile
+                    instance.input.setAttribute('readonly', 'readonly')
+                }
+            }
+
             checkInPicker = flatpickr('#check-in', {
+                ...commonOptions,
                 minDate: today,
                 dateFormat: 'Y-m-d',
                 disable: disabledDates,
                 onOpen: function(selectedDates, dateStr, instance) {
                     // Add legend below the calendar when it opens
                     addCalendarLegend(instance)
+                    console.log('📅 Check-in calendar opened')
                 },
-                onChange: function(selectedDates) {
+                onChange: function(selectedDates, dateStr, instance) {
+                    console.log('📅 Check-in date selected:', dateStr)
+
                     if (selectedDates.length > 0) {
                         // Detect and apply seasonal theme
                         const season = getSeason(selectedDates[0])
@@ -1402,18 +1455,25 @@
                         // Clear theme when date is cleared
                         applySeasonalTheme(null)
                     }
+                },
+                onClose: function(selectedDates, dateStr, instance) {
+                    console.log('📅 Check-in calendar closed')
                 }
             })
 
             checkOutPicker = flatpickr('#check-out', {
+                ...commonOptions,
                 minDate: new Date(today.getTime() + 86400000),
                 dateFormat: 'Y-m-d',
                 disable: disabledDates,
                 onOpen: function(selectedDates, dateStr, instance) {
                     // Add legend below the calendar when it opens
                     addCalendarLegend(instance)
+                    console.log('📅 Check-out calendar opened')
                 },
-                onChange: function() {
+                onChange: function(selectedDates, dateStr, instance) {
+                    console.log('📅 Check-out date selected:', dateStr)
+
                     // Re-apply theme based on check-in date when checkout changes
                     const checkInDate = checkInPicker.selectedDates[0]
                     if (checkInDate) {
@@ -1421,8 +1481,15 @@
                         applySeasonalTheme(season)
                     }
                     calculatePrice()
+                },
+                onClose: function(selectedDates, dateStr, instance) {
+                    console.log('📅 Check-out calendar closed')
                 }
             })
+
+            // Make inputs readonly to prevent keyboard on mobile
+            document.getElementById('check-in').setAttribute('readonly', 'readonly')
+            document.getElementById('check-out').setAttribute('readonly', 'readonly')
         }
 
         // Add legend below the flatpickr calendar
@@ -1461,14 +1528,27 @@
                 const response = await fetch(url)
                 console.log('📡 Response status:', response.status)
 
-                if (!response.ok) {
-                    const errorText = await response.text()
-                    console.error('❌ Server error response:', errorText)
-                    throw new Error(`Server returned ${response.status}: ${errorText}`)
-                }
-
                 const data = await response.json()
                 console.log('📊 Response data:', JSON.stringify(data, null, 2))
+
+                // Handle 409 conflict - dates already booked
+                if (response.status === 409) {
+                    console.warn('⚠️ Date conflict detected')
+                    alert('Sorry! These dates are already booked. Please select different dates from the calendar.')
+
+                    // Clear the selections to force user to pick new dates
+                    checkInPicker.clear()
+                    checkOutPicker.clear()
+                    document.getElementById('price-breakdown').classList.add('hidden')
+                    document.getElementById('booking-button').disabled = true
+                    return
+                }
+
+                if (!response.ok) {
+                    const errorMessage = data.message || `Server returned ${response.status}`
+                    console.error('❌ Server error response:', errorMessage)
+                    throw new Error(errorMessage)
+                }
 
                 if (data.success && data.available) {
                     const pricing = data.pricing
@@ -1500,11 +1580,16 @@
                     const message = data.message || 'Property not available for selected dates'
                     console.warn('⚠️ Property not available:', message)
                     alert(message)
+
+                    // Clear selections and hide breakdown
+                    checkInPicker.clear()
+                    checkOutPicker.clear()
+                    document.getElementById('price-breakdown').classList.add('hidden')
                     document.getElementById('booking-button').disabled = true
                 }
             } catch (error) {
                 console.error('❌ Error checking availability:', error)
-                alert(`Failed to check availability: ${error.message}. Please check console for details.`)
+                alert(`Unable to check availability. ${error.message}`)
                 document.getElementById('booking-button').disabled = true
             }
         }

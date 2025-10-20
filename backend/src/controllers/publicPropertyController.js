@@ -216,30 +216,33 @@ class PublicPropertyController {
 
       // Check for conflicting bookings
       // Use bookingStatus for workflow states (requested, approved, confirmed, etc.)
+      // Proper overlap detection: two date ranges overlap if:
+      // (StartA < EndB) AND (EndA > StartB)
       const conflictingBooking = await Booking.findOne({
         where: {
           propertyId: property.id,
           bookingStatus: { [Op.in]: ['requested', 'approved', 'confirmed'] },
-          [Op.or]: [
-            {
-              checkIn: {
-                [Op.between]: [checkInDate, checkOutDate]
-              }
-            },
-            {
-              checkOut: {
-                [Op.between]: [checkInDate, checkOutDate]
-              }
-            },
-            {
-              [Op.and]: [
-                { checkIn: { [Op.lte]: checkInDate } },
-                { checkOut: { [Op.gte]: checkOutDate } }
-              ]
-            }
+          [Op.and]: [
+            { checkIn: { [Op.lt]: checkOutDate } },  // Existing booking starts before new checkout
+            { checkOut: { [Op.gt]: checkInDate } }   // Existing booking ends after new checkin
           ]
         }
       })
+
+      console.log('🔍 Checking availability for:', {
+        propertyId: property.id,
+        requestedCheckIn: checkInDate,
+        requestedCheckOut: checkOutDate,
+        conflictFound: !!conflictingBooking
+      })
+
+      if (conflictingBooking) {
+        console.log('❌ Conflict found:', {
+          existingCheckIn: conflictingBooking.checkIn,
+          existingCheckOut: conflictingBooking.checkOut,
+          existingStatus: conflictingBooking.bookingStatus
+        })
+      }
 
       if (conflictingBooking) {
         return res.status(409).json({

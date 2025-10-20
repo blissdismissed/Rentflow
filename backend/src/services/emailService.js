@@ -1,16 +1,217 @@
 const sgMail = require('@sendgrid/mail');
 
 // Initialize SendGrid with API key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+if (!SENDGRID_API_KEY) {
+  console.error('⚠️ WARNING: SENDGRID_API_KEY is not set in environment variables!');
+  console.error('Emails will NOT be sent until SendGrid is configured.');
+} else {
+  sgMail.setApiKey(SENDGRID_API_KEY);
+  console.log('✅ SendGrid initialized successfully');
+}
 
-const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@rentflow.com';
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || process.env.FROM_EMAIL || 'noreply@aspiretowards.com';
+const FROM_NAME = process.env.SENDGRID_FROM_NAME || 'AspireTowards';
+const REPLY_TO_EMAIL = process.env.SENDGRID_REPLY_TO || process.env.SENDGRID_FROM_EMAIL || 'aspiretowards@gmail.com';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8000';
+
+console.log('📧 Email Service Configuration:');
+console.log('  - From Email:', FROM_EMAIL);
+console.log('  - From Name:', FROM_NAME);
+console.log('  - Reply To Email:', REPLY_TO_EMAIL);
+console.log('  - Frontend URL:', FRONTEND_URL);
+console.log('  - SendGrid API Key:', SENDGRID_API_KEY ? '✓ Configured' : '✗ Missing');
 
 /**
  * Email Service for RentFlow
  * Handles all transactional emails for the booking system
  */
 class EmailService {
+  /**
+   * Send initial confirmation email to guest when they submit a booking request
+   * @param {Object} booking - Booking object with all details
+   * @param {Object} property - Property object
+   */
+  async sendBookingRequestToGuest(booking, property) {
+    try {
+      const checkInDate = new Date(booking.checkIn).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const checkOutDate = new Date(booking.checkOut).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      const msg = {
+        to: booking.guestEmail,
+        from: {
+          email: FROM_EMAIL,
+          name: FROM_NAME
+        },
+        replyTo: REPLY_TO_EMAIL,
+        subject: `Booking Request Received - ${property.name} (${booking.confirmationCode})`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: #2563eb; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+              .booking-details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }
+              .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+              .detail-row:last-child { border-bottom: none; }
+              .label { font-weight: bold; color: #6b7280; }
+              .value { color: #111827; }
+              .confirmation-code { background: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0; }
+              .confirmation-code h2 { margin: 0; font-size: 32px; letter-spacing: 2px; }
+              .highlight { background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }
+              .info-box { background: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }
+              .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>✓ Booking Request Received</h1>
+              </div>
+              <div class="content">
+                <p>Hi ${booking.guestName},</p>
+
+                <p>Thank you for your booking request at <strong>${property.name}</strong>!</p>
+
+                <div class="confirmation-code">
+                  <p style="margin: 0; font-size: 14px; opacity: 0.9;">Your Confirmation Code</p>
+                  <h2>${booking.confirmationCode}</h2>
+                  <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">Save this for your records</p>
+                </div>
+
+                <div class="highlight">
+                  <strong>⏰ What's Next?</strong> The property host will review your request and respond within 24 hours.
+                  You'll receive another email once your booking is confirmed.
+                </div>
+
+                <div class="booking-details">
+                  <h3 style="margin-top: 0; color: #2563eb;">Reservation Details</h3>
+                  <div class="detail-row">
+                    <span class="label">Property:</span>
+                    <span class="value">${property.name}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Location:</span>
+                    <span class="value">${property.city}, ${property.state}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Check-in:</span>
+                    <span class="value">${checkInDate}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Check-out:</span>
+                    <span class="value">${checkOutDate}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Nights:</span>
+                    <span class="value">${booking.nights}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Guests:</span>
+                    <span class="value">${booking.numberOfGuests}</span>
+                  </div>
+                </div>
+
+                <div class="booking-details">
+                  <h3 style="margin-top: 0; color: #2563eb;">Payment Summary</h3>
+                  <div class="detail-row">
+                    <span class="label">Total Amount:</span>
+                    <span class="value"><strong>$${parseFloat(booking.totalAmount).toFixed(2)}</strong></span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Deposit (10%) - Due Now:</span>
+                    <span class="value">$${parseFloat(booking.depositAmount).toFixed(2)}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Balance (90%) - Due at Check-in:</span>
+                    <span class="value">$${parseFloat(booking.balanceAmount).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div class="info-box">
+                  <strong>💳 Payment Information:</strong><br>
+                  Your card has been authorized for the deposit amount but will <strong>NOT be charged</strong> until
+                  the host approves your booking request. If your request is declined, the authorization will be
+                  released immediately with no charge.
+                </div>
+
+                <div style="text-align: center; margin: 30px 0;">
+                  <p style="color: #6b7280;">Questions about your booking?</p>
+                  <p>Confirmation Code: <strong>${booking.confirmationCode}</strong></p>
+                  <p>Contact us at <a href="mailto:${FROM_EMAIL}">${FROM_EMAIL}</a></p>
+                </div>
+
+                <p style="color: #6b7280; font-size: 14px; text-align: center;">
+                  We'll notify you as soon as the host responds to your request.
+                </p>
+              </div>
+
+              <div class="footer">
+                <p>This is an automated confirmation from AspireTowards.<br>
+                For assistance, please contact ${FROM_EMAIL}</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+        text: `
+BOOKING REQUEST RECEIVED
+
+Confirmation Code: ${booking.confirmationCode}
+
+Hi ${booking.guestName},
+
+Thank you for your booking request at ${property.name}!
+
+What's Next? The property host will review your request and respond within 24 hours.
+
+Reservation Details:
+- Property: ${property.name}
+- Location: ${property.city}, ${property.state}
+- Check-in: ${checkInDate}
+- Check-out: ${checkOutDate}
+- Nights: ${booking.nights}
+- Guests: ${booking.numberOfGuests}
+
+Payment Summary:
+- Total Amount: $${parseFloat(booking.totalAmount).toFixed(2)}
+- Deposit (10%) - Due Now: $${parseFloat(booking.depositAmount).toFixed(2)}
+- Balance (90%) - Due at Check-in: $${parseFloat(booking.balanceAmount).toFixed(2)}
+
+Payment Information: Your card has been authorized for the deposit amount but will NOT be charged
+until the host approves your booking request.
+
+Questions? Contact us at ${FROM_EMAIL}
+
+We'll notify you as soon as the host responds to your request.
+        `
+      };
+
+      await sgMail.send(msg);
+      console.log(`✅ Booking request confirmation email sent to guest: ${booking.guestEmail}`);
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Error sending booking request email to guest:', error);
+      if (error.response) {
+        console.error('SendGrid error details:', error.response.body);
+      }
+      throw error;
+    }
+  }
+
   /**
    * Send email notification to host when a new booking request is received
    * @param {Object} booking - Booking object with all details
@@ -34,7 +235,11 @@ class EmailService {
 
       const msg = {
         to: host.email,
-        from: FROM_EMAIL,
+        from: {
+          email: FROM_EMAIL,
+          name: FROM_NAME
+        },
+        replyTo: REPLY_TO_EMAIL,
         subject: `New Booking Request for ${property.name}`,
         html: `
           <!DOCTYPE html>
@@ -225,7 +430,11 @@ ${FRONTEND_URL}/dashboard/bookings.html
 
       const msg = {
         to: booking.guestEmail,
-        from: FROM_EMAIL,
+        from: {
+          email: FROM_EMAIL,
+          name: FROM_NAME
+        },
+        replyTo: REPLY_TO_EMAIL,
         subject: `Booking Confirmed! ${property.name} - ${booking.confirmationCode}`,
         html: `
           <!DOCTYPE html>
@@ -419,7 +628,11 @@ We look forward to hosting you!
 
       const msg = {
         to: booking.guestEmail,
-        from: FROM_EMAIL,
+        from: {
+          email: FROM_EMAIL,
+          name: FROM_NAME
+        },
+        replyTo: REPLY_TO_EMAIL,
         subject: `Booking Update - ${property.name}`,
         html: `
           <!DOCTYPE html>
@@ -564,7 +777,11 @@ Need assistance? Contact us at ${FROM_EMAIL}
 
       const msg = {
         to: booking.guestEmail,
-        from: FROM_EMAIL,
+        from: {
+          email: FROM_EMAIL,
+          name: FROM_NAME
+        },
+        replyTo: REPLY_TO_EMAIL,
         subject: `Payment Reminder: Balance Due for ${property.name}`,
         html: `
           <!DOCTYPE html>

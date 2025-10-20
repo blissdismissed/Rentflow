@@ -20,7 +20,7 @@ const CONFIG = {
 
   // Stripe Publishable Key (safe to expose in frontend)
   // Get from: https://dashboard.stripe.com/test/apikeys
-  STRIPE_PUBLISHABLE_KEY: 'pk_test_51SJcTTRof35cBGM2T9MlBeLRq3W6AJSaFPx4NjWYuG04K1wznZmAa87XZOLm4dutCrzlFgmptPsfbVKPsfbVK2cE67hFET00bbrf6xXD'
+  STRIPE_PUBLISHABLE_KEY: 'pk_test_51SJcTTRof35cBGM2T9MlBeLRq3W6AJSaFPx4NjWYuG04K1wznZmAa87XZOLm4dutCrzlFgmptPsfbVK2cE67hFET00bbrf6xXD'
 }
 
 // Make config available globally

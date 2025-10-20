@@ -270,7 +270,9 @@
             <div class="lg:col-span-1">
                 <div class="booking-summary bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:sticky lg:top-24">
                     <div id="property-summary" class="mb-6">
-                        <div class="h-48 bg-gray-200 rounded-lg mb-4" id="property-image"></div>
+                        <div class="relative w-full rounded-lg mb-4 overflow-hidden bg-gray-200" style="padding-bottom: 66.67%;">
+                            <img id="property-image" src="" alt="Property" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.display='none';">
+                        </div>
                         <h3 id="property-name" class="font-bold text-lg text-gray-900 mb-2"></h3>
                         <p id="property-location" class="text-gray-600 text-sm"></p>
                     </div>
@@ -522,9 +524,9 @@
 
             // Property summary
             const propImage = document.getElementById('property-image')
-            propImage.style.backgroundImage = `url(${property.featuredImage || property.images?.[0] || 'https://via.placeholder.com/400x300'})`
-            propImage.style.backgroundSize = 'cover'
-            propImage.style.backgroundPosition = 'center'
+            const imageUrl = property.featuredImage || property.images?.[0] || 'https://via.placeholder.com/400x300'
+            propImage.src = imageUrl
+            propImage.style.display = 'block'
 
             document.getElementById('property-name').textContent = property.name
             document.getElementById('property-location').textContent = `${property.city}, ${property.state}`

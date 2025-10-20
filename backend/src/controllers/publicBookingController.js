@@ -136,14 +136,35 @@ class PublicBookingController {
         // Continue without Stripe - host can still approve manually
       }
 
-      // Send email notification to host
+      // Send email notifications
       try {
+        // Send confirmation email to guest
+        console.log('📧 Sending booking request confirmation to guest...')
+        await emailService.sendBookingRequestToGuest(booking, property)
+        console.log('✅ Guest confirmation email sent successfully')
+      } catch (emailError) {
+        console.error('❌ Failed to send confirmation email to guest:', emailError)
+        if (emailError.response) {
+          console.error('SendGrid error details:', emailError.response.body)
+        }
+        // Continue - don't fail the booking if email fails
+      }
+
+      try {
+        // Send notification email to host
+        console.log('📧 Sending booking request notification to host...')
         const host = await User.findByPk(property.userId)
         if (host && host.email) {
           await emailService.sendBookingRequestToHost(booking, property, host)
+          console.log('✅ Host notification email sent successfully')
+        } else {
+          console.warn('⚠️ Host not found or has no email address')
         }
       } catch (emailError) {
-        console.error('Failed to send email to host:', emailError)
+        console.error('❌ Failed to send email to host:', emailError)
+        if (emailError.response) {
+          console.error('SendGrid error details:', emailError.response.body)
+        }
         // Continue - don't fail the booking if email fails
       }
 
