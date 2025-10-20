@@ -256,7 +256,7 @@ We'll notify you as soon as the host responds to your request.
               .label { font-weight: bold; color: #6b7280; }
               .value { color: #111827; }
               .highlight { background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }
-              .button { display: inline-block; background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 10px 5px; }
+              .button { display: inline-block; background: #2563eb; color: white !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 10px 5px; font-weight: 600; }
               .button-decline { background: #dc2626; }
               .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
               .message-box { background: #eff6ff; padding: 15px; border-radius: 8px; margin: 15px 0; font-style: italic; }
@@ -350,7 +350,7 @@ We'll notify you as soon as the host responds to your request.
                 </div>
 
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="${FRONTEND_URL}/dashboard/bookings.html" class="button">
+                  <a href="${FRONTEND_URL}/dashboard/bookings.html" class="button" style="display: inline-block; background: #2563eb; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
                     ✓ View in Dashboard
                   </a>
                 </div>
@@ -650,7 +650,7 @@ We look forward to hosting you!
               .value { color: #111827; }
               .reason-box { background: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc2626; }
               .highlight { background: #d1fae5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
-              .button { display: inline-block; background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 10px 5px; }
+              .button { display: inline-block; background: #2563eb; color: white !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 10px 5px; font-weight: 600; }
               .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
             </style>
           </head>

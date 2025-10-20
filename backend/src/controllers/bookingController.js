@@ -12,50 +12,60 @@ class BookingController {
     try {
       const { status, propertyId, startDate, endDate, platform } = req.query;
 
-      // Build filter conditions
-      const where = { userId: req.user.id };
+      console.log('📊 Fetching bookings for user:', req.user.id);
+
+      // Build filter conditions for Booking
+      const bookingWhere = {};
 
       if (status) {
-        where.status = status;
+        bookingWhere.status = status;
       }
 
       if (propertyId) {
-        where.propertyId = propertyId;
+        bookingWhere.propertyId = propertyId;
       }
 
       if (platform) {
-        where.platform = platform;
+        bookingWhere.channel = platform;
       }
 
       // Date range filter
       if (startDate || endDate) {
-        where.checkIn = {};
+        bookingWhere.checkIn = {};
         if (startDate) {
-          where.checkIn[Op.gte] = new Date(startDate);
+          bookingWhere.checkIn[Op.gte] = new Date(startDate);
         }
         if (endDate) {
-          where.checkIn[Op.lte] = new Date(endDate);
+          bookingWhere.checkIn[Op.lte] = new Date(endDate);
         }
       }
 
+      // Query bookings through Property relationship (user owns properties)
       const bookings = await Booking.findAll({
-        where,
+        where: bookingWhere,
         include: [{
           model: Property,
-          attributes: ['id', 'name', 'address', 'city', 'images']
+          as: 'property',
+          attributes: ['id', 'name', 'address', 'city', 'images'],
+          where: { userId: req.user.id }, // Filter by user's properties
+          required: true // Inner join - only bookings for user's properties
         }],
         order: [['checkIn', 'DESC']]
       });
 
+      console.log(`✅ Found ${bookings.length} bookings`);
+
       res.json({
         success: true,
-        data: bookings
+        bookings: bookings // Match what dashboard.html expects
       });
     } catch (error) {
-      console.error('Error fetching bookings:', error);
+      console.error('❌ Error fetching bookings:', error);
+      console.error('Error stack:', error.stack);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch bookings'
+        message: 'Failed to fetch bookings',
+        error: error.message
       });
     }
   }
@@ -68,13 +78,13 @@ class BookingController {
       const { id } = req.params;
 
       const booking = await Booking.findOne({
-        where: {
-          id,
-          userId: req.user.id
-        },
+        where: { id },
         include: [{
           model: Property,
-          attributes: ['id', 'name', 'address', 'city', 'state', 'images', 'basePrice']
+          as: 'property',
+          attributes: ['id', 'name', 'address', 'city', 'state', 'images', 'basePrice'],
+          where: { userId: req.user.id }, // Ensure booking is for user's property
+          required: true
         }]
       });
 
@@ -90,10 +100,11 @@ class BookingController {
         data: booking
       });
     } catch (error) {
-      console.error('Error fetching booking:', error);
+      console.error('❌ Error fetching booking:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch booking'
+        message: 'Failed to fetch booking',
+        error: error.message
       });
     }
   }
@@ -166,7 +177,6 @@ class BookingController {
       const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
 
       const booking = await Booking.create({
-        userId: req.user.id,
         propertyId,
         guestName,
         guestEmail,
@@ -179,12 +189,12 @@ class BookingController {
         confirmationCode,
         status: 'confirmed',
         paymentStatus: 'pending',
-        platform: 'direct',
-        metadata: {
-          nights,
-          createdBy: 'dashboard',
-          bookingSource: 'direct'
-        }
+        channel: 'direct',
+        nights,
+        baseAmount: totalAmount, // Simplified - you may want to break this down
+        cleaningFee: 0,
+        depositAmount: (totalAmount * 0.1).toFixed(2),
+        balanceAmount: (totalAmount * 0.9).toFixed(2)
       });
 
       res.status(201).json({
@@ -220,10 +230,13 @@ class BookingController {
       } = req.body;
 
       const booking = await Booking.findOne({
-        where: {
-          id,
-          userId: req.user.id
-        }
+        where: { id },
+        include: [{
+          model: Property,
+          as: 'property',
+          where: { userId: req.user.id },
+          required: true
+        }]
       });
 
       if (!booking) {
@@ -281,10 +294,13 @@ class BookingController {
       const { cancellationReason } = req.body;
 
       const booking = await Booking.findOne({
-        where: {
-          id,
-          userId: req.user.id
-        }
+        where: { id },
+        include: [{
+          model: Property,
+          as: 'property',
+          where: { userId: req.user.id },
+          required: true
+        }]
       });
 
       if (!booking) {
@@ -527,36 +543,70 @@ class BookingController {
     try {
       const { startDate, endDate } = req.query;
 
-      const where = { userId: req.user.id };
+      console.log('📊 Fetching booking stats for user:', req.user.id);
+
+      // Build booking filter conditions
+      const bookingWhere = {};
 
       // Date range filter
       if (startDate || endDate) {
-        where.checkIn = {};
+        bookingWhere.checkIn = {};
         if (startDate) {
-          where.checkIn[Op.gte] = new Date(startDate);
+          bookingWhere.checkIn[Op.gte] = new Date(startDate);
         }
         if (endDate) {
-          where.checkIn[Op.lte] = new Date(endDate);
+          bookingWhere.checkIn[Op.lte] = new Date(endDate);
         }
       }
 
+      // Include condition to filter by user's properties
+      const includeProperty = {
+        model: Property,
+        as: 'property',
+        attributes: [],
+        where: { userId: req.user.id },
+        required: true
+      };
+
       const [totalBookings, confirmedBookings, cancelledBookings, totalRevenue] = await Promise.all([
-        Booking.count({ where }),
-        Booking.count({ where: { ...where, status: 'confirmed' } }),
-        Booking.count({ where: { ...where, status: 'cancelled' } }),
-        Booking.sum('totalAmount', { where: { ...where, status: { [Op.notIn]: ['cancelled'] } } })
+        Booking.count({
+          where: bookingWhere,
+          include: [includeProperty]
+        }),
+        Booking.count({
+          where: { ...bookingWhere, status: 'confirmed' },
+          include: [includeProperty]
+        }),
+        Booking.count({
+          where: { ...bookingWhere, status: 'cancelled' },
+          include: [includeProperty]
+        }),
+        Booking.sum('totalAmount', {
+          where: { ...bookingWhere, status: { [Op.notIn]: ['cancelled'] } },
+          include: [includeProperty]
+        })
       ]);
 
       // Platform breakdown
       const platformStats = await Booking.findAll({
-        where,
+        where: bookingWhere,
         attributes: [
-          'platform',
-          [Booking.sequelize.fn('COUNT', Booking.sequelize.col('id')), 'count'],
+          'channel',
+          [Booking.sequelize.fn('COUNT', Booking.sequelize.col('Booking.id')), 'count'],
           [Booking.sequelize.fn('SUM', Booking.sequelize.col('totalAmount')), 'revenue']
         ],
-        group: ['platform']
+        include: [{
+          model: Property,
+          as: 'property',
+          attributes: [],
+          where: { userId: req.user.id },
+          required: true
+        }],
+        group: ['channel'],
+        raw: true
       });
+
+      console.log(`✅ Stats: ${totalBookings} total bookings, ${confirmedBookings} confirmed`);
 
       res.json({
         success: true,
@@ -569,10 +619,12 @@ class BookingController {
         }
       });
     } catch (error) {
-      console.error('Error fetching booking stats:', error);
+      console.error('❌ Error fetching booking stats:', error);
+      console.error('Error stack:', error.stack);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch booking statistics'
+        message: 'Failed to fetch booking statistics',
+        error: error.message
       });
     }
   }

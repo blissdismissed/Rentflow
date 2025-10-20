@@ -112,19 +112,25 @@ class PublicPropertyController {
       const bookings = await Booking.findAll({
         where: {
           propertyId: property.id,
-          bookingStatus: { [Op.in]: ['confirmed', 'approved'] },
+          // Include requested, approved, and confirmed bookings (exclude only declined/cancelled)
+          bookingStatus: { [Op.in]: ['requested', 'approved', 'confirmed'] },
           checkOut: { [Op.gte]: today },
           checkIn: { [Op.lte]: sixMonthsLater }
         },
-        attributes: ['checkIn', 'checkOut'],
+        attributes: ['checkIn', 'checkOut', 'bookingStatus'],
         order: [['checkIn', 'ASC']]
       })
+
+      console.log(`📅 Found ${bookings.length} booked dates for property ${property.name}:`,
+        bookings.map(b => `${b.checkIn} to ${b.checkOut} (${b.bookingStatus})`))
 
       // Create array of booked date ranges
       const bookedDates = bookings.map(booking => ({
         start: booking.checkIn,
         end: booking.checkOut
       }))
+
+      console.log('🚫 Returning bookedDates:', bookedDates)
 
       res.json({
         success: true,
