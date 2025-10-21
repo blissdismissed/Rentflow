@@ -77,7 +77,7 @@ desktop.ini
 *.dump
 
 # ORM / Migrations (if generated)
-migrations/
+# migrations/  # COMMENTED OUT - we need to track our Sequelize migrations
 __pycache__/         # if Python backend
 *.pyc
 *.pyo
@@ -92,4 +92,4 @@ __pycache__/         # if Python backend
 *.pid
 *.seed
 *.tgz
-docs/
+# docs/  # COMMENTED OUT - we need to track our documentation
