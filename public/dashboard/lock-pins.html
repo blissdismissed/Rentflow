@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lock PIN Management - AspireTowards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+        .pin-item {
+            transition: all 0.3s ease;
+        }
+        .pin-item.sortable-chosen {
+            opacity: 0.5;
+        }
+        .pin-item.sortable-drag {
+            opacity: 0.8;
+            transform: rotate(2deg);
+        }
+        .drag-handle {
+            cursor: grab;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <a href="/dashboard.html" class="text-xl font-display font-bold text-gray-900">AspireTowards</a>
+                    <span class="text-gray-400">|</span>
+                    <span class="text-gray-600">Lock PIN Management</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard.html" class="text-gray-600 hover:text-teal-600 transition">Dashboard</a>
+                    <button id="logout-btn" class="text-red-600 hover:text-red-700 transition">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-display font-bold text-gray-900">Lock PIN Management</h1>
+                    <p class="text-gray-600 mt-1">Manage rotating lock codes for your property</p>
+                </div>
+                <a href="property-settings.html" class="text-teal-600 hover:text-teal-700 font-medium">← Back to Settings</a>
+            </div>
+
+            <!-- Property Selector -->
+            <div class="bg-white rounded-lg shadow-sm p-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Property</label>
+                <select id="property-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                    <option value="">Loading properties...</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- PIN Management -->
+        <div id="pin-management" class="hidden">
+            <!-- Info Banner -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div class="flex items-start">
+                    <svg class="h-5 w-5 text-blue-600 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-medium text-blue-900">How Lock PIN Rotation Works</h3>
+                        <p class="text-sm text-blue-700 mt-1">PINs are assigned to bookings in sequential order (top to bottom). After the last PIN, rotation starts over from the first. Drag to reorder.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rotation Status -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Total PINs</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="total-pins-count">0</p>
+                        </div>
+                        <div class="p-3 bg-teal-100 rounded-full">
+                            <svg class="h-6 w-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Active PINs</p>
+                            <p class="text-2xl font-bold text-green-600 mt-1" id="active-pins-count">0</p>
+                        </div>
+                        <div class="p-3 bg-green-100 rounded-full">
+                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Next PIN Index</p>
+                            <p class="text-2xl font-bold text-blue-600 mt-1" id="current-index">0</p>
+                        </div>
+                        <div class="p-3 bg-blue-100 rounded-full">
+                            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add New PIN -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Add New PIN</h2>
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <input type="text" id="new-pin-input" placeholder="Enter PIN code (e.g., 1234)" maxlength="10" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    <div class="flex-1">
+                        <input type="text" id="new-pin-notes" placeholder="Notes (optional)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    <button id="add-pin-btn" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium whitespace-nowrap">
+                        + Add PIN
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Minimum 4 characters. PINs are encrypted and stored securely.</p>
+            </div>
+
+            <!-- PIN List -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">PIN Rotation Order</h2>
+                    <button id="view-history-btn" class="text-teal-600 hover:text-teal-700 font-medium text-sm">View Usage History →</button>
+                </div>
+
+                <div id="pins-list" class="space-y-3">
+                    <!-- PINs will be loaded here -->
+                </div>
+
+                <div id="no-pins-message" class="hidden text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    <p class="text-gray-600 mt-4">No PINs added yet</p>
+                    <p class="text-sm text-gray-500 mt-1">Add your first PIN above to get started</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            <p class="text-gray-600 mt-4">Loading PINs...</p>
+        </div>
+
+        <!-- No Property Selected -->
+        <div id="no-property-state" class="hidden text-center py-12 bg-white rounded-lg shadow-sm">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            <p class="text-gray-600 mt-4">Select a property to manage lock PINs</p>
+        </div>
+    </div>
+
+    <!-- Edit PIN Modal -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Edit PIN</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">PIN Code</label>
+                    <input type="text" id="edit-pin-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                    <input type="text" id="edit-pin-notes" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="edit-pin-active" class="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
+                    <label for="edit-pin-active" class="ml-2 text-sm text-gray-700">Active (included in rotation)</label>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button id="cancel-edit-btn" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition">Cancel</button>
+                <button id="save-edit-btn" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api'
+            : '/api';
+
+        let currentPropertyId = null;
+        let pins = [];
+        let editingPinId = null;
+        let sortable = null;
+
+        // Auth check
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/auth/login.html';
+        }
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/auth/login.html';
+        });
+
+        // Get property ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const propertyIdFromUrl = urlParams.get('property');
+
+        // Load properties
+        async function loadProperties() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load properties');
+
+                const data = await response.json();
+                const select = document.getElementById('property-select');
+
+                if (data.properties && data.properties.length > 0) {
+                    select.innerHTML = '<option value="">Select a property...</option>';
+                    data.properties.forEach(property => {
+                        const option = document.createElement('option');
+                        option.value = property.id;
+                        option.textContent = property.name;
+                        if (property.id === propertyIdFromUrl) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+
+                    // Auto-load if property in URL
+                    if (propertyIdFromUrl) {
+                        currentPropertyId = propertyIdFromUrl;
+                        loadPins(propertyIdFromUrl);
+                    }
+                } else {
+                    select.innerHTML = '<option value="">No properties found</option>';
+                }
+            } catch (error) {
+                console.error('Error loading properties:', error);
+                alert('Failed to load properties. Please try again.');
+            }
+        }
+
+        // Load PINs for property
+        async function loadPins(propertyId) {
+            document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('pin-management').classList.add('hidden');
+            document.getElementById('no-property-state').classList.add('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/lock-pins`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load PINs');
+
+                const data = await response.json();
+                pins = data.pins || [];
+
+                // Update stats
+                document.getElementById('total-pins-count').textContent = pins.length;
+                document.getElementById('active-pins-count').textContent = pins.filter(p => p.isActive).length;
+                document.getElementById('current-index').textContent = data.currentPinIndex || 0;
+
+                // Update history button
+                document.getElementById('view-history-btn').onclick = () => {
+                    window.location.href = `pin-history.html?property=${propertyId}`;
+                };
+
+                // Render PINs
+                renderPins();
+
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('pin-management').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading PINs:', error);
+                document.getElementById('loading-state').classList.add('hidden');
+                alert('Failed to load PINs. Please try again.');
+            }
+        }
+
+        // Render PIN list
+        function renderPins() {
+            const container = document.getElementById('pins-list');
+            const noMessage = document.getElementById('no-pins-message');
+
+            if (pins.length === 0) {
+                container.innerHTML = '';
+                noMessage.classList.remove('hidden');
+                return;
+            }
+
+            noMessage.classList.add('hidden');
+            container.innerHTML = pins.map((pin, index) => `
+                <div class="pin-item bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-md transition" data-pin-id="${pin.id}">
+                    <div class="flex items-center gap-4">
+                        <div class="drag-handle p-2 text-gray-400 hover:text-gray-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                            </svg>
+                        </div>
+
+                        <div class="flex-shrink-0">
+                            <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                                <span class="text-sm font-bold text-teal-700">#${index + 1}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3">
+                                <span class="text-lg font-mono font-bold text-gray-900">${pin.pin}</span>
+                                ${pin.isActive
+                                    ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">Active</span>'
+                                    : '<span class="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full font-medium">Inactive</span>'
+                                }
+                            </div>
+                            ${pin.notes ? `<p class="text-sm text-gray-600 mt-1">${pin.notes}</p>` : ''}
+                            <div class="flex gap-4 text-xs text-gray-500 mt-2">
+                                <span>Used ${pin.usageCount || 0} times</span>
+                                ${pin.lastUsedAt ? `<span>Last used: ${new Date(pin.lastUsedAt).toLocaleDateString()}</span>` : '<span>Never used</span>'}
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button onclick="editPin('${pin.id}')" class="p-2 text-gray-600 hover:text-teal-600 transition">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button onclick="deletePin('${pin.id}')" class="p-2 text-gray-600 hover:text-red-600 transition">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Initialize Sortable.js
+            if (sortable) {
+                sortable.destroy();
+            }
+            sortable = new Sortable(container, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                onEnd: function(evt) {
+                    reorderPins(evt.oldIndex, evt.newIndex);
+                }
+            });
+        }
+
+        // Add new PIN
+        async function addPin() {
+            const pinInput = document.getElementById('new-pin-input');
+            const notesInput = document.getElementById('new-pin-notes');
+            const pin = pinInput.value.trim();
+            const notes = notesInput.value.trim();
+
+            if (!pin || pin.length < 4) {
+                alert('Please enter a PIN with at least 4 characters');
+                return;
+            }
+
+            const addBtn = document.getElementById('add-pin-btn');
+            addBtn.disabled = true;
+            addBtn.textContent = 'Adding...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${currentPropertyId}/lock-pins`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pin, notes })
+                });
+
+                if (!response.ok) throw new Error('Failed to add PIN');
+
+                pinInput.value = '';
+                notesInput.value = '';
+                await loadPins(currentPropertyId);
+            } catch (error) {
+                console.error('Error adding PIN:', error);
+                alert('Failed to add PIN. Please try again.');
+            } finally {
+                addBtn.disabled = false;
+                addBtn.textContent = '+ Add PIN';
+            }
+        }
+
+        // Edit PIN
+        function editPin(pinId) {
+            const pin = pins.find(p => p.id === pinId);
+            if (!pin) return;
+
+            editingPinId = pinId;
+            document.getElementById('edit-pin-input').value = pin.pin;
+            document.getElementById('edit-pin-notes').value = pin.notes || '';
+            document.getElementById('edit-pin-active').checked = pin.isActive;
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        // Save edited PIN
+        async function saveEdit() {
+            const pin = document.getElementById('edit-pin-input').value.trim();
+            const notes = document.getElementById('edit-pin-notes').value.trim();
+            const isActive = document.getElementById('edit-pin-active').checked;
+
+            if (!pin || pin.length < 4) {
+                alert('Please enter a PIN with at least 4 characters');
+                return;
+            }
+
+            const saveBtn = document.getElementById('save-edit-btn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${currentPropertyId}/lock-pins/${editingPinId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pin, notes, isActive })
+                });
+
+                if (!response.ok) throw new Error('Failed to update PIN');
+
+                document.getElementById('edit-modal').classList.add('hidden');
+                await loadPins(currentPropertyId);
+            } catch (error) {
+                console.error('Error updating PIN:', error);
+                alert('Failed to update PIN. Please try again.');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+            }
+        }
+
+        // Delete PIN
+        async function deletePin(pinId) {
+            if (!confirm('Are you sure you want to delete this PIN? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${currentPropertyId}/lock-pins/${pinId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to delete PIN');
+
+                await loadPins(currentPropertyId);
+            } catch (error) {
+                console.error('Error deleting PIN:', error);
+                alert('Failed to delete PIN. Please try again.');
+            }
+        }
+
+        // Reorder PINs after drag
+        async function reorderPins(oldIndex, newIndex) {
+            if (oldIndex === newIndex) return;
+
+            // Reorder local array
+            const [movedPin] = pins.splice(oldIndex, 1);
+            pins.splice(newIndex, 0, movedPin);
+
+            // Send new order to server
+            const pinOrder = pins.map(p => p.id);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${currentPropertyId}/lock-pins/reorder`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pinOrder })
+                });
+
+                if (!response.ok) throw new Error('Failed to reorder PINs');
+
+                // Reload to get updated order indices
+                await loadPins(currentPropertyId);
+            } catch (error) {
+                console.error('Error reordering PINs:', error);
+                alert('Failed to save new order. Please try again.');
+                // Reload to restore original order
+                await loadPins(currentPropertyId);
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('property-select').addEventListener('change', (e) => {
+            currentPropertyId = e.target.value;
+            if (currentPropertyId) {
+                loadPins(currentPropertyId);
+            } else {
+                document.getElementById('pin-management').classList.add('hidden');
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('no-property-state').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('add-pin-btn').addEventListener('click', addPin);
+        document.getElementById('new-pin-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addPin();
+        });
+
+        document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+            document.getElementById('edit-modal').classList.add('hidden');
+        });
+
+        document.getElementById('save-edit-btn').addEventListener('click', saveEdit);
+
+        // Close modal on outside click
+        document.getElementById('edit-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'edit-modal') {
+                document.getElementById('edit-modal').classList.add('hidden');
+            }
+        });
+
+        // Initialize
+        loadProperties();
+        if (!propertyIdFromUrl) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('no-property-state').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIN Usage History - AspireTowards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <a href="/dashboard.html" class="text-xl font-display font-bold text-gray-900">AspireTowards</a>
+                    <span class="text-gray-400">|</span>
+                    <span class="text-gray-600">PIN Usage History</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard.html" class="text-gray-600 hover:text-teal-600 transition">Dashboard</a>
+                    <button id="logout-btn" class="text-red-600 hover:text-red-700 transition">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-display font-bold text-gray-900">PIN Usage History</h1>
+                    <p class="text-gray-600 mt-1">Complete audit trail of lock PIN assignments</p>
+                </div>
+                <a href="lock-pins.html" id="back-to-pins-link" class="text-teal-600 hover:text-teal-700 font-medium">← Back to PINs</a>
+            </div>
+
+            <!-- Property Selector -->
+            <div class="bg-white rounded-lg shadow-sm p-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Property</label>
+                <select id="property-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                    <option value="">Loading properties...</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- History View -->
+        <div id="history-view" class="hidden">
+            <!-- Filters -->
+            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search Guest</label>
+                        <input type="text" id="search-input" placeholder="Search by name or email..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Filter by PIN</label>
+                        <select id="pin-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                            <option value="">All PINs</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                        <select id="date-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                            <option value="all">All Time</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="180">Last 6 Months</option>
+                            <option value="365">Last Year</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Total Assignments</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="total-assignments">0</p>
+                        </div>
+                        <div class="p-3 bg-blue-100 rounded-full">
+                            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Unique Guests</p>
+                            <p class="text-2xl font-bold text-green-600 mt-1" id="unique-guests">0</p>
+                        </div>
+                        <div class="p-3 bg-green-100 rounded-full">
+                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Most Used PIN</p>
+                            <p class="text-2xl font-bold text-teal-600 mt-1 font-mono" id="most-used-pin">-</p>
+                        </div>
+                        <div class="p-3 bg-teal-100 rounded-full">
+                            <svg class="h-6 w-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Table -->
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900">Assignment History</h2>
+                    <button id="export-csv-btn" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition text-sm font-medium">
+                        📥 Export CSV
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guest</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booking ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-in</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-out</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PIN</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rotation Index</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="no-history-message" class="hidden text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="text-gray-600 mt-4">No PIN assignments yet</p>
+                    <p class="text-sm text-gray-500 mt-1">History will appear once bookings are approved and PINs are assigned</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            <p class="text-gray-600 mt-4">Loading history...</p>
+        </div>
+
+        <!-- No Property Selected -->
+        <div id="no-property-state" class="hidden text-center py-12 bg-white rounded-lg shadow-sm">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            <p class="text-gray-600 mt-4">Select a property to view PIN usage history</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api'
+            : '/api';
+
+        let currentPropertyId = null;
+        let allHistory = [];
+        let filteredHistory = [];
+
+        // Auth check
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/auth/login.html';
+        }
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/auth/login.html';
+        });
+
+        // Get property ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const propertyIdFromUrl = urlParams.get('property');
+
+        // Load properties
+        async function loadProperties() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load properties');
+
+                const data = await response.json();
+                const select = document.getElementById('property-select');
+
+                if (data.properties && data.properties.length > 0) {
+                    select.innerHTML = '<option value="">Select a property...</option>';
+                    data.properties.forEach(property => {
+                        const option = document.createElement('option');
+                        option.value = property.id;
+                        option.textContent = property.name;
+                        if (property.id === propertyIdFromUrl) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+
+                    // Auto-load if property in URL
+                    if (propertyIdFromUrl) {
+                        currentPropertyId = propertyIdFromUrl;
+                        loadHistory(propertyIdFromUrl);
+                    }
+                } else {
+                    select.innerHTML = '<option value="">No properties found</option>';
+                }
+            } catch (error) {
+                console.error('Error loading properties:', error);
+                alert('Failed to load properties. Please try again.');
+            }
+        }
+
+        // Load PIN history
+        async function loadHistory(propertyId) {
+            document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('history-view').classList.add('hidden');
+            document.getElementById('no-property-state').classList.add('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/lock-pins/history`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load history');
+
+                const data = await response.json();
+                allHistory = data.history || [];
+                filteredHistory = [...allHistory];
+
+                // Update back link
+                document.getElementById('back-to-pins-link').href = `lock-pins.html?property=${propertyId}`;
+
+                // Load PINs for filter
+                await loadPinFilter(propertyId);
+
+                // Update statistics
+                updateStatistics();
+
+                // Render table
+                renderHistory();
+
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('history-view').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading history:', error);
+                document.getElementById('loading-state').classList.add('hidden');
+                alert('Failed to load history. Please try again.');
+            }
+        }
+
+        // Load PINs for filter dropdown
+        async function loadPinFilter(propertyId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/lock-pins`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                const select = document.getElementById('pin-filter');
+
+                select.innerHTML = '<option value="">All PINs</option>';
+                data.pins.forEach(pin => {
+                    const option = document.createElement('option');
+                    option.value = pin.pin;
+                    option.textContent = `PIN: ${pin.pin}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading PIN filter:', error);
+            }
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const total = filteredHistory.length;
+            const uniqueGuestsSet = new Set(filteredHistory.map(h => h.guestEmail.toLowerCase()));
+            const uniqueGuests = uniqueGuestsSet.size;
+
+            // Count PIN usage
+            const pinCounts = {};
+            filteredHistory.forEach(h => {
+                pinCounts[h.pin] = (pinCounts[h.pin] || 0) + 1;
+            });
+
+            const mostUsedPin = Object.keys(pinCounts).length > 0
+                ? Object.keys(pinCounts).reduce((a, b) => pinCounts[a] > pinCounts[b] ? a : b)
+                : '-';
+
+            document.getElementById('total-assignments').textContent = total;
+            document.getElementById('unique-guests').textContent = uniqueGuests;
+            document.getElementById('most-used-pin').textContent = mostUsedPin;
+        }
+
+        // Render history table
+        function renderHistory() {
+            const tbody = document.getElementById('history-table-body');
+            const noMessage = document.getElementById('no-history-message');
+
+            if (filteredHistory.length === 0) {
+                tbody.innerHTML = '';
+                noMessage.classList.remove('hidden');
+                return;
+            }
+
+            noMessage.classList.add('hidden');
+            tbody.innerHTML = filteredHistory.map(record => {
+                const checkIn = new Date(record.checkIn).toLocaleDateString();
+                const checkOut = new Date(record.checkOut).toLocaleDateString();
+
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${record.guestName}</div>
+                            <div class="text-sm text-gray-500">${record.guestEmail}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900 font-mono">${record.bookingId.substring(0, 8)}...</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${checkIn}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${checkOut}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 bg-teal-100 text-teal-800 rounded-full text-sm font-mono font-semibold">${record.pin}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm">#${record.pinOrderIndex !== null ? record.pinOrderIndex + 1 : 'N/A'}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const pinFilter = document.getElementById('pin-filter').value;
+            const dateFilter = parseInt(document.getElementById('date-filter').value);
+
+            filteredHistory = allHistory.filter(record => {
+                // Search filter
+                if (searchTerm) {
+                    const matchesSearch =
+                        record.guestName.toLowerCase().includes(searchTerm) ||
+                        record.guestEmail.toLowerCase().includes(searchTerm);
+                    if (!matchesSearch) return false;
+                }
+
+                // PIN filter
+                if (pinFilter && record.pin !== pinFilter) {
+                    return false;
+                }
+
+                // Date filter
+                if (dateFilter && dateFilter !== 'all') {
+                    const checkInDate = new Date(record.checkIn);
+                    const daysAgo = new Date();
+                    daysAgo.setDate(daysAgo.getDate() - dateFilter);
+                    if (checkInDate < daysAgo) return false;
+                }
+
+                return true;
+            });
+
+            updateStatistics();
+            renderHistory();
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            if (filteredHistory.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            const headers = ['Guest Name', 'Guest Email', 'Booking ID', 'Check-in', 'Check-out', 'PIN', 'Rotation Index'];
+            const rows = filteredHistory.map(record => [
+                record.guestName,
+                record.guestEmail,
+                record.bookingId,
+                new Date(record.checkIn).toLocaleDateString(),
+                new Date(record.checkOut).toLocaleDateString(),
+                record.pin,
+                record.pinOrderIndex !== null ? record.pinOrderIndex + 1 : 'N/A'
+            ]);
+
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pin-history-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Event Listeners
+        document.getElementById('property-select').addEventListener('change', (e) => {
+            currentPropertyId = e.target.value;
+            if (currentPropertyId) {
+                loadHistory(currentPropertyId);
+            } else {
+                document.getElementById('history-view').classList.add('hidden');
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('no-property-state').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('search-input').addEventListener('input', applyFilters);
+        document.getElementById('pin-filter').addEventListener('change', applyFilters);
+        document.getElementById('date-filter').addEventListener('change', applyFilters);
+        document.getElementById('export-csv-btn').addEventListener('click', exportToCSV);
+
+        // Initialize
+        loadProperties();
+        if (!propertyIdFromUrl) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('no-property-state').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

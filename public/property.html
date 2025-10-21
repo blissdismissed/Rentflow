@@ -408,32 +408,26 @@
         /* Flatpickr Disabled Dates Styling */
         .flatpickr-day.flatpickr-disabled,
         .flatpickr-day.flatpickr-disabled:hover {
-            color: #ef4444 !important;
+            color: #991b1b !important;
             background: #fee2e2 !important;
             border-color: #fecaca !important;
             cursor: not-allowed !important;
             position: relative;
-            text-decoration: line-through;
-            opacity: 0.7 !important;
+            opacity: 0.8 !important;
         }
 
-        /* Add X mark over disabled dates */
+        /* Add subtle X mark over disabled dates */
         .flatpickr-day.flatpickr-disabled::after {
             content: '✕';
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 20px;
+            font-size: 18px;
             color: #dc2626;
             font-weight: bold;
             pointer-events: none;
             z-index: 10;
-        }
-
-        /* Ensure the date number is still visible behind the X */
-        .flatpickr-day.flatpickr-disabled {
-            font-weight: 600;
         }
 
         /* Mobile-specific calendar styling */
@@ -488,6 +482,18 @@
                 padding: 8px 10px;
             }
         }
+
+        /* Green styling for selected check-in date in checkout calendar */
+        .flatpickr-day.selected-checkin {
+            background: #10b981 !important;
+            color: white !important;
+            border-color: #059669 !important;
+            font-weight: 600 !important;
+        }
+
+        .flatpickr-day.selected-checkin:hover {
+            background: #059669 !important;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -502,6 +508,8 @@
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="index.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
                     <a href="properties.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Properties</a>
+                    <a href="index.html#why-direct" class="text-gray-600 hover:text-teal-600 font-medium transition">Why Book Direct</a>
+                    <a href="index.html#contact" class="text-gray-600 hover:text-teal-600 font-medium transition">Contact</a>
                     <button id="wallet-connect-btn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition flex items-center gap-2">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
@@ -534,6 +542,8 @@
             <nav class="flex-1 overflow-y-auto p-4">
                 <a href="index.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Home</a>
                 <a href="properties.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Properties</a>
+                <a href="index.html#why-direct" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Why Book Direct</a>
+                <a href="index.html#contact" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Contact</a>
                 <a href="/auth/login.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Host Login</a>
                 <button id="wallet-connect-mobile" class="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition flex items-center justify-center gap-2">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -1493,6 +1503,20 @@
                     // Add legend below the calendar when it opens
                     addCalendarLegend(instance)
                     console.log('📅 Check-out calendar opened')
+
+                    // Highlight the selected check-in date in green
+                    const checkInDate = checkInPicker.selectedDates[0]
+                    if (checkInDate) {
+                        setTimeout(() => {
+                            const checkInDateStr = instance.formatDate(checkInDate, 'Y-m-d')
+                            const dayElements = instance.calendarContainer.querySelectorAll('.flatpickr-day')
+                            dayElements.forEach(dayEl => {
+                                if (dayEl.dateObj && instance.formatDate(dayEl.dateObj, 'Y-m-d') === checkInDateStr) {
+                                    dayEl.classList.add('selected-checkin')
+                                }
+                            })
+                        }, 0)
+                    }
                 },
                 onChange: function(selectedDates, dateStr, instance) {
                     console.log('📅 Check-out date selected:', dateStr)
@@ -1507,6 +1531,12 @@
                 },
                 onClose: function(selectedDates, dateStr, instance) {
                     console.log('📅 Check-out calendar closed')
+
+                    // Remove the check-in highlighting when closing
+                    const dayElements = instance.calendarContainer.querySelectorAll('.flatpickr-day.selected-checkin')
+                    dayElements.forEach(dayEl => {
+                        dayEl.classList.remove('selected-checkin')
+                    })
                 }
             })
 

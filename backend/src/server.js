@@ -16,6 +16,13 @@ const integrationRoutes = require('./routes/integrationRoutes')
 const financialRoutes = require('./routes/financialRoutes')
 const publicRoutes = require('./routes/publicRoutes')
 const webhookRoutes = require('./routes/webhookRoutes')
+const cleanerRoutes = require('./routes/cleanerRoutes')
+const propertyContactRoutes = require('./routes/propertyContactRoutes')
+const guestRoutes = require('./routes/guestRoutes')
+const lockPinRoutes = require('./routes/lockPinRoutes')
+const propertySettingsRoutes = require('./routes/propertySettingsRoutes')
+const emailTemplateRoutes = require('./routes/emailTemplateRoutes')
+const emailScheduler = require('./jobs/emailScheduler')
 
 const app = express()
 
@@ -90,6 +97,18 @@ app.use('/api/payments', paymentRoutes)
 app.use('/api/integrations', integrationRoutes)
 app.use('/api/financials', financialRoutes)
 
+// Cleaner and property contact routes
+app.use('/api/cleaners', cleanerRoutes)
+app.use('/api/properties', propertyContactRoutes)
+
+// Guest management routes
+app.use('/api/guests', guestRoutes)
+
+// Pre-stay email and lock PIN routes
+app.use('/api/properties', lockPinRoutes)
+app.use('/api/properties', propertySettingsRoutes)
+app.use('/api/properties', emailTemplateRoutes)
+
 // Public routes (no authentication required)
 app.use('/api/public', publicRoutes)
 
@@ -129,15 +148,37 @@ const startServer = async () => {
       console.log('✅ Database synchronized')
     }
 
+    // Start email scheduler for automated pre-stay emails
+    emailScheduler.start()
+
     // Start listening - bind to localhost only for security (use Nginx reverse proxy)
     const host = process.env.NODE_ENV === 'production' ? '127.0.0.1' : '0.0.0.0'
-    app.listen(PORT, host, () => {
+    const server = app.listen(PORT, host, () => {
       console.log(`🚀 Server running on ${host}:${PORT}`)
       console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`)
       console.log(`🔗 API URL: http://${host}:${PORT}`)
       if (process.env.NODE_ENV === 'production') {
         console.log(`⚠️  Server bound to localhost only - use Nginx reverse proxy for external access`)
       }
+    })
+
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received, shutting down gracefully...')
+      emailScheduler.stop()
+      server.close(() => {
+        console.log('✅ Server closed')
+        process.exit(0)
+      })
+    })
+
+    process.on('SIGINT', () => {
+      console.log('SIGINT received, shutting down gracefully...')
+      emailScheduler.stop()
+      server.close(() => {
+        console.log('✅ Server closed')
+        process.exit(0)
+      })
     })
   } catch (error) {
     console.error('❌ Failed to start server:', error)

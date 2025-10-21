@@ -3,6 +3,7 @@ const Property = require('../models/Property');
 const { Op } = require('sequelize');
 const stripeService = require('../services/stripeService');
 const emailService = require('../services/emailService');
+const preStayEmailService = require('../services/preStayEmailService');
 
 class BookingController {
   /**
@@ -399,6 +400,18 @@ class BookingController {
         }]
       });
 
+      // Assign PIN if rotating PINs are enabled
+      let assignedPin = null;
+      try {
+        assignedPin = await preStayEmailService.assignPinToBooking(updatedBooking);
+        if (assignedPin) {
+          console.log(`✅ PIN assigned to booking ${updatedBooking.id}: ${assignedPin}`);
+        }
+      } catch (pinError) {
+        console.error('Failed to assign PIN to booking:', pinError);
+        // Continue - don't fail the approval if PIN assignment fails
+      }
+
       // Send confirmation email to guest
       try {
         await emailService.sendBookingApprovalToGuest(updatedBooking, updatedBooking.property);
@@ -414,7 +427,8 @@ class BookingController {
           : 'Booking approved but payment capture failed. Please collect manually.',
         data: {
           booking: updatedBooking,
-          payment: captureResult
+          payment: captureResult,
+          assignedPin: assignedPin ? '****' : null // Don't expose full PIN in response
         }
       });
     } catch (error) {

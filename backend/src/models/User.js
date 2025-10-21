@@ -54,7 +54,7 @@ User.init(
       allowNull: true
     },
     role: {
-      type: DataTypes.ENUM('admin', 'owner', 'manager', 'staff'),
+      type: DataTypes.ENUM('admin', 'owner', 'manager', 'staff', 'cleaner'),
       defaultValue: 'owner'
     },
     googleId: {

@@ -64,12 +64,10 @@
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
-                <div class="flex items-center space-x-3">
-                    <a href="index.html" class="flex items-center space-x-3">
-                        <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo" class="h-16 w-16 sm:h-20 sm:w-20">
-                        <span class="text-2xl sm:text-3xl font-display font-bold text-gray-900 leading-none mt-0.5">AspireTowards</span>
-                    </a>
-                </div>
+                <a href="index.html" class="flex items-center space-x-3">
+                    <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo" class="h-16 w-16 sm:h-20 sm:w-20">
+                    <span class="text-2xl sm:text-3xl font-display font-bold text-gray-900 leading-none mt-0.5">AspireTowards</span>
+                </a>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="index.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
                     <a href="properties.html" class="text-teal-600 font-medium">Properties</a>
@@ -144,10 +142,11 @@
                     <div class="mb-6">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Price Range</label>
                         <div class="flex items-center space-x-2">
-                            <input type="number" id="minPrice" placeholder="Min" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <input type="number" id="minPrice" placeholder="Min" min="0" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
                             <span class="text-gray-500">-</span>
-                            <input type="number" id="maxPrice" placeholder="Max" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <input type="number" id="maxPrice" placeholder="Max" min="0" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
                         </div>
+                        <p id="price-error" class="text-red-500 text-xs mt-1 hidden">Min price cannot be greater than max price</p>
                     </div>
 
                     <!-- Bedrooms -->
@@ -246,10 +245,11 @@
                 <div class="mb-6">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Price Range</label>
                     <div class="flex items-center space-x-2">
-                        <input type="number" id="mobile-minPrice" placeholder="Min" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <input type="number" id="mobile-minPrice" placeholder="Min" min="0" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
                         <span class="text-gray-500">-</span>
-                        <input type="number" id="mobile-maxPrice" placeholder="Max" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <input type="number" id="mobile-maxPrice" placeholder="Max" min="0" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
                     </div>
+                    <p id="mobile-price-error" class="text-red-500 text-xs mt-1 hidden">Min price cannot be greater than max price</p>
                 </div>
 
                 <!-- Bedrooms -->
@@ -444,8 +444,42 @@
             grid.innerHTML = propertyCards.join('')
         }
 
+        // Validate filter inputs
+        function validateFilters(minPriceInput, maxPriceInput, errorElement) {
+            const minPrice = parseFloat(minPriceInput.value)
+            const maxPrice = parseFloat(maxPriceInput.value)
+
+            // Prevent negative values
+            if (minPriceInput.value && minPrice < 0) {
+                minPriceInput.value = 0
+            }
+            if (maxPriceInput.value && maxPrice < 0) {
+                maxPriceInput.value = 0
+            }
+
+            // Check if min > max
+            if (minPrice && maxPrice && minPrice > maxPrice) {
+                errorElement.classList.remove('hidden')
+                return false
+            } else {
+                errorElement.classList.add('hidden')
+                return true
+            }
+        }
+
         // Apply filters
         function applyFilters() {
+            // Validate first
+            const isValid = validateFilters(
+                document.getElementById('minPrice'),
+                document.getElementById('maxPrice'),
+                document.getElementById('price-error')
+            )
+
+            if (!isValid) {
+                return // Don't apply if validation fails
+            }
+
             const minPrice = parseFloat(document.getElementById('minPrice').value) || 0
             const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity
             const bedrooms = parseInt(document.getElementById('bedrooms').value) || 0
@@ -490,11 +524,45 @@
             document.getElementById('maxGuests').value = ''
             document.getElementById('city').value = ''
             document.getElementById('sortBy').value = 'featured'
+            document.getElementById('price-error').classList.add('hidden')
             displayProperties(allProperties)
         }
 
+        // Add enter key listeners to filter inputs
+        function setupEnterKeyListeners() {
+            const filterInputs = ['minPrice', 'maxPrice', 'city']
+            filterInputs.forEach(id => {
+                const input = document.getElementById(id)
+                if (input) {
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault()
+                            applyFilters()
+                        }
+                    })
+                }
+            })
+
+            // Mobile filter inputs
+            const mobileFilterInputs = ['mobile-minPrice', 'mobile-maxPrice', 'mobile-city']
+            mobileFilterInputs.forEach(id => {
+                const input = document.getElementById(id)
+                if (input) {
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault()
+                            applyMobileFilters()
+                        }
+                    })
+                }
+            })
+        }
+
         // Load on page load
-        document.addEventListener('DOMContentLoaded', loadProperties)
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProperties()
+            setupEnterKeyListeners()
+        })
 
         // Mobile menu functionality
         const mobileMenuButton = document.getElementById('mobile-menu-button')
@@ -544,6 +612,17 @@
         }
 
         function applyMobileFilters() {
+            // Validate mobile filters first
+            const isValid = validateFilters(
+                document.getElementById('mobile-minPrice'),
+                document.getElementById('mobile-maxPrice'),
+                document.getElementById('mobile-price-error')
+            )
+
+            if (!isValid) {
+                return // Don't apply if validation fails
+            }
+
             // Sync mobile filter values to desktop
             document.getElementById('minPrice').value = document.getElementById('mobile-minPrice').value
             document.getElementById('maxPrice').value = document.getElementById('mobile-maxPrice').value
@@ -561,6 +640,7 @@
             document.getElementById('mobile-bedrooms').value = ''
             document.getElementById('mobile-maxGuests').value = ''
             document.getElementById('mobile-city').value = ''
+            document.getElementById('mobile-price-error').classList.add('hidden')
 
             clearFilters()
             closeMobileFilters()

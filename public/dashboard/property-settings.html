@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Settings - AspireTowards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <a href="/dashboard.html" class="text-xl font-display font-bold text-gray-900">AspireTowards</a>
+                    <span class="text-gray-400">|</span>
+                    <span class="text-gray-600">Property Settings</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard.html" class="text-gray-600 hover:text-teal-600 transition">Dashboard</a>
+                    <button id="logout-btn" class="text-red-600 hover:text-red-700 transition">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-display font-bold text-gray-900">Property Settings</h1>
+                    <p class="text-gray-600 mt-1">Configure automation, check-in details, and guest information</p>
+                </div>
+                <a href="/dashboard.html" class="text-teal-600 hover:text-teal-700 font-medium">← Back to Dashboard</a>
+            </div>
+
+            <!-- Property Selector -->
+            <div class="bg-white rounded-lg shadow-sm p-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Property</label>
+                <select id="property-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                    <option value="">Loading properties...</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Settings Form -->
+        <div id="settings-form" class="hidden">
+            <!-- Email Automation Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Email Automation</h2>
+                        <p class="text-sm text-gray-600 mt-1">Automatically send pre-stay emails to guests</p>
+                    </div>
+                </div>
+
+                <!-- Pre-Stay Email Toggle -->
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-medium text-gray-900">Pre-Stay Emails</h3>
+                            <p class="text-sm text-gray-600">Send check-in details before arrival</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="pre-stay-enabled" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                        </label>
+                    </div>
+
+                    <div id="pre-stay-config" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Send email how many days before check-in?</label>
+                                <input type="number" id="pre-stay-days" min="0" max="30" value="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                                <p class="text-xs text-gray-500 mt-1">Recommended: 3 days</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post-Stay Email Toggle (Future) -->
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg opacity-50">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-medium text-gray-900">Post-Stay Emails</h3>
+                            <p class="text-sm text-gray-600">Send thank you and review requests (Coming Soon)</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="post-stay-enabled" disabled class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 rounded-full"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lock PIN Automation Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Lock PIN Automation</h2>
+                        <p class="text-sm text-gray-600 mt-1">Automatically rotate lock codes for each booking</p>
+                    </div>
+                    <a href="lock-pins.html" id="manage-pins-link" class="text-teal-600 hover:text-teal-700 font-medium">Manage PINs →</a>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-medium text-gray-900">Rotating Lock PINs</h3>
+                            <p class="text-sm text-gray-600">Assign different PIN to each guest automatically</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="rotating-pins-enabled" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                        </label>
+                    </div>
+
+                    <div id="pin-status" class="hidden mt-4 p-3 bg-white rounded border border-gray-200">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Active PINs:</span>
+                            <span id="active-pins-count" class="font-semibold text-gray-900">0</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm mt-2">
+                            <span class="text-gray-600">Current Rotation Index:</span>
+                            <span id="current-pin-index" class="font-semibold text-gray-900">0</span>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <p class="text-xs text-gray-500">PINs are assigned in sequential order when bookings are approved.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property Information Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">Property Information</h2>
+
+                <!-- WiFi -->
+                <div class="mb-6">
+                    <h3 class="font-medium text-gray-900 mb-4">WiFi Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Network Name</label>
+                            <input type="text" id="wifi-network" placeholder="MyWiFiNetwork" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">WiFi Password</label>
+                            <input type="text" id="wifi-password" placeholder="password123" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Check-in Instructions -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Check-in Instructions</label>
+                    <textarea id="check-in-instructions" rows="4" placeholder="Check-in time is 3:00 PM. The lock code will be provided in your pre-stay email..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"></textarea>
+                    <p class="text-xs text-gray-500 mt-1">These instructions will be included in pre-stay emails</p>
+                </div>
+
+                <!-- Parking Instructions -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Parking Instructions</label>
+                    <textarea id="parking-instructions" rows="3" placeholder="Park in the driveway on the left side. Street parking is also available." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"></textarea>
+                </div>
+
+                <!-- House Rules -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">House Rules</label>
+                    <textarea id="house-rules" rows="4" placeholder="• No smoking&#10;• No pets&#10;• Quiet hours: 10 PM - 8 AM&#10;• Maximum occupancy: 4 guests" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"></textarea>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <div class="flex items-center justify-between bg-white rounded-lg shadow-sm p-6">
+                <div>
+                    <p class="text-sm text-gray-600">Changes are saved automatically to your property settings</p>
+                    <p class="text-xs text-gray-500 mt-1">Last saved: <span id="last-saved">Never</span></p>
+                </div>
+                <button id="save-settings-btn" class="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium">
+                    Save Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            <p class="text-gray-600 mt-4">Loading settings...</p>
+        </div>
+
+        <!-- No Property Selected -->
+        <div id="no-property-state" class="hidden text-center py-12 bg-white rounded-lg shadow-sm">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            <p class="text-gray-600 mt-4">Select a property to configure settings</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api'
+            : '/api';
+
+        let currentPropertyId = null;
+        let settings = null;
+
+        // Auth check
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/auth/login.html';
+        }
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/auth/login.html';
+        });
+
+        // Load properties
+        async function loadProperties() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load properties');
+
+                const data = await response.json();
+                const select = document.getElementById('property-select');
+
+                if (data.properties && data.properties.length > 0) {
+                    select.innerHTML = '<option value="">Select a property...</option>';
+                    data.properties.forEach(property => {
+                        const option = document.createElement('option');
+                        option.value = property.id;
+                        option.textContent = property.name;
+                        select.appendChild(option);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">No properties found</option>';
+                }
+            } catch (error) {
+                console.error('Error loading properties:', error);
+                alert('Failed to load properties. Please try again.');
+            }
+        }
+
+        // Load settings for selected property
+        async function loadSettings(propertyId) {
+            document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('settings-form').classList.add('hidden');
+            document.getElementById('no-property-state').classList.add('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/settings`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load settings');
+
+                const data = await response.json();
+                settings = data.settings;
+
+                // Populate form
+                document.getElementById('pre-stay-enabled').checked = settings.preStayEmailEnabled || false;
+                document.getElementById('pre-stay-days').value = settings.preStayEmailDays || 3;
+                document.getElementById('rotating-pins-enabled').checked = settings.rotatingPinsEnabled || false;
+                document.getElementById('wifi-network').value = settings.wifiNetwork || '';
+                document.getElementById('wifi-password').value = settings.wifiPassword || '';
+                document.getElementById('check-in-instructions').value = settings.checkInInstructions || '';
+                document.getElementById('parking-instructions').value = settings.parkingInstructions || '';
+                document.getElementById('house-rules').value = settings.houseRules || '';
+
+                // Update manage pins link
+                document.getElementById('manage-pins-link').href = `lock-pins.html?property=${propertyId}`;
+
+                // Show/hide sections based on toggles
+                togglePreStayConfig();
+                togglePinStatus();
+
+                // Load PIN count if rotating enabled
+                if (settings.rotatingPinsEnabled) {
+                    await loadPinCount(propertyId);
+                }
+
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('settings-form').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                document.getElementById('loading-state').classList.add('hidden');
+                alert('Failed to load settings. Please try again.');
+            }
+        }
+
+        // Load PIN count
+        async function loadPinCount(propertyId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/lock-pins`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                const activePins = data.pins.filter(p => p.isActive).length;
+                document.getElementById('active-pins-count').textContent = activePins;
+                document.getElementById('current-pin-index').textContent = data.currentPinIndex || 0;
+            } catch (error) {
+                console.error('Error loading PIN count:', error);
+            }
+        }
+
+        // Toggle pre-stay config visibility
+        function togglePreStayConfig() {
+            const enabled = document.getElementById('pre-stay-enabled').checked;
+            const config = document.getElementById('pre-stay-config');
+            if (enabled) {
+                config.classList.remove('hidden');
+            } else {
+                config.classList.add('hidden');
+            }
+        }
+
+        // Toggle PIN status visibility
+        function togglePinStatus() {
+            const enabled = document.getElementById('rotating-pins-enabled').checked;
+            const status = document.getElementById('pin-status');
+            if (enabled) {
+                status.classList.remove('hidden');
+            } else {
+                status.classList.add('hidden');
+            }
+        }
+
+        // Save settings
+        async function saveSettings() {
+            if (!currentPropertyId) return;
+
+            const saveBtn = document.getElementById('save-settings-btn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                const payload = {
+                    preStayEmailEnabled: document.getElementById('pre-stay-enabled').checked,
+                    preStayEmailDays: parseInt(document.getElementById('pre-stay-days').value),
+                    rotatingPinsEnabled: document.getElementById('rotating-pins-enabled').checked,
+                    wifiNetwork: document.getElementById('wifi-network').value,
+                    wifiPassword: document.getElementById('wifi-password').value,
+                    checkInInstructions: document.getElementById('check-in-instructions').value,
+                    parkingInstructions: document.getElementById('parking-instructions').value,
+                    houseRules: document.getElementById('house-rules').value
+                };
+
+                const response = await fetch(`${API_BASE_URL}/properties/${currentPropertyId}/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('Failed to save settings');
+
+                const data = await response.json();
+                settings = data.settings;
+
+                // Update last saved time
+                const now = new Date().toLocaleTimeString();
+                document.getElementById('last-saved').textContent = now;
+
+                saveBtn.textContent = 'Saved!';
+                saveBtn.classList.remove('bg-teal-600', 'hover:bg-teal-700');
+                saveBtn.classList.add('bg-green-600');
+
+                setTimeout(() => {
+                    saveBtn.textContent = 'Save Settings';
+                    saveBtn.classList.remove('bg-green-600');
+                    saveBtn.classList.add('bg-teal-600', 'hover:bg-teal-700');
+                    saveBtn.disabled = false;
+                }, 2000);
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Failed to save settings. Please try again.');
+                saveBtn.textContent = 'Save Settings';
+                saveBtn.disabled = false;
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('property-select').addEventListener('change', (e) => {
+            currentPropertyId = e.target.value;
+            if (currentPropertyId) {
+                loadSettings(currentPropertyId);
+            } else {
+                document.getElementById('settings-form').classList.add('hidden');
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('no-property-state').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('pre-stay-enabled').addEventListener('change', togglePreStayConfig);
+        document.getElementById('rotating-pins-enabled').addEventListener('change', togglePinStatus);
+        document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+
+        // Initialize
+        loadProperties();
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('no-property-state').classList.remove('hidden');
+    </script>
+</body>
+</html>

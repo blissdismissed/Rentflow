@@ -761,6 +761,165 @@ Need assistance? Contact us at ${FROM_EMAIL}
   }
 
   /**
+   * Send booking confirmation notification to cleaners
+   * @param {Object} booking - Booking object
+   * @param {Object} property - Property object
+   * @param {Array} cleaners - Array of cleaner objects
+   */
+  async sendBookingNotificationToCleaners(booking, property, cleaners) {
+    try {
+      const checkInDate = new Date(booking.checkIn).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const checkOutDate = new Date(booking.checkOut).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      if (!cleaners || cleaners.length === 0) {
+        console.log('No cleaners to notify for this property');
+        return { success: true };
+      }
+
+      // Send email to each cleaner
+      const emailPromises = cleaners.map(cleaner => {
+        const msg = {
+          to: cleaner.email,
+          from: {
+            email: FROM_EMAIL,
+            name: FROM_NAME
+          },
+          replyTo: REPLY_TO_EMAIL,
+          subject: `New Booking Confirmed: ${property.name} - ${checkInDate}`,
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: #10b981; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+                .booking-details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
+                .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+                .detail-row:last-child { border-bottom: none; }
+                .label { font-weight: bold; color: #6b7280; }
+                .value { color: #111827; }
+                .highlight { background: #d1fae5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
+                .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>🏠 New Booking Confirmed</h1>
+                </div>
+                <div class="content">
+                  <p>Hi ${cleaner.name},</p>
+
+                  <p>A new booking has been confirmed at <strong>${property.name}</strong>.</p>
+
+                  <div class="highlight">
+                    <strong>📅 Cleaning Required:</strong> Check-out is on ${checkOutDate}. Please schedule cleaning accordingly.
+                  </div>
+
+                  <div class="booking-details">
+                    <h3 style="margin-top: 0; color: #10b981;">Booking Details</h3>
+                    <div class="detail-row">
+                      <span class="label">Property:</span>
+                      <span class="value">${property.name}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Location:</span>
+                      <span class="value">${property.city}, ${property.state}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Confirmation Code:</span>
+                      <span class="value"><strong>${booking.confirmationCode}</strong></span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Check-in:</span>
+                      <span class="value">${checkInDate}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Check-out:</span>
+                      <span class="value">${checkOutDate}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Nights:</span>
+                      <span class="value">${booking.nights}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Number of Guests:</span>
+                      <span class="value">${booking.numberOfGuests}</span>
+                    </div>
+                  </div>
+
+                  <div style="text-align: center; margin: 30px 0;">
+                    <p style="color: #6b7280;">View your complete cleaning schedule:</p>
+                    <a href="${FRONTEND_URL}/cleaner-dashboard.html" style="display: inline-block; background: #10b981; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                      View Calendar
+                    </a>
+                  </div>
+
+                  <p style="color: #6b7280; font-size: 14px;">
+                    If you have any questions about this booking, please contact the property owner.
+                  </p>
+                </div>
+
+                <div class="footer">
+                  <p>This is an automated notification from AspireTowards.<br>
+                  For assistance, please contact ${FROM_EMAIL}</p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `,
+          text: `
+NEW BOOKING CONFIRMED
+
+Hi ${cleaner.name},
+
+A new booking has been confirmed at ${property.name}.
+
+Cleaning Required: Check-out is on ${checkOutDate}. Please schedule cleaning accordingly.
+
+Booking Details:
+- Property: ${property.name}
+- Location: ${property.city}, ${property.state}
+- Confirmation Code: ${booking.confirmationCode}
+- Check-in: ${checkInDate}
+- Check-out: ${checkOutDate}
+- Nights: ${booking.nights}
+- Number of Guests: ${booking.numberOfGuests}
+
+View your complete cleaning schedule: ${FRONTEND_URL}/cleaner-dashboard.html
+
+If you have any questions, please contact the property owner.
+          `
+        };
+
+        return sgMail.send(msg);
+      });
+
+      await Promise.all(emailPromises);
+      console.log(`✅ Booking confirmation emails sent to ${cleaners.length} cleaner(s)`);
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Error sending booking notification to cleaners:', error);
+      if (error.response) {
+        console.error('SendGrid error details:', error.response.body);
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Send balance payment reminder to guest
    * @param {Object} booking - Booking object
    * @param {Object} property - Property object
@@ -867,6 +1026,45 @@ Questions? Contact us at ${FROM_EMAIL}
       return { success: true };
     } catch (error) {
       console.error('Error sending balance reminder email:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send custom email with template content
+   * Used for pre-stay emails, post-stay emails, and custom templates
+   * @param {string} to - Recipient email address
+   * @param {string} subject - Email subject
+   * @param {string} htmlContent - HTML email content
+   * @param {string} plainTextContent - Optional plain text content
+   */
+  async sendCustomEmail(to, subject, htmlContent, plainTextContent = null) {
+    try {
+      if (!SENDGRID_API_KEY) {
+        console.warn('⚠️ SendGrid not configured. Email not sent.');
+        return { success: false, reason: 'SendGrid not configured' };
+      }
+
+      const msg = {
+        to,
+        from: {
+          email: FROM_EMAIL,
+          name: FROM_NAME
+        },
+        replyTo: REPLY_TO_EMAIL,
+        subject,
+        html: htmlContent
+      };
+
+      if (plainTextContent) {
+        msg.text = plainTextContent;
+      }
+
+      await sgMail.send(msg);
+      console.log(`✅ Custom email sent to: ${to} - Subject: ${subject}`);
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Error sending custom email:', error);
       throw error;
     }
   }
