@@ -494,6 +494,11 @@
         .flatpickr-day.selected-checkin:hover {
             background: #059669 !important;
         }
+
+        /* Hide red X on check-in date in checkout calendar */
+        .flatpickr-day.selected-checkin::after {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="bg-gray-50">

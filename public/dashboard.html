@@ -267,7 +267,7 @@
                     </div>
                 </a>
 
-                <a href="/dashboard/property-settings.html" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-purple-500 hover:shadow-md transition-all duration-200 text-left">
+                <div onclick="toggleSettingsSection()" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-purple-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-purple-100 rounded-lg">
                             <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -280,9 +280,9 @@
                             <p class="text-sm text-gray-600">Configure automation & emails</p>
                         </div>
                     </div>
-                </a>
+                </div>
 
-                <a href="/dashboard/lock-pins.html" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all duration-200 text-left">
+                <div onclick="togglePinsSection()" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-blue-100 rounded-lg">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -294,9 +294,9 @@
                             <p class="text-sm text-gray-600">Rotate access codes</p>
                         </div>
                     </div>
-                </a>
+                </div>
 
-                <a href="/dashboard/email-templates.html" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-pink-500 hover:shadow-md transition-all duration-200 text-left">
+                <div onclick="toggleTemplatesSection()" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-pink-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-pink-100 rounded-lg">
                             <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -308,9 +308,9 @@
                             <p class="text-sm text-gray-600">Customize guest emails</p>
                         </div>
                     </div>
-                </a>
+                </div>
 
-                <a href="/dashboard/pin-history.html" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-indigo-500 hover:shadow-md transition-all duration-200 text-left">
+                <div onclick="toggleHistorySection()" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-indigo-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-indigo-100 rounded-lg">
                             <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -322,7 +322,7 @@
                             <p class="text-sm text-gray-600">View usage audit trail</p>
                         </div>
                     </div>
-                </a>
+                </div>
 
                 <button class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-green-500 hover:shadow-md transition-all duration-200 text-left">
                     <div class="flex items-center space-x-3">
@@ -337,6 +337,78 @@
                         </div>
                     </div>
                 </button>
+            </div>
+        </div>
+
+        <!-- Property Settings Section (Expandable) -->
+        <div id="settings-section" class="mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-display font-semibold text-gray-900">Property Settings</h3>
+                    <button onclick="toggleSettingsSection()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-gray-600 mb-4">Configure automation settings, check-in details, and guest information for your properties.</p>
+                <div id="settings-content" class="text-gray-500">
+                    <p>Select a property from your list to configure settings.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lock PINs Section (Expandable) -->
+        <div id="pins-section" class="mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-display font-semibold text-gray-900">Manage Lock PINs</h3>
+                    <button onclick="togglePinsSection()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-gray-600 mb-4">Add, edit, and reorder rotating lock PINs for guest access.</p>
+                <div id="pins-content" class="text-gray-500">
+                    <p>Select a property from your list to manage lock PINs.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Templates Section (Expandable) -->
+        <div id="templates-section" class="mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-display font-semibold text-gray-900">Email Templates</h3>
+                    <button onclick="toggleTemplatesSection()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-gray-600 mb-4">Create and customize automated guest email templates.</p>
+                <div id="templates-content" class="text-gray-500">
+                    <p>Select a property from your list to manage email templates.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PIN History Section (Expandable) -->
+        <div id="history-section" class="mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-display font-semibold text-gray-900">PIN Usage History</h3>
+                    <button onclick="toggleHistorySection()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-gray-600 mb-4">Complete audit trail of lock PIN assignments and usage.</p>
+                <div id="history-content" class="text-gray-500">
+                    <p>Select a property from your list to view PIN history.</p>
+                </div>
             </div>
         </div>
 
@@ -623,6 +695,86 @@
                 }, 100);
             } else {
                 // Hide section
+                section.classList.add('hidden');
+            }
+        }
+
+        // Toggle Settings Section
+        function toggleSettingsSection() {
+            const section = document.getElementById('settings-section');
+            const isHidden = section.classList.contains('hidden');
+
+            // Hide all other sections first
+            document.getElementById('pins-section').classList.add('hidden');
+            document.getElementById('templates-section').classList.add('hidden');
+            document.getElementById('history-section').classList.add('hidden');
+
+            if (isHidden) {
+                section.classList.remove('hidden');
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        // Toggle Lock PINs Section
+        function togglePinsSection() {
+            const section = document.getElementById('pins-section');
+            const isHidden = section.classList.contains('hidden');
+
+            // Hide all other sections first
+            document.getElementById('settings-section').classList.add('hidden');
+            document.getElementById('templates-section').classList.add('hidden');
+            document.getElementById('history-section').classList.add('hidden');
+
+            if (isHidden) {
+                section.classList.remove('hidden');
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        // Toggle Email Templates Section
+        function toggleTemplatesSection() {
+            const section = document.getElementById('templates-section');
+            const isHidden = section.classList.contains('hidden');
+
+            // Hide all other sections first
+            document.getElementById('settings-section').classList.add('hidden');
+            document.getElementById('pins-section').classList.add('hidden');
+            document.getElementById('history-section').classList.add('hidden');
+
+            if (isHidden) {
+                section.classList.remove('hidden');
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        // Toggle PIN History Section
+        function toggleHistorySection() {
+            const section = document.getElementById('history-section');
+            const isHidden = section.classList.contains('hidden');
+
+            // Hide all other sections first
+            document.getElementById('settings-section').classList.add('hidden');
+            document.getElementById('pins-section').classList.add('hidden');
+            document.getElementById('templates-section').classList.add('hidden');
+
+            if (isHidden) {
+                section.classList.remove('hidden');
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
                 section.classList.add('hidden');
             }
         }

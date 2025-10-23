@@ -92,4 +92,4 @@ __pycache__/         # if Python backend
 *.pid
 *.seed
 *.tgz
-# docs/  # COMMENTED OUT - we need to track our documentation
+docs/
