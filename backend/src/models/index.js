@@ -12,6 +12,7 @@ const GuestStay = require('./GuestStay')
 const PropertySettings = require('./PropertySettings')
 const PropertyLockPin = require('./PropertyLockPin')
 const EmailTemplate = require('./EmailTemplate')
+const Review = require('./Review')
 
 // Define associations
 User.hasMany(Property, { foreignKey: 'userId', as: 'properties' })
@@ -81,6 +82,16 @@ PropertyLockPin.hasMany(Booking, { foreignKey: 'lockPinId', as: 'bookings' })
 Property.hasMany(EmailTemplate, { foreignKey: 'propertyId', as: 'emailTemplates' })
 EmailTemplate.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' })
 
+// Review associations
+Property.hasMany(Review, { foreignKey: 'propertyId', as: 'reviews' })
+Review.belongsTo(Property, { foreignKey: 'propertyId', as: 'Property' })
+
+Booking.hasMany(Review, { foreignKey: 'bookingId', as: 'reviews' })
+Review.belongsTo(Booking, { foreignKey: 'bookingId', as: 'booking' })
+
+Guest.hasMany(Review, { foreignKey: 'guestId', as: 'reviews' })
+Review.belongsTo(Guest, { foreignKey: 'guestId', as: 'guest' })
+
 module.exports = {
   User,
   Property,
@@ -95,5 +106,6 @@ module.exports = {
   GuestStay,
   PropertySettings,
   PropertyLockPin,
-  EmailTemplate
+  EmailTemplate,
+  Review
 }
