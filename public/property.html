@@ -749,6 +749,60 @@
 
         <!-- Property Details & Booking -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+            <!-- Mobile Booking Card (Shown at top on mobile only) -->
+            <div class="lg:hidden mb-6">
+                <div class="bg-white rounded-xl shadow-lg p-4">
+                    <div class="mb-4">
+                        <div class="flex items-baseline">
+                            <span class="text-2xl font-bold text-gray-900">$<span id="mobile-booking-price">0</span></span>
+                            <span class="text-gray-600 ml-2">/ night</span>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Booking Form -->
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Check-in</label>
+                            <input type="text" id="mobile-check-in" placeholder="Select date" readonly
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Check-out</label>
+                            <input type="text" id="mobile-check-out" placeholder="Select date" readonly
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Guests</label>
+                            <select id="mobile-num-guests" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
+                                <!-- Options populated dynamically -->
+                            </select>
+                        </div>
+
+                        <!-- Mobile Price Breakdown -->
+                        <div id="mobile-price-breakdown" class="hidden border-t border-gray-200 pt-3 space-y-2">
+                            <div class="flex justify-between text-sm text-gray-700">
+                                <span>$<span id="mobile-breakdown-price">0</span> × <span id="mobile-breakdown-nights">0</span> nights</span>
+                                <span>$<span id="mobile-breakdown-base">0</span></span>
+                            </div>
+                            <div id="mobile-breakdown-cleaning-row" class="flex justify-between text-sm text-gray-700 hidden">
+                                <span>Cleaning fee</span>
+                                <span>$<span id="mobile-breakdown-cleaning">0</span></span>
+                            </div>
+                            <div class="flex justify-between font-bold text-gray-900 border-t border-gray-200 pt-2">
+                                <span>Total</span>
+                                <span>$<span id="mobile-total-price">0</span></span>
+                            </div>
+                        </div>
+
+                        <button type="button" id="mobile-book-now" class="w-full bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition text-sm">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Left Column - Details -->
                 <div class="lg:col-span-2">
@@ -1393,18 +1447,30 @@
             }
             document.getElementById('cancellation-policy').textContent = policyMap[property.cancellationPolicy] || 'Contact host for details'
 
-            // Booking card
+            // Booking card (desktop and mobile)
             document.getElementById('booking-price').textContent = property.basePrice
+            document.getElementById('mobile-booking-price').textContent = property.basePrice
             if (property.cleaningFee > 0) {
                 document.getElementById('cleaning-fee-display').textContent = `+ $${property.cleaningFee} cleaning fee`
                 document.getElementById('cleaning-fee-display').classList.remove('hidden')
             }
 
-            // Guests dropdown
+            // Guests dropdown (desktop and mobile)
             const guestsSelect = document.getElementById('num-guests')
-            guestsSelect.innerHTML = Array.from({ length: property.maxGuests }, (_, i) => i + 1)
+            const mobileGuestsSelect = document.getElementById('mobile-num-guests')
+            const guestOptions = Array.from({ length: property.maxGuests }, (_, i) => i + 1)
                 .map(num => `<option value="${num}">${num} guest${num !== 1 ? 's' : ''}</option>`)
                 .join('')
+            guestsSelect.innerHTML = guestOptions
+            mobileGuestsSelect.innerHTML = guestOptions
+
+            // Sync guest selectors
+            guestsSelect.addEventListener('change', () => {
+                mobileGuestsSelect.value = guestsSelect.value
+            })
+            mobileGuestsSelect.addEventListener('change', () => {
+                guestsSelect.value = mobileGuestsSelect.value
+            })
         }
 
         // Initialize date pickers
@@ -1548,6 +1614,55 @@
             // Make inputs readonly to prevent keyboard on mobile
             document.getElementById('check-in').setAttribute('readonly', 'readonly')
             document.getElementById('check-out').setAttribute('readonly', 'readonly')
+
+            // Initialize mobile calendars with same settings
+            const mobileCheckInPicker = flatpickr('#mobile-check-in', {
+                ...commonOptions,
+                minDate: tomorrow,
+                onChange: function(selectedDates, dateStr) {
+                    // Sync with desktop
+                    document.getElementById('check-in').value = dateStr
+                    checkInPicker.setDate(dateStr)
+                    if (dateStr && mobileCheckOutPicker) {
+                        const checkInDate = new Date(dateStr)
+                        const nextDay = new Date(checkInDate)
+                        nextDay.setDate(checkInDate.getDate() + 1)
+                        mobileCheckOutPicker.set('minDate', nextDay)
+                    }
+                    calculatePrice()
+                }
+            })
+
+            const mobileCheckOutPicker = flatpickr('#mobile-check-out', {
+                ...commonOptions,
+                minDate: tomorrow,
+                onChange: function(selectedDates, dateStr) {
+                    // Sync with desktop
+                    document.getElementById('check-out').value = dateStr
+                    checkOutPicker.setDate(dateStr)
+                    calculatePrice()
+                }
+            })
+
+            // Sync desktop to mobile
+            checkInPicker.config.onChange.push((selectedDates, dateStr) => {
+                document.getElementById('mobile-check-in').value = dateStr
+                mobileCheckInPicker.setDate(dateStr)
+            })
+
+            checkOutPicker.config.onChange.push((selectedDates, dateStr) => {
+                document.getElementById('mobile-check-out').value = dateStr
+                mobileCheckOutPicker.setDate(dateStr)
+            })
+
+            // Make mobile inputs readonly
+            document.getElementById('mobile-check-in').setAttribute('readonly', 'readonly')
+            document.getElementById('mobile-check-out').setAttribute('readonly', 'readonly')
+
+            // Sync mobile book button
+            document.getElementById('mobile-book-now').addEventListener('click', () => {
+                document.getElementById('book-now').click()
+            })
         }
 
         // Add legend below the flatpickr calendar
@@ -1611,7 +1726,7 @@
                 if (data.success && data.available) {
                     const pricing = data.pricing
 
-                    // Show breakdown
+                    // Show breakdown (desktop)
                     document.getElementById('price-breakdown').classList.remove('hidden')
                     document.getElementById('breakdown-price').textContent = pricing.pricePerNight
                     document.getElementById('breakdown-nights').textContent = pricing.nights
@@ -1623,6 +1738,18 @@
                     if (pricing.cleaningFee > 0) {
                         document.getElementById('breakdown-cleaning-row').classList.remove('hidden')
                         document.getElementById('breakdown-cleaning').textContent = pricing.cleaningFee
+                    }
+
+                    // Show breakdown (mobile)
+                    document.getElementById('mobile-price-breakdown').classList.remove('hidden')
+                    document.getElementById('mobile-breakdown-price').textContent = pricing.pricePerNight
+                    document.getElementById('mobile-breakdown-nights').textContent = pricing.nights
+                    document.getElementById('mobile-breakdown-base').textContent = pricing.baseAmount
+                    document.getElementById('mobile-total-price').textContent = pricing.subtotal
+
+                    if (pricing.cleaningFee > 0) {
+                        document.getElementById('mobile-breakdown-cleaning-row').classList.remove('hidden')
+                        document.getElementById('mobile-breakdown-cleaning').textContent = pricing.cleaningFee
                     }
 
                     // Update crypto prices if wallet is connected
