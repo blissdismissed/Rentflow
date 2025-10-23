@@ -1,7 +1,9 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { DataTypes, Model } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-const Review = sequelize.define('Review', {
+class Review extends Model {}
+
+Review.init({
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -140,6 +142,8 @@ const Review = sequelize.define('Review', {
     defaultValue: 0
   }
 }, {
+  sequelize,
+  modelName: 'Review',
   tableName: 'reviews',
   timestamps: true,
   indexes: [
