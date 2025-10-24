@@ -740,12 +740,19 @@
             const select = document.getElementById(selectId);
             select.innerHTML = '<option value="">Choose a property...</option>';
 
-            userProperties.forEach(property => {
+            userProperties.forEach((property, index) => {
                 const option = document.createElement('option');
                 option.value = property.id;
                 option.textContent = property.name;
                 select.appendChild(option);
             });
+
+            // Auto-select first property if only one exists
+            if (userProperties.length === 1) {
+                select.value = userProperties[0].id;
+                // Trigger change event to load data
+                select.dispatchEvent(new Event('change'));
+            }
         }
 
         // Toggle Settings Section
