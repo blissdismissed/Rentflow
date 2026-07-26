@@ -1,5 +1,6 @@
 const Booking = require('../models/Booking');
 const Property = require('../models/Property');
+const { Guest, GuestStay } = require('../models');
 const { Op } = require('sequelize');
 const stripeService = require('../services/stripeService');
 const emailService = require('../services/emailService');
@@ -197,6 +198,43 @@ class BookingController {
         depositAmount: (totalAmount * 0.1).toFixed(2),
         balanceAmount: (totalAmount * 0.9).toFixed(2)
       });
+
+      // Upsert guest contact record for website bookings
+      if (guestEmail || guestPhone) {
+        try {
+          let guest = guestEmail ? await Guest.findOne({ where: { email: guestEmail } }) : null
+          if (!guest && guestPhone) guest = await Guest.findOne({ where: { phoneNumber: guestPhone } })
+          if (!guest) {
+            guest = await Guest.create({
+              email: guestEmail || null,
+              name: guestName,
+              phoneNumber: guestPhone || null,
+              totalStays: 0,
+              totalSpent: 0,
+              marketingOptIn: true,
+            })
+          } else {
+            await guest.update({
+              name: guest.name || guestName,
+              phoneNumber: guest.phoneNumber || guestPhone || null,
+              email: guest.email || guestEmail || null,
+            })
+          }
+          await GuestStay.create({
+            guestId: guest.id,
+            propertyId,
+            bookingId: booking.id,
+            bookingSource: 'website',
+            checkIn,
+            checkOut,
+            nights,
+            numberOfGuests: numberOfGuests || 1,
+            totalAmount: totalAmount || 0,
+          })
+        } catch (guestErr) {
+          console.error('Guest upsert after booking creation failed (non-fatal):', guestErr.message)
+        }
+      }
 
       res.status(201).json({
         success: true,

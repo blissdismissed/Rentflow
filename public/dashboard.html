@@ -248,6 +248,67 @@
             </div>
         </div>
 
+        <!-- Guests Section (Expandable) -->
+        <div id="guests-section" class="mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-xl font-display font-semibold text-gray-900">Past Guests &amp; Contacts</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">Imported from Evolve CSV, Airbnb, VRBO, and direct website bookings</p>
+                    </div>
+                    <button onclick="toggleGuestsSection()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Filters + actions bar -->
+                <div class="flex flex-wrap gap-3 mb-4 items-center">
+                    <select id="guests-property-filter" onchange="loadGuests()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">All properties</option>
+                    </select>
+                    <input type="text" id="guests-search" placeholder="Search name, email, phone…" oninput="loadGuests()"
+                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm w-56">
+                    <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+                        <input type="checkbox" id="guests-marketing-only" onchange="loadGuests()" class="rounded">
+                        Marketing opt-in only
+                    </label>
+                    <div class="ml-auto flex gap-2">
+                        <span id="guests-selected-count" class="hidden text-sm text-gray-500 self-center"></span>
+                        <button id="guests-email-btn" onclick="openEmailModal()" disabled
+                            class="px-4 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            Send Email
+                        </button>
+                        <button onclick="loadGuests()" class="px-3 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50">Refresh</button>
+                    </div>
+                </div>
+
+                <!-- Guest table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th class="pb-3 pr-3 w-8">
+                                    <input type="checkbox" id="guests-select-all" onchange="toggleSelectAllGuests()" class="rounded">
+                                </th>
+                                <th class="pb-3 px-2">Name</th>
+                                <th class="pb-3 px-2">Email</th>
+                                <th class="pb-3 px-2">Phone</th>
+                                <th class="pb-3 px-2">Properties</th>
+                                <th class="pb-3 px-2 text-center">Stays</th>
+                                <th class="pb-3 px-2">Last Stay</th>
+                                <th class="pb-3 px-2">Tags</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guests-table-body">
+                            <tr><td colspan="8" class="py-8 text-center text-gray-400 text-sm">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-3 text-xs text-gray-400" id="guests-count-label"></p>
+            </div>
+        </div>
+
         <!-- Quick Actions -->
         <div class="mb-8">
             <h3 class="text-xl font-display font-semibold text-gray-900 mb-4">Quick Actions</h3>
@@ -277,6 +338,20 @@
                         <div>
                             <h4 class="font-semibold text-gray-900">Property Settings</h4>
                             <p class="text-sm text-gray-600">Configure automation & emails</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="toggleGuestsSection()" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-emerald-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-emerald-100 rounded-lg">
+                            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Past Guests</h4>
+                            <p class="text-sm text-gray-600">Contacts, repeat bookers, outreach</p>
                         </div>
                     </div>
                 </div>
@@ -869,6 +944,7 @@
                                 <option value="expenses">Expense Items (CSV)</option>
                                 <option value="annual-summary">Annual Totals — all years (CSV)</option>
                                 <option value="caribbean-pdf">Caribbean Statement (PDF)</option>
+                                <option value="evolve-csv">Evolve Booking Report (CSV)</option>
                             </select>
                         </div>
                         <div id="fin-import-year-wrap">
@@ -975,6 +1051,49 @@
         </div>
 
     </main>
+
+    <!-- Guest Email Compose Modal -->
+    <div id="guests-email-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg flex flex-col">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Send Email to Guests</h3>
+                <button onclick="closeEmailModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sending to</label>
+                    <p class="text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2" id="email-modal-recipients"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">From name</label>
+                    <input id="email-modal-from" type="text" placeholder="e.g. Caribbean 1225 Myrtle Beach"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                    <input id="email-modal-subject" type="text" placeholder="e.g. Come back soon — special rate for you!"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea id="email-modal-message" rows="6" placeholder="Hi [Name], ..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
+                    <p class="text-xs text-gray-400 mt-1">Only guests with email addresses and marketing opt-in will receive this.</p>
+                </div>
+                <div id="email-modal-result" class="hidden text-sm rounded-lg px-3 py-2"></div>
+            </div>
+            <div class="p-6 border-t flex justify-end gap-3">
+                <button onclick="closeEmailModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                <button id="email-modal-send-btn" onclick="sendGuestEmail()"
+                    class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Edit Name Modal -->
     <div id="edit-name-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
@@ -2607,6 +2726,7 @@ Total: $${props.totalAmount}`);
                 'expenses': 'One row per expense item. Columns: Month, Date, Expense, Vendor, Amount, Tag.',
                 'annual-summary': 'One row per year. Used for historical years without monthly detail. Download template below.',
                 'caribbean-pdf': 'Upload the PDF statement you download from the Caribbean Resorts owner portal.',
+                'evolve-csv': 'Upload the "Bookings Report" CSV from your Evolve owner portal. Imports financials AND adds guests to your contacts.',
             };
             document.getElementById('fin-import-type-hint').textContent = hints[type] || '';
 
@@ -2632,10 +2752,15 @@ Total: $${props.totalAmount}`);
                     const rawRows = parseCSV(e.target.result);
                     let rows;
                     if (type === 'annual-summary') rows = mapAnnualSummaryRows(rawRows);
+                    else if (type === 'evolve-csv') rows = mapEvolveBookingRows(rawRows);
                     else if (type === 'monthly') rows = mapMonthlyRows(rawRows);
                     else rows = mapExpenseRows(rawRows);
 
-                    if (rows.length === 0) {
+                    // Evolve returns { monthlyAggregates, guestContacts } object
+                    const isEmpty = type === 'evolve-csv'
+                        ? (rows.monthlyAggregates.length === 0 && rows.guestContacts.length === 0)
+                        : rows.length === 0;
+                    if (isEmpty) {
                         showImportError('No valid data rows found. Make sure the file has a header row and a Year or Month column.');
                         return;
                     }
@@ -2644,7 +2769,10 @@ Total: $${props.totalAmount}`);
                     showImportPreview(rows, type);
                     document.getElementById('fin-import-error').classList.add('hidden');
                     document.getElementById('fin-import-confirm-btn').disabled = false;
-                    document.getElementById('fin-import-confirm-btn').textContent = `Import ${rows.length} row${rows.length !== 1 ? 's' : ''}`;
+                    const rowCount = type === 'evolve-csv'
+                        ? `${rows.monthlyAggregates.length} month(s) + ${rows.guestContacts.length} guest(s)`
+                        : `${rows.length} row${rows.length !== 1 ? 's' : ''}`;
+                    document.getElementById('fin-import-confirm-btn').textContent = `Import ${rowCount}`;
                 } catch (err) {
                     showImportError('Failed to parse file: ' + err.message);
                 }
@@ -2699,6 +2827,81 @@ Total: $${props.totalAmount}`);
                 showImportError('PDF parse failed: ' + err.message);
                 document.getElementById('fin-import-confirm-btn').textContent = 'Import';
             }
+        }
+
+        // Map Evolve Booking Report CSV — returns { monthlyAggregates, guestContacts }
+        function mapEvolveBookingRows(rawRows) {
+            let headerIdx = 0;
+            for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+                const normed = rawRows[i].map(normHeader);
+                if (normed.includes('guestname') || normed.includes('status') || normed.includes('bookingid')) { headerIdx = i; break; }
+            }
+            const headers = rawRows[headerIdx].map(normHeader);
+            const col = (aliases) => { for (const a of aliases) { const i = headers.indexOf(a); if (i !== -1) return i; } return -1; };
+            const cols = {
+                guestName:    col(['guestname','name']),
+                status:       col(['status']),
+                bookingId:    col(['bookingid']),
+                checkIn:      col(['checkin','checkindate']),
+                checkOut:     col(['checkout','checkoutdate']),
+                nights:       col(['nights']),
+                nightsStayed: col(['nightsstayed']),
+                totalPayout:  col(['totalpayout','payout','total']),
+                adults:       col(['adults']),
+                children:     col(['children']),
+                listing:      col(['listing']),
+                guestEmail:   col(['guestemail','email']),
+                guestPhone:   col(['guestphone','phone']),
+                bookingSite:  col(['bookingsite','site','channel']),
+            };
+
+            const monthlyMap = {};
+            const guests = [];
+
+            for (const row of rawRows.slice(headerIdx + 1)) {
+                if (!row.some(c => c)) continue;
+                const get = (k) => cols[k] !== -1 ? row[cols[k]] : '';
+                const status = get('status').trim();
+                const checkInStr = get('checkIn').trim();
+                const payout = parseMoney(get('totalPayout'));
+                const nightsStayed = parseInt(get('nightsStayed')) || 0;
+                const nights = parseInt(get('nights')) || nightsStayed;
+
+                // Financial aggregation: Checked out bookings only, by check-IN month
+                if (status === 'Checked out' && checkInStr) {
+                    const d = new Date(checkInStr);
+                    if (!isNaN(d)) {
+                        const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+                        if (!monthlyMap[key]) monthlyMap[key] = { year: d.getFullYear(), month: d.getMonth() + 1, grossIncome: 0, nightsBooked: 0, numReservations: 0 };
+                        monthlyMap[key].grossIncome += payout;
+                        monthlyMap[key].nightsBooked += nightsStayed || nights;
+                        monthlyMap[key].numReservations++;
+                    }
+                }
+
+                // Guest contacts: all non-canceled
+                if (status !== 'Canceled') {
+                    guests.push({
+                        guestName: get('guestName').trim(),
+                        status,
+                        externalBookingId: get('bookingId').trim(),
+                        checkIn: checkInStr,
+                        checkOut: get('checkOut').trim(),
+                        nights,
+                        nightsStayed,
+                        totalPayout: payout,
+                        adults: parseInt(get('adults')) || 1,
+                        children: parseInt(get('children')) || 0,
+                        email: get('guestEmail').trim() || null,
+                        phone: get('guestPhone').trim() || null,
+                        listing: get('listing').trim(),
+                        bookingSource: (get('bookingSite') || 'evolve').toLowerCase().replace(/[. ]/g, '').replace('bookingcom','booking.com'),
+                    });
+                }
+            }
+
+            const monthlyAggregates = Object.values(monthlyMap).sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
+            return { monthlyAggregates, guestContacts: guests };
         }
 
         // Map CSV rows for annual-summary import (one row per year)
@@ -2773,6 +2976,18 @@ Total: $${props.totalAmount}`);
                 headers = ['Year','Gross Income','Mgmt Fee','Charges','Nights','HOA','Notes'];
                 getRow = r => [r.year, finFmt(r.grossIncomeAnnual), finFmt(r.managementFeeAnnual),
                     finFmt(r.platformChargesAnnual), r.nightsBookedAnnual ?? '—', finFmt(r.hoaAnnual), r.notes || ''];
+            } else if (type === 'evolve-csv') {
+                const { monthlyAggregates, guestContacts } = rows;
+                document.getElementById('fin-import-preview-label').textContent =
+                    `${monthlyAggregates.length} month(s) of financial data + ${guestContacts.length} guest contact(s) detected:`;
+                headers = ['Month/Year','Gross Income (Payout)','Nights','Reservations'];
+                document.getElementById('fin-import-preview-head').innerHTML =
+                    `<tr>${headers.map(h => `<th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 bg-gray-50">${h}</th>`).join('')}</tr>`;
+                document.getElementById('fin-import-preview-body').innerHTML = monthlyAggregates.map(r =>
+                    `<tr class="border-t border-gray-100"><td class="px-3 py-1.5 text-xs text-gray-700">${MONTH_NAMES[r.month-1]} ${r.year}</td><td class="px-3 py-1.5 text-xs text-gray-700">${finFmt(r.grossIncome)} <span class="text-gray-400 text-xs">(owner payout)</span></td><td class="px-3 py-1.5 text-xs text-gray-700">${r.nightsBooked}</td><td class="px-3 py-1.5 text-xs text-gray-700">${r.numReservations}</td></tr>`
+                ).join('') + `<tr class="bg-blue-50 border-t border-gray-200"><td colspan="4" class="px-3 py-2 text-xs text-blue-700">+ ${guestContacts.length} guest contact(s) will be added to your Guests list</td></tr>`;
+                document.getElementById('fin-import-preview').classList.remove('hidden');
+                return;
             } else {
                 headers = ['Month','Date','Expense','Vendor','Amount','Tag'];
                 getRow = r => [MONTH_NAMES[r.month - 1], r.expenseDate || '—', r.expenseName, r.vendor, finFmt(r.amount), r.tag];
@@ -2810,6 +3025,23 @@ Total: $${props.totalAmount}`);
                         method: 'POST', headers: authHeaders(),
                         body: JSON.stringify(payload)
                     });
+                } else if (type === 'evolve-csv') {
+                    const { monthlyAggregates, guestContacts } = importState.rows;
+                    const year = parseInt(document.getElementById('fin-import-year').value);
+                    // Import financials
+                    for (const row of monthlyAggregates) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify({ ...row, managementFee: 0, cleaningFee: 0, platformCharges: 0 })
+                        });
+                    }
+                    // Import guest contacts
+                    if (guestContacts.length > 0) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/guests/bulk-import`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify({ propertyId: finState.propertyId, bookings: guestContacts })
+                        });
+                    }
                 } else if (type === 'annual-summary') {
                     for (const row of importState.rows) {
                         await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/year-summary`, {
@@ -2864,6 +3096,166 @@ Total: $${props.totalAmount}`);
             a.href = URL.createObjectURL(blob);
             a.download = filename;
             a.click();
+        }
+
+        // ─── Guests / Contacts ────────────────────────────────────────────────────
+
+        const guestState = { selected: new Set(), all: [] };
+
+        function toggleGuestsSection() {
+            const sec = document.getElementById('guests-section');
+            if (sec.classList.toggle('hidden')) return;
+            loadGuests();
+        }
+
+        async function loadGuests() {
+            const propFilter = document.getElementById('guests-property-filter').value;
+            const search = document.getElementById('guests-search').value;
+            const marketingOnly = document.getElementById('guests-marketing-only').checked;
+
+            let url = `${window.CONFIG.API_BASE_URL}/api/guests?sortBy=lastStayDate&order=DESC`;
+            if (propFilter) url += `&propertyId=${propFilter}`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (marketingOnly) url += `&marketingOptIn=true`;
+
+            const token = localStorage.getItem('accessToken');
+            try {
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                guestState.all = data.guests || [];
+                guestState.selected.clear();
+                renderGuestsTable(guestState.all);
+                populateGuestsPropertyFilter(guestState.all);
+                updateGuestEmailBtn();
+            } catch (err) {
+                document.getElementById('guests-table-body').innerHTML =
+                    `<tr><td colspan="8" class="py-8 text-center text-red-500 text-sm">Failed to load guests: ${err.message}</td></tr>`;
+            }
+        }
+
+        function populateGuestsPropertyFilter(guests) {
+            const sel = document.getElementById('guests-property-filter');
+            const cur = sel.value;
+            const propMap = {};
+            for (const g of guests) {
+                for (const stay of (g.stays || [])) {
+                    if (stay.property) propMap[stay.property.id] = stay.property.name;
+                }
+            }
+            const extraOpts = Object.entries(propMap).map(([id, name]) =>
+                `<option value="${id}" ${id === cur ? 'selected' : ''}>${name}</option>`).join('');
+            sel.innerHTML = `<option value="">All properties</option>` + extraOpts;
+        }
+
+        function renderGuestsTable(guests) {
+            const tbody = document.getElementById('guests-table-body');
+            if (!guests.length) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-10 text-center text-gray-400 text-sm">No guests found. Import an Evolve booking CSV to populate this list.</td></tr>`;
+                document.getElementById('guests-count-label').textContent = '';
+                return;
+            }
+            document.getElementById('guests-count-label').textContent = `${guests.length} guest${guests.length !== 1 ? 's' : ''}`;
+
+            tbody.innerHTML = guests.map(g => {
+                const stays = g.stays || [];
+                const propNames = [...new Set(stays.map(s => s.property?.name).filter(Boolean))].join(', ') || '—';
+                const lastStay = g.lastStayDate ? new Date(g.lastStayDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—';
+                const isRepeat = (g.totalStays || 0) > 1;
+                const tags = [];
+                if (isRepeat) tags.push(`<span class="bg-amber-100 text-amber-700 text-xs px-1.5 py-0.5 rounded-full font-medium">${g.totalStays}x Repeat</span>`);
+                if (g.isBlacklisted) tags.push(`<span class="bg-red-100 text-red-700 text-xs px-1.5 py-0.5 rounded-full font-medium">Blocked</span>`);
+                if (!g.marketingOptIn) tags.push(`<span class="bg-gray-100 text-gray-500 text-xs px-1.5 py-0.5 rounded-full">Opt-out</span>`);
+                if (!g.email) tags.push(`<span class="bg-gray-100 text-gray-400 text-xs px-1.5 py-0.5 rounded-full">No email</span>`);
+                const isChecked = guestState.selected.has(g.id);
+                return `<tr class="border-b border-gray-100 hover:bg-gray-50 ${g.isBlacklisted ? 'opacity-50' : ''}">
+                    <td class="py-3 pr-3">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleGuestSelect('${g.id}', this.checked)" class="rounded">
+                    </td>
+                    <td class="py-3 px-2 text-sm font-medium text-gray-900 whitespace-nowrap">${g.name}</td>
+                    <td class="py-3 px-2 text-sm text-gray-600 max-w-[180px] truncate">${g.email || '<span class="text-gray-300">—</span>'}</td>
+                    <td class="py-3 px-2 text-sm text-gray-600 whitespace-nowrap">${g.phoneNumber || '<span class="text-gray-300">—</span>'}</td>
+                    <td class="py-3 px-2 text-sm text-gray-600 max-w-[140px] truncate">${propNames}</td>
+                    <td class="py-3 px-2 text-sm text-center font-medium ${isRepeat ? 'text-amber-600' : 'text-gray-700'}">${g.totalStays || 0}</td>
+                    <td class="py-3 px-2 text-sm text-gray-500 whitespace-nowrap">${lastStay}</td>
+                    <td class="py-3 px-2">${tags.join(' ') || ''}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function toggleGuestSelect(guestId, checked) {
+            if (checked) guestState.selected.add(guestId);
+            else guestState.selected.delete(guestId);
+            updateGuestEmailBtn();
+        }
+
+        function toggleSelectAllGuests() {
+            const allChecked = document.getElementById('guests-select-all').checked;
+            guestState.selected.clear();
+            if (allChecked) guestState.all.forEach(g => guestState.selected.add(g.id));
+            renderGuestsTable(guestState.all);
+            updateGuestEmailBtn();
+        }
+
+        function updateGuestEmailBtn() {
+            const btn = document.getElementById('guests-email-btn');
+            const countEl = document.getElementById('guests-selected-count');
+            const n = guestState.selected.size;
+            btn.disabled = n === 0;
+            if (n > 0) {
+                countEl.textContent = `${n} selected`;
+                countEl.classList.remove('hidden');
+            } else {
+                countEl.classList.add('hidden');
+            }
+        }
+
+        function openEmailModal() {
+            const n = guestState.selected.size;
+            const eligible = guestState.all.filter(g => guestState.selected.has(g.id) && g.email && g.marketingOptIn);
+            document.getElementById('email-modal-recipients').textContent =
+                `${n} selected guest${n !== 1 ? 's' : ''} (${eligible.length} have email + opt-in and will receive this)`;
+            document.getElementById('email-modal-result').classList.add('hidden');
+            document.getElementById('email-modal-send-btn').disabled = false;
+            document.getElementById('email-modal-send-btn').textContent = 'Send';
+            document.getElementById('guests-email-modal').classList.remove('hidden');
+        }
+
+        function closeEmailModal() {
+            document.getElementById('guests-email-modal').classList.add('hidden');
+        }
+
+        async function sendGuestEmail() {
+            const subject = document.getElementById('email-modal-subject').value.trim();
+            const message = document.getElementById('email-modal-message').value.trim();
+            const fromName = document.getElementById('email-modal-from').value.trim();
+            if (!subject || !message) {
+                showEmailResult('Subject and message are required.', false);
+                return;
+            }
+            const btn = document.getElementById('email-modal-send-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/guests/send-email`, {
+                    method: 'POST', headers: authHeaders(),
+                    body: JSON.stringify({ guestIds: [...guestState.selected], subject, message, fromName })
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                showEmailResult(`Sent to ${data.sent} guest${data.sent !== 1 ? 's' : ''} successfully.`, true);
+            } catch (err) {
+                showEmailResult('Send failed: ' + err.message, false);
+                btn.disabled = false;
+                btn.textContent = 'Send';
+            }
+        }
+
+        function showEmailResult(msg, success) {
+            const el = document.getElementById('email-modal-result');
+            el.textContent = msg;
+            el.className = `text-sm rounded-lg px-3 py-2 ${success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`;
+            el.classList.remove('hidden');
         }
     </script>
 </body>

@@ -28,11 +28,21 @@ GuestStay.init(
     },
     bookingId: {
       type: DataTypes.UUID,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'bookings',
         key: 'id'
       }
+    },
+    externalBookingId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Booking ID from Evolve/Airbnb/VRBO/Booking.com'
+    },
+    bookingSource: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      comment: 'airbnb, vrbo, evolve, booking.com, website, manual'
     },
     checkIn: {
       type: DataTypes.DATEONLY,

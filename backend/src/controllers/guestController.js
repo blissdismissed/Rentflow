@@ -322,6 +322,162 @@ class GuestController {
       res.status(500).json({ success: false, message: 'Error fetching stats', error: error.message })
     }
   }
+  // POST /api/guests/bulk-import — upsert guests + stays from Evolve/external CSV
+  async bulkImport(req, res) {
+    try {
+      const userId = req.user.id
+      const { propertyId, bookings } = req.body
+
+      if (!propertyId || !Array.isArray(bookings)) {
+        return res.status(400).json({ success: false, message: 'propertyId and bookings array required' })
+      }
+
+      const property = await Property.findOne({ where: { id: propertyId, userId } })
+      if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
+
+      const results = { created: 0, updated: 0, skipped: 0 }
+
+      for (const b of bookings) {
+        if (b.status === 'Canceled') { results.skipped++; continue }
+        if (!b.guestName) { results.skipped++; continue }
+
+        // Upsert guest by email, then phone, then name
+        let guest = null
+        if (b.email) {
+          guest = await Guest.findOne({ where: { email: b.email } })
+        }
+        if (!guest && b.phone) {
+          guest = await Guest.findOne({ where: { phoneNumber: b.phone } })
+        }
+
+        const payout = parseFloat(String(b.totalPayout || '0').replace(/[$,]/g, '')) || 0
+        const nights = parseInt(b.nightsStayed || b.nights || 0) || 0
+        const checkIn = b.checkIn ? new Date(b.checkIn) : null
+        const checkOut = b.checkOut ? new Date(b.checkOut) : null
+
+        if (!guest) {
+          guest = await Guest.create({
+            email: b.email || null,
+            name: b.guestName,
+            phoneNumber: b.phone || null,
+            totalStays: b.status === 'Checked out' ? 1 : 0,
+            totalSpent: b.status === 'Checked out' ? payout : 0,
+            firstStayDate: b.status === 'Checked out' ? checkOut : null,
+            lastStayDate: b.status === 'Checked out' ? checkOut : null,
+            marketingOptIn: true,
+          })
+          results.created++
+        } else {
+          // Update aggregates for completed stays
+          if (b.status === 'Checked out') {
+            await guest.update({
+              name: guest.name || b.guestName,
+              phoneNumber: guest.phoneNumber || b.phone || null,
+              email: guest.email || b.email || null,
+              totalStays: (guest.totalStays || 0) + 1,
+              totalSpent: parseFloat(guest.totalSpent || 0) + payout,
+              firstStayDate: guest.firstStayDate && checkOut && new Date(guest.firstStayDate) < checkOut ? guest.firstStayDate : checkOut,
+              lastStayDate: !guest.lastStayDate || (checkOut && new Date(guest.lastStayDate) < checkOut) ? checkOut : guest.lastStayDate,
+            })
+          }
+          results.updated++
+        }
+
+        // Upsert stay by externalBookingId
+        if (b.externalBookingId && checkIn && checkOut) {
+          const [, stayCreated] = await GuestStay.findOrCreate({
+            where: { guestId: guest.id, externalBookingId: b.externalBookingId },
+            defaults: {
+              guestId: guest.id,
+              propertyId,
+              bookingId: null,
+              externalBookingId: b.externalBookingId,
+              bookingSource: b.bookingSource || 'manual',
+              checkIn: checkIn.toISOString().split('T')[0],
+              checkOut: checkOut.toISOString().split('T')[0],
+              nights: nights || Math.round((checkOut - checkIn) / 86400000),
+              numberOfGuests: (parseInt(b.adults) || 1) + (parseInt(b.children) || 0),
+              totalAmount: payout,
+            }
+          })
+          if (!stayCreated) {
+            // Update if already exists
+            await GuestStay.update(
+              { propertyId, bookingSource: b.bookingSource || 'manual', checkIn: checkIn.toISOString().split('T')[0], checkOut: checkOut.toISOString().split('T')[0], totalAmount: payout },
+              { where: { guestId: guest.id, externalBookingId: b.externalBookingId } }
+            )
+          }
+        }
+      }
+
+      res.json({ success: true, results })
+    } catch (error) {
+      console.error('bulkImport error:', error)
+      res.status(500).json({ success: false, message: 'Import failed: ' + error.message })
+    }
+  }
+
+  // POST /api/guests/send-email — send marketing email to selected guests
+  async sendMarketingEmail(req, res) {
+    try {
+      const userId = req.user.id
+      const { guestIds, subject, message, fromName } = req.body
+
+      if (!guestIds?.length || !subject || !message) {
+        return res.status(400).json({ success: false, message: 'guestIds, subject, and message required' })
+      }
+
+      // Verify owner owns properties where these guests stayed
+      const ownerProperties = await Property.findAll({ where: { userId }, attributes: ['id', 'name'] })
+      const propertyIds = ownerProperties.map(p => p.id)
+
+      const guests = await Guest.findAll({
+        where: {
+          id: { [Op.in]: guestIds },
+          marketingOptIn: true,
+          email: { [Op.ne]: null }
+        },
+        include: [{
+          model: GuestStay,
+          as: 'stays',
+          where: { propertyId: { [Op.in]: propertyIds } },
+          required: true
+        }]
+      })
+
+      if (guests.length === 0) {
+        return res.json({ success: true, sent: 0, message: 'No eligible guests (must have email + marketing opt-in)' })
+      }
+
+      const sgMail = require('@sendgrid/mail')
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+
+      const senderName = fromName || 'Rentflow'
+      const fromEmail = process.env.FROM_EMAIL
+
+      let sent = 0
+      const errors = []
+      for (const guest of guests) {
+        try {
+          await sgMail.send({
+            to: guest.email,
+            from: { email: fromEmail, name: senderName },
+            subject,
+            text: message,
+            html: message.replace(/\n/g, '<br>'),
+          })
+          sent++
+        } catch (e) {
+          errors.push({ email: guest.email, error: e.message })
+        }
+      }
+
+      res.json({ success: true, sent, errors })
+    } catch (error) {
+      console.error('sendMarketingEmail error:', error)
+      res.status(500).json({ success: false, message: 'Send failed: ' + error.message })
+    }
+  }
 }
 
 module.exports = new GuestController()

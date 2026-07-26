@@ -12,12 +12,12 @@ Guest.init(
     },
     email: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       unique: true,
       validate: {
         isEmail: true
       },
-      comment: 'Primary identifier for guest'
+      comment: 'Primary identifier for guest — nullable for phone-only guests'
     },
     name: {
       type: DataTypes.STRING,
