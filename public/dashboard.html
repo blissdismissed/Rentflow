@@ -109,7 +109,6 @@
             <div class="flex justify-between items-center h-20">
                 <div class="flex items-center space-x-3">
                     <a href="/dashboard.html" class="flex items-center space-x-3">
-                        <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo" class="h-16 w-16 sm:h-20 sm:w-20">
                         <h1 class="text-2xl sm:text-3xl font-display font-bold text-gray-900 leading-none mt-0.5">AspireTowards</h1>
                     </a>
                 </div>
@@ -511,23 +510,335 @@
 
         <!-- Finances Content -->
         <div id="finances-content" class="tab-content hidden">
-            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Financial Overview</h3>
-                <div id="finances-view" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-green-50 rounded-lg p-6">
-                            <p class="text-sm text-green-600 font-medium">Total Revenue</p>
-                            <p class="text-3xl font-bold text-green-900 mt-2" id="total-revenue">$0</p>
+
+            <!-- Property selector + view toggle -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <select id="fin-property-select" onchange="setFinProperty(this.value)"
+                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                        <option value="">Select property...</option>
+                    </select>
+                    <!-- Visibility toggle -->
+                    <div id="fin-visibility-wrap" class="hidden items-center gap-2">
+                        <span class="text-sm text-gray-500">Public listing:</span>
+                        <button id="fin-visibility-btn" onclick="togglePropertyVisibility()"
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none">
+                            <span id="fin-visibility-knob" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"></span>
+                        </button>
+                        <span id="fin-visibility-label" class="text-sm font-medium"></span>
+                    </div>
+                </div>
+                <div class="flex bg-gray-100 rounded-lg p-1">
+                    <button id="fin-btn-summary" onclick="setFinView('summary')"
+                        class="px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow text-gray-900 transition">
+                        All Years
+                    </button>
+                    <button id="fin-btn-year" onclick="setFinView('year')"
+                        class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition">
+                        Year Detail
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empty state -->
+            <div id="fin-empty" class="bg-white rounded-xl shadow-sm p-12 text-center text-gray-500">
+                Select a property above to view its financial data.
+            </div>
+
+            <!-- Summary View -->
+            <div id="fin-summary-view" class="hidden">
+                <!-- NOI cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm p-4">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">All-Time Net Income</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1" id="fin-total-net">—</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">All-Time Gross Profits</p>
+                        <p class="text-2xl font-bold mt-1" id="fin-total-profit">—</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">NOI (All Time)</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1" id="fin-noi">—</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Purchase Price</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1" id="fin-purchase-price">—</p>
+                    </div>
+                </div>
+                <!-- Summary table -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200">
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 sticky left-0 bg-gray-50">Year</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Gross Income</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Mgmt Fees</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Expenses</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Net Income</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">%</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Nights</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Res.</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Occ.</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">HOA</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Mortgage</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Actual Paid</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Extra Paid</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">T&amp;I</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Gross Profits</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Breakeven</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Notes</th>
+                                    <th class="px-4 py-3"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="fin-summary-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Year Detail View -->
+            <div id="fin-year-view" class="hidden">
+                <!-- Year picker + config button -->
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div class="flex items-center gap-3">
+                        <select id="fin-year-select" onchange="loadFinYear(this.value)"
+                            class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500">
+                        </select>
+                        <button onclick="openAnnualConfigModal()"
+                            class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            Mortgage &amp; T&amp;I
+                        </button>
+                    </div>
+                    <button onclick="openMonthModal(null)"
+                        class="px-4 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 transition flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Add / Edit Month
+                    </button>
+                </div>
+
+                <!-- Monthly table -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200" id="fin-monthly-header">
+                                </tr>
+                            </thead>
+                            <tbody id="fin-monthly-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Annual summary metrics -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="fin-annual-metrics"></div>
+
+                <!-- Expense items (shown for itemized properties) -->
+                <div id="fin-expense-section" class="hidden">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-semibold text-gray-900">Itemized Expenses</h4>
+                        <button onclick="openExpenseModal(null)"
+                            class="px-3 py-1.5 bg-teal-600 text-white text-xs rounded-lg hover:bg-teal-700 transition">
+                            + Add Expense
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200">
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Month</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Date</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Expense</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Vendor</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">Amount</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Tag</th>
+                                    <th class="px-4 py-3"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="fin-expense-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Monthly Data Modal -->
+        <div id="fin-month-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900" id="fin-month-modal-title">Edit Month</h3>
+                    <button onclick="closeMonthModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                            <input type="number" id="fin-m-year" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="2024">
                         </div>
-                        <div class="bg-blue-50 rounded-lg p-6">
-                            <p class="text-sm text-blue-600 font-medium">Pending Payments</p>
-                            <p class="text-3xl font-bold text-blue-900 mt-2" id="pending-payments">$0</p>
-                        </div>
-                        <div class="bg-amber-50 rounded-lg p-6">
-                            <p class="text-sm text-amber-600 font-medium">This Month</p>
-                            <p class="text-3xl font-bold text-amber-900 mt-2" id="month-revenue">$0</p>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
+                            <select id="fin-m-month" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                                <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                                <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                            </select>
                         </div>
                     </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Gross Income</label>
+                            <input type="number" step="0.01" id="fin-m-gross" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Management Fee</label>
+                            <input type="number" step="0.01" id="fin-m-mgmt" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                    </div>
+                    <!-- Vermont expense fields -->
+                    <div id="fin-m-itemized-fields">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Itemized Expenses</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Cleaning</label>
+                                <input type="number" step="0.01" id="fin-m-cleaning" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Utilities</label>
+                                <input type="number" step="0.01" id="fin-m-utilities" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Maintenance</label>
+                                <input type="number" step="0.01" id="fin-m-maintenance" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Other Expenses</label>
+                                <input type="number" step="0.01" id="fin-m-other" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Myrtle platform charges -->
+                    <div id="fin-m-charges-field" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Platform Charges</label>
+                        <input type="number" step="0.01" id="fin-m-charges" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nights Booked</label>
+                            <input type="number" id="fin-m-nights" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"># Reservations</label>
+                            <input type="number" id="fin-m-reservations" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">HOA Payment</label>
+                            <input type="number" step="0.01" id="fin-m-hoa" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Actual Mortgage Paid</label>
+                            <input type="number" step="0.01" id="fin-m-mortgage" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6 border-t flex justify-end gap-3">
+                    <button onclick="closeMonthModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                    <button onclick="saveMonth()" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Annual Config Modal -->
+        <div id="fin-annual-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900" id="fin-annual-modal-title">Mortgage &amp; T&amp;I</h3>
+                    <button onclick="closeAnnualConfigModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Mortgage Payment ($)</label>
+                        <input type="number" step="0.01" id="fin-a-mortgage" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        <p class="text-xs text-gray-500 mt-1">Scheduled minimum payment</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Annual Taxes &amp; Insurance ($)</label>
+                        <input type="number" step="0.01" id="fin-a-ti" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <input type="text" id="fin-a-notes" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Cash Out Refi $50k">
+                    </div>
+                </div>
+                <div class="p-6 border-t flex justify-end gap-3">
+                    <button onclick="closeAnnualConfigModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                    <button onclick="saveAnnualConfig()" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense Item Modal -->
+        <div id="fin-expense-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900" id="fin-expense-modal-title">Add Expense</h3>
+                    <button onclick="closeExpenseModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
+                            <select id="fin-e-month" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                                <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                                <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input type="date" id="fin-e-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Expense Name</label>
+                        <input type="text" id="fin-e-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Electric Bill">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+                        <input type="text" id="fin-e-vendor" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Green Mountain Power">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
+                            <input type="number" step="0.01" id="fin-e-amount" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tag</label>
+                            <select id="fin-e-tag" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="utilities">Utilities</option>
+                                <option value="housekeeping">Housekeeping</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="hoa">HOA</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6 border-t flex justify-end gap-3">
+                    <button onclick="closeExpenseModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                    <button onclick="saveExpenseItem()" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Save</button>
                 </div>
             </div>
         </div>
@@ -586,7 +897,6 @@
                 <!-- About -->
                 <div class="col-span-1 md:col-span-2">
                     <div class="flex items-center space-x-3 mb-4">
-                        <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo" class="h-12 w-12 brightness-0 invert">
                         <h3 class="text-xl font-display font-bold text-white">AspireTowards</h3>
                     </div>
                     <p class="text-gray-400 mb-4">
@@ -960,7 +1270,7 @@
                                 <span class="font-medium text-teal-600">$${property.basePrice}/night</span>
                             </div>
                             <div class="flex space-x-2 mt-3">
-                                <a href="/property.html?slug=${property.slug}" class="flex-1 text-center px-3 py-1.5 bg-teal-600 text-white text-sm rounded hover:bg-teal-700 transition">
+                                <a href="/property.html?slug=${property.slug}&from=dashboard" class="flex-1 text-center px-3 py-1.5 bg-teal-600 text-white text-sm rounded hover:bg-teal-700 transition">
                                     View
                                 </a>
                                 <a href="/edit-property.html?id=${property.id}" class="flex-1 text-center px-3 py-1.5 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition">
@@ -1419,47 +1729,519 @@ Total: $${props.totalAmount}`);
             }
         }
 
-        // Load finances
+        // ─── Finances ────────────────────────────────────────────────────────────
+
+        const finState = {
+            propertyId: null,
+            view: 'summary',
+            year: new Date().getFullYear(),
+            summaryData: null,
+            yearData: null,
+            properties: [],
+            editingExpenseId: null
+        };
+
+        const MONTH_NAMES = ['January','February','March','April','May','June',
+            'July','August','September','October','November','December'];
+
+        function finFmt(val) {
+            if (val === null || val === undefined) return '—';
+            const n = parseFloat(val);
+            if (isNaN(n)) return '—';
+            return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        function finFmtSigned(val) {
+            if (val === null || val === undefined) return '—';
+            const n = parseFloat(val);
+            if (isNaN(n)) return '—';
+            const str = '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return n < 0 ? '-' + str : str;
+        }
+        function finColorClass(val) {
+            const n = parseFloat(val);
+            if (isNaN(n)) return 'text-gray-900';
+            return n >= 0 ? 'text-green-700' : 'text-red-600';
+        }
+        function finPct(val) {
+            if (val === null || val === undefined) return '—';
+            return (parseFloat(val) * 100).toFixed(2) + '%';
+        }
+        function authHeaders() {
+            return { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' };
+        }
+
         async function loadFinances() {
             try {
-                const token = localStorage.getItem('token');
-                const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/properties`, { headers: authHeaders() });
+                const data = await res.json();
+                finState.properties = data.properties || [];
+
+                const sel = document.getElementById('fin-property-select');
+                sel.innerHTML = '<option value="">Select property...</option>';
+                finState.properties.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = `${p.name} (${p.city}, ${p.state})`;
+                    sel.appendChild(opt);
                 });
 
-                if (!response.ok) throw new Error('Failed to load finances');
-
-                const data = await response.json();
-                const bookings = data.bookings || [];
-
-                // Calculate totals
-                const totalRevenue = bookings
-                    .filter(b => b.bookingStatus === 'confirmed' || b.bookingStatus === 'completed')
-                    .reduce((sum, b) => sum + parseFloat(b.totalAmount || 0), 0);
-
-                const pendingPayments = bookings
-                    .filter(b => b.bookingStatus === 'requested' || b.bookingStatus === 'approved')
-                    .reduce((sum, b) => sum + parseFloat(b.totalAmount || 0), 0);
-
-                const thisMonth = new Date().getMonth();
-                const thisYear = new Date().getFullYear();
-                const monthRevenue = bookings
-                    .filter(b => {
-                        const checkIn = new Date(b.checkIn);
-                        return checkIn.getMonth() === thisMonth &&
-                               checkIn.getFullYear() === thisYear &&
-                               (b.bookingStatus === 'confirmed' || b.bookingStatus === 'completed');
-                    })
-                    .reduce((sum, b) => sum + parseFloat(b.totalAmount || 0), 0);
-
-                document.getElementById('total-revenue').textContent = `$${totalRevenue.toFixed(2)}`;
-                document.getElementById('pending-payments').textContent = `$${pendingPayments.toFixed(2)}`;
-                document.getElementById('month-revenue').textContent = `$${monthRevenue.toFixed(2)}`;
-            } catch (error) {
-                console.error('Error loading finances:', error);
+                if (finState.propertyId) {
+                    sel.value = finState.propertyId;
+                    await setFinProperty(finState.propertyId);
+                }
+            } catch(e) {
+                console.error('loadFinances error:', e);
             }
+        }
+
+        async function setFinProperty(propertyId) {
+            finState.propertyId = propertyId;
+            const wrap = document.getElementById('fin-visibility-wrap');
+            if (!propertyId) {
+                document.getElementById('fin-empty').classList.remove('hidden');
+                document.getElementById('fin-summary-view').classList.add('hidden');
+                document.getElementById('fin-year-view').classList.add('hidden');
+                wrap.classList.remove('flex');
+                wrap.classList.add('hidden');
+                return;
+            }
+            wrap.classList.remove('hidden');
+            wrap.classList.add('flex');
+            updateVisibilityToggle();
+            document.getElementById('fin-empty').classList.add('hidden');
+            await setFinView(finState.view);
+        }
+
+        function updateVisibilityToggle() {
+            const prop = finState.properties.find(p => p.id === finState.propertyId);
+            if (!prop) return;
+            const btn = document.getElementById('fin-visibility-btn');
+            const knob = document.getElementById('fin-visibility-knob');
+            const label = document.getElementById('fin-visibility-label');
+            if (prop.publiclyVisible) {
+                btn.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-teal-600 transition-colors focus:outline-none';
+                knob.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6';
+                label.textContent = 'On';
+                label.className = 'text-sm font-medium text-teal-700';
+            } else {
+                btn.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 transition-colors focus:outline-none';
+                knob.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1';
+                label.textContent = 'Off';
+                label.className = 'text-sm font-medium text-gray-500';
+            }
+        }
+
+        async function togglePropertyVisibility() {
+            const prop = finState.properties.find(p => p.id === finState.propertyId);
+            if (!prop) return;
+            const newVal = !prop.publiclyVisible;
+            try {
+                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/visibility`, {
+                    method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ publiclyVisible: newVal })
+                });
+                prop.publiclyVisible = newVal;
+                updateVisibilityToggle();
+            } catch(e) { console.error('toggleVisibility error:', e); }
+        }
+
+        async function setFinView(view) {
+            finState.view = view;
+            document.getElementById('fin-btn-summary').className = view === 'summary'
+                ? 'px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow text-gray-900 transition'
+                : 'px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition';
+            document.getElementById('fin-btn-year').className = view === 'year'
+                ? 'px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow text-gray-900 transition'
+                : 'px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition';
+
+            document.getElementById('fin-summary-view').classList.toggle('hidden', view !== 'summary');
+            document.getElementById('fin-year-view').classList.toggle('hidden', view !== 'year');
+
+            if (view === 'summary') await loadFinSummary();
+            else await initFinYear();
+        }
+
+        async function loadFinSummary() {
+            if (!finState.propertyId) return;
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/summary`, { headers: authHeaders() });
+                const data = await res.json();
+                finState.summaryData = data;
+                renderSummary(data);
+            } catch(e) { console.error('loadFinSummary error:', e); }
+        }
+
+        function renderSummary(data) {
+            const { years = [], allTimeTotals, purchasePrice } = data;
+
+            document.getElementById('fin-total-net').textContent = allTimeTotals ? finFmtSigned(allTimeTotals.netIncome) : '—';
+            const profitEl = document.getElementById('fin-total-profit');
+            if (allTimeTotals) {
+                profitEl.textContent = finFmtSigned(allTimeTotals.grossProfits);
+                profitEl.className = 'text-2xl font-bold mt-1 ' + finColorClass(allTimeTotals.grossProfits);
+            }
+            document.getElementById('fin-noi').textContent = allTimeTotals?.noi != null ? finPct(allTimeTotals.noi) : '—';
+            document.getElementById('fin-purchase-price').textContent = purchasePrice ? finFmt(purchasePrice) : '—';
+
+            const tbody = document.getElementById('fin-summary-body');
+            const rows = [...years];
+
+            let html = rows.map(y => {
+                return `<tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="drillToYear(${y.year})">
+                    <td class="px-4 py-3 font-medium text-teal-600 sticky left-0 bg-white hover:bg-gray-50">${y.year}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(y.grossIncome)}</td>
+                    <td class="px-4 py-3 text-right text-gray-600">${finFmt(y.managementFee)}</td>
+                    <td class="px-4 py-3 text-right text-gray-600">${finFmt(y.grossExpenses)}</td>
+                    <td class="px-4 py-3 text-right font-medium">${finFmtSigned(y.netIncome)}</td>
+                    <td class="px-4 py-3 text-right">${finPct(y.percentageOfIncome)}</td>
+                    <td class="px-4 py-3 text-right">${y.nightsBooked || 0}</td>
+                    <td class="px-4 py-3 text-right">${y.numReservations || 0}</td>
+                    <td class="px-4 py-3 text-right">${y.occupancyRatio != null ? (y.occupancyRatio * 100).toFixed(0) + '%' : '—'}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(y.hoaPayment)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(y.scheduledMortgage ? y.scheduledMortgage * 12 : null)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(y.actualMortgagePaid)}</td>
+                    <td class="px-4 py-3 text-right ${finColorClass(y.extraPaid)}">${finFmtSigned(y.extraPaid)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(y.taxesInsurance)}</td>
+                    <td class="px-4 py-3 text-right font-medium ${finColorClass(y.grossProfits)}">${finFmtSigned(y.grossProfits)}</td>
+                    <td class="px-4 py-3 text-right ${finColorClass(y.breakEvenIdeal)}">${finFmtSigned(y.breakEvenIdeal)}</td>
+                    <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">${y.notes || ''}</td>
+                    <td class="px-4 py-3 text-teal-600 text-xs">Detail →</td>
+                </tr>`;
+            }).join('');
+
+            if (allTimeTotals) {
+                html += `<tr class="border-t-2 border-gray-300 bg-gray-50 font-semibold">
+                    <td class="px-4 py-3 sticky left-0 bg-gray-50">All-Time Total</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.grossIncome)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.managementFee)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.grossExpenses)}</td>
+                    <td class="px-4 py-3 text-right">${finFmtSigned(allTimeTotals.netIncome)}</td>
+                    <td class="px-4 py-3 text-right">${finPct(allTimeTotals.percentageOfIncome)}</td>
+                    <td class="px-4 py-3 text-right">${allTimeTotals.nightsBooked}</td>
+                    <td class="px-4 py-3 text-right">${allTimeTotals.numReservations}</td>
+                    <td class="px-4 py-3 text-right">—</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.hoaPayment)}</td>
+                    <td class="px-4 py-3 text-right">—</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.actualMortgagePaid)}</td>
+                    <td class="px-4 py-3 text-right">${finFmtSigned(allTimeTotals.extraPaid)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.taxesInsurance)}</td>
+                    <td class="px-4 py-3 text-right ${finColorClass(allTimeTotals.grossProfits)}">${finFmtSigned(allTimeTotals.grossProfits)}</td>
+                    <td class="px-4 py-3 text-right">—</td>
+                    <td class="px-4 py-3" colspan="2"></td>
+                </tr>`;
+            }
+
+            tbody.innerHTML = html;
+        }
+
+        function drillToYear(year) {
+            finState.year = year;
+            setFinView('year');
+        }
+
+        async function initFinYear() {
+            if (!finState.propertyId) return;
+            // Populate year selector from summary data (or derive from current year)
+            const years = finState.summaryData?.years?.map(y => y.year) || [];
+            const currentYear = new Date().getFullYear();
+            if (!years.includes(currentYear)) years.push(currentYear);
+            years.sort((a, b) => b - a);
+
+            const sel = document.getElementById('fin-year-select');
+            sel.innerHTML = years.map(y => `<option value="${y}" ${y === finState.year ? 'selected' : ''}>${y}</option>`).join('');
+
+            await loadFinYear(finState.year);
+        }
+
+        async function loadFinYear(year) {
+            finState.year = parseInt(year);
+            document.getElementById('fin-annual-modal-title').textContent = `Mortgage & T&I — ${year}`;
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/year/${year}`, { headers: authHeaders() });
+                const data = await res.json();
+                finState.yearData = data;
+                renderMonthlyTable(data);
+                renderAnnualMetrics(data);
+                renderExpenseItems(data);
+            } catch(e) { console.error('loadFinYear error:', e); }
+        }
+
+        function isItemized(data) {
+            // Vermont uses itemized fields; detected by dataSource or by presence of cleaning data
+            return data?.dataSource !== 'caribbean';
+        }
+
+        function renderMonthlyTable(data) {
+            const { months = [], annualConfig, dataSource } = data;
+            const itemized = isItemized(data);
+            const scheduledMortgage = parseFloat(annualConfig?.scheduledMortgage || 0);
+
+            const header = document.getElementById('fin-monthly-header');
+            const baseCols = ['Month', 'Gross Income', 'Mgmt Fee'];
+            const expCols = itemized
+                ? ['Cleaning', 'Utilities', 'Maint.', 'Other']
+                : ['Platform Charges'];
+            const restCols = ['Net Income', '%', 'Nights', 'Res.', 'Avg Stay', 'Occ.', 'HOA', 'Actual Paid', ''];
+            const allCols = [...baseCols, ...expCols, ...restCols];
+            header.innerHTML = allCols.map(c => `<th class="px-3 py-3 text-${c ? (c === 'Month' ? 'left' : 'right') : 'right'} font-semibold text-gray-700 whitespace-nowrap text-sm">${c}</th>`).join('');
+
+            const tbody = document.getElementById('fin-monthly-body');
+            const totalsRow = data.annualTotals;
+
+            let html = months.map(m => {
+                const expCells = itemized
+                    ? [finFmt(m.cleaningFee), finFmt(m.utilities), finFmt(m.maintenance), finFmt(m.otherExpenses)]
+                    : [finFmt(m.platformCharges)];
+                const net = finFmtSigned(m.netIncome);
+                return `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                    <td class="px-3 py-2 font-medium text-gray-900">${m.monthName}</td>
+                    <td class="px-3 py-2 text-right">${finFmt(m.grossIncome)}</td>
+                    <td class="px-3 py-2 text-right text-gray-500">${finFmt(m.managementFee)}</td>
+                    ${expCells.map(c => `<td class="px-3 py-2 text-right text-gray-500">${c}</td>`).join('')}
+                    <td class="px-3 py-2 text-right font-medium ${finColorClass(m.netIncome)}">${net}</td>
+                    <td class="px-3 py-2 text-right">${finPct(m.percentageOfIncome)}</td>
+                    <td class="px-3 py-2 text-right">${m.nightsBooked || 0}</td>
+                    <td class="px-3 py-2 text-right">${m.numReservations || 0}</td>
+                    <td class="px-3 py-2 text-right">${m.avgLengthOfStay ? m.avgLengthOfStay.toFixed(2) : '—'}</td>
+                    <td class="px-3 py-2 text-right">${(m.occupancyRatio * 100).toFixed(0)}%</td>
+                    <td class="px-3 py-2 text-right">${finFmt(m.hoaPayment)}</td>
+                    <td class="px-3 py-2 text-right">${finFmt(m.actualMortgagePaid)}</td>
+                    <td class="px-3 py-2 text-center">
+                        <button onclick="openMonthModal(${m.month})" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            if (totalsRow) {
+                const expTotals = itemized
+                    ? [finFmt(totalsRow.cleaningFee), finFmt(totalsRow.utilities), finFmt(totalsRow.maintenance), finFmt(totalsRow.otherExpenses)]
+                    : [finFmt(totalsRow.platformCharges)];
+                html += `<tr class="border-t-2 border-gray-300 bg-gray-50 font-semibold text-sm">
+                    <td class="px-3 py-2">Totals</td>
+                    <td class="px-3 py-2 text-right">${finFmt(totalsRow.grossIncome)}</td>
+                    <td class="px-3 py-2 text-right">${finFmt(totalsRow.managementFee)}</td>
+                    ${expTotals.map(c => `<td class="px-3 py-2 text-right">${c}</td>`).join('')}
+                    <td class="px-3 py-2 text-right ${finColorClass(totalsRow.netIncome)}">${finFmtSigned(totalsRow.netIncome)}</td>
+                    <td class="px-3 py-2 text-right">${finPct(totalsRow.percentageOfIncome)}</td>
+                    <td class="px-3 py-2 text-right">${totalsRow.nightsBooked}</td>
+                    <td class="px-3 py-2 text-right">${totalsRow.numReservations}</td>
+                    <td class="px-3 py-2 text-right">—</td>
+                    <td class="px-3 py-2 text-right">${(totalsRow.occupancyRatio * 100).toFixed(0)}%</td>
+                    <td class="px-3 py-2 text-right">${finFmt(totalsRow.hoaPayment)}</td>
+                    <td class="px-3 py-2 text-right">${finFmt(totalsRow.actualMortgagePaid)}</td>
+                    <td></td>
+                </tr>`;
+            }
+
+            tbody.innerHTML = html;
+        }
+
+        function renderAnnualMetrics(data) {
+            const t = data.annualTotals;
+            const config = data.annualConfig;
+            const pp = data.purchasePrice;
+            const scheduledMortgage = parseFloat(config?.scheduledMortgage || 0);
+            const ti = parseFloat(config?.taxesInsurance || 0);
+
+            const metrics = [
+                { label: 'Gross Rental Income', value: finFmt(t?.grossIncome), color: 'text-gray-900' },
+                { label: 'Gross Profits', value: finFmtSigned(t?.grossProfits), color: finColorClass(t?.grossProfits) },
+                { label: 'NOI', value: t?.noi != null ? finPct(t.noi) : '—', color: finColorClass(t?.noi), sub: `(${pp ? finFmt(pp) : 'no purchase price'})` },
+                { label: 'Kev NOI', value: t?.kevNoi != null ? finPct(t.kevNoi) : '—', color: finColorClass(t?.kevNoi) },
+                { label: 'Breakeven (Ideal)', value: finFmtSigned(t?.breakEvenIdeal), color: finColorClass(t?.breakEvenIdeal) },
+                { label: 'Annual T&I', value: finFmt(ti || null), color: 'text-gray-900' },
+                { label: 'Scheduled Mortgage / mo', value: finFmt(scheduledMortgage || null), color: 'text-gray-900' },
+                { label: 'Extra Paid', value: finFmtSigned(t?.extraPaid), color: finColorClass(t?.extraPaid) },
+            ];
+
+            document.getElementById('fin-annual-metrics').innerHTML = metrics.map(m =>
+                `<div class="bg-white rounded-xl shadow-sm p-4">
+                    <p class="text-xs text-gray-500 font-medium">${m.label}</p>
+                    <p class="text-xl font-bold mt-1 ${m.color}">${m.value}</p>
+                    ${m.sub ? `<p class="text-xs text-gray-400">${m.sub}</p>` : ''}
+                </div>`
+            ).join('');
+        }
+
+        function renderExpenseItems(data) {
+            const section = document.getElementById('fin-expense-section');
+            const itemized = isItemized(data);
+            section.classList.toggle('hidden', !itemized);
+            if (!itemized) return;
+
+            const items = data.expenseItems || [];
+            const tagColors = {
+                utilities: 'bg-blue-100 text-blue-700',
+                housekeeping: 'bg-green-100 text-green-700',
+                maintenance: 'bg-orange-100 text-orange-700',
+                hoa: 'bg-purple-100 text-purple-700',
+                other: 'bg-gray-100 text-gray-600'
+            };
+
+            document.getElementById('fin-expense-body').innerHTML = items.length === 0
+                ? `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No expense items yet. Click + Add Expense to start.</td></tr>`
+                : items.map(item => `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2">${MONTH_NAMES[(item.month || 1) - 1]}</td>
+                    <td class="px-4 py-2 text-gray-500">${item.expenseDate || '—'}</td>
+                    <td class="px-4 py-2">${item.expenseName || '—'}</td>
+                    <td class="px-4 py-2 text-gray-500">${item.vendor || '—'}</td>
+                    <td class="px-4 py-2 text-right font-medium">${item.amount != null ? finFmt(item.amount) : '—'}</td>
+                    <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tagColors[item.tag] || tagColors.other}">${item.tag}</span></td>
+                    <td class="px-4 py-2 flex gap-2">
+                        <button onclick="openExpenseModal('${item.id}')" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
+                        <button onclick="deleteExpense('${item.id}')" class="text-red-500 hover:text-red-700 text-xs">Del</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        // Month modal
+        function openMonthModal(month) {
+            const modal = document.getElementById('fin-month-modal');
+            const data = finState.yearData;
+            const itemized = isItemized(data);
+
+            document.getElementById('fin-m-itemized-fields').classList.toggle('hidden', !itemized);
+            document.getElementById('fin-m-charges-field').classList.toggle('hidden', itemized);
+
+            document.getElementById('fin-m-year').value = finState.year;
+
+            if (month) {
+                const m = data?.months?.find(x => x.month === month);
+                document.getElementById('fin-month-modal-title').textContent = `Edit ${MONTH_NAMES[month - 1]} ${finState.year}`;
+                document.getElementById('fin-m-month').value = month;
+                if (m) {
+                    document.getElementById('fin-m-gross').value = m.grossIncome || '';
+                    document.getElementById('fin-m-mgmt').value = m.managementFee || '';
+                    document.getElementById('fin-m-cleaning').value = m.cleaningFee || '';
+                    document.getElementById('fin-m-utilities').value = m.utilities || '';
+                    document.getElementById('fin-m-maintenance').value = m.maintenance || '';
+                    document.getElementById('fin-m-other').value = m.otherExpenses || '';
+                    document.getElementById('fin-m-charges').value = m.platformCharges || '';
+                    document.getElementById('fin-m-nights').value = m.nightsBooked || '';
+                    document.getElementById('fin-m-reservations').value = m.numReservations || '';
+                    document.getElementById('fin-m-hoa').value = m.hoaPayment || '';
+                    document.getElementById('fin-m-mortgage').value = m.actualMortgagePaid || '';
+                }
+            } else {
+                document.getElementById('fin-month-modal-title').textContent = `Add Month — ${finState.year}`;
+                ['fin-m-gross','fin-m-mgmt','fin-m-cleaning','fin-m-utilities','fin-m-maintenance',
+                 'fin-m-other','fin-m-charges','fin-m-nights','fin-m-reservations','fin-m-hoa','fin-m-mortgage']
+                    .forEach(id => { document.getElementById(id).value = ''; });
+            }
+
+            modal.classList.remove('hidden');
+        }
+        function closeMonthModal() { document.getElementById('fin-month-modal').classList.add('hidden'); }
+
+        async function saveMonth() {
+            const body = {
+                year: parseInt(document.getElementById('fin-m-year').value),
+                month: parseInt(document.getElementById('fin-m-month').value),
+                grossIncome: parseFloat(document.getElementById('fin-m-gross').value) || 0,
+                managementFee: parseFloat(document.getElementById('fin-m-mgmt').value) || 0,
+                cleaningFee: parseFloat(document.getElementById('fin-m-cleaning').value) || 0,
+                utilities: parseFloat(document.getElementById('fin-m-utilities').value) || 0,
+                maintenance: parseFloat(document.getElementById('fin-m-maintenance').value) || 0,
+                otherExpenses: parseFloat(document.getElementById('fin-m-other').value) || 0,
+                platformCharges: parseFloat(document.getElementById('fin-m-charges').value) || 0,
+                nightsBooked: parseInt(document.getElementById('fin-m-nights').value) || 0,
+                numReservations: parseInt(document.getElementById('fin-m-reservations').value) || 0,
+                hoaPayment: parseFloat(document.getElementById('fin-m-hoa').value) || 0,
+                actualMortgagePaid: parseFloat(document.getElementById('fin-m-mortgage').value) || 0,
+            };
+            try {
+                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                    method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
+                });
+                closeMonthModal();
+                await loadFinYear(finState.year);
+            } catch(e) { console.error('saveMonth error:', e); }
+        }
+
+        // Annual config modal
+        function openAnnualConfigModal() {
+            const config = finState.yearData?.annualConfig;
+            document.getElementById('fin-a-mortgage').value = config?.scheduledMortgage || '';
+            document.getElementById('fin-a-ti').value = config?.taxesInsurance || '';
+            document.getElementById('fin-a-notes').value = config?.notes || '';
+            document.getElementById('fin-annual-modal').classList.remove('hidden');
+        }
+        function closeAnnualConfigModal() { document.getElementById('fin-annual-modal').classList.add('hidden'); }
+
+        async function saveAnnualConfig() {
+            const body = {
+                year: finState.year,
+                scheduledMortgage: parseFloat(document.getElementById('fin-a-mortgage').value) || null,
+                taxesInsurance: parseFloat(document.getElementById('fin-a-ti').value) || null,
+                notes: document.getElementById('fin-a-notes').value
+            };
+            try {
+                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/annual-config`, {
+                    method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
+                });
+                closeAnnualConfigModal();
+                await loadFinYear(finState.year);
+            } catch(e) { console.error('saveAnnualConfig error:', e); }
+        }
+
+        // Expense item modal
+        function openExpenseModal(idOrNull) {
+            finState.editingExpenseId = idOrNull;
+            const isEdit = idOrNull && idOrNull !== 'null';
+            document.getElementById('fin-expense-modal-title').textContent = isEdit ? 'Edit Expense' : 'Add Expense';
+
+            if (isEdit) {
+                const item = finState.yearData?.expenseItems?.find(x => x.id === idOrNull);
+                if (item) {
+                    document.getElementById('fin-e-month').value = item.month;
+                    document.getElementById('fin-e-date').value = item.expenseDate || '';
+                    document.getElementById('fin-e-name').value = item.expenseName || '';
+                    document.getElementById('fin-e-vendor').value = item.vendor || '';
+                    document.getElementById('fin-e-amount').value = item.amount || '';
+                    document.getElementById('fin-e-tag').value = item.tag || 'other';
+                }
+            } else {
+                ['fin-e-date','fin-e-name','fin-e-vendor','fin-e-amount'].forEach(id => { document.getElementById(id).value = ''; });
+                document.getElementById('fin-e-month').value = '1';
+                document.getElementById('fin-e-tag').value = 'other';
+            }
+            document.getElementById('fin-expense-modal').classList.remove('hidden');
+        }
+        function closeExpenseModal() { document.getElementById('fin-expense-modal').classList.add('hidden'); }
+
+        async function saveExpenseItem() {
+            const body = {
+                year: finState.year,
+                month: parseInt(document.getElementById('fin-e-month').value),
+                expenseDate: document.getElementById('fin-e-date').value || null,
+                expenseName: document.getElementById('fin-e-name').value,
+                vendor: document.getElementById('fin-e-vendor').value,
+                amount: parseFloat(document.getElementById('fin-e-amount').value) || null,
+                tag: document.getElementById('fin-e-tag').value
+            };
+            try {
+                const isEdit = finState.editingExpenseId && finState.editingExpenseId !== 'null';
+                if (isEdit) {
+                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/expenses/${finState.editingExpenseId}`, {
+                        method: 'PUT', headers: authHeaders(), body: JSON.stringify(body)
+                    });
+                } else {
+                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/expenses`, {
+                        method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
+                    });
+                }
+                closeExpenseModal();
+                await loadFinYear(finState.year);
+            } catch(e) { console.error('saveExpenseItem error:', e); }
+        }
+
+        async function deleteExpense(id) {
+            if (!confirm('Delete this expense?')) return;
+            try {
+                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/expenses/${id}`, {
+                    method: 'DELETE', headers: authHeaders()
+                });
+                await loadFinYear(finState.year);
+            } catch(e) { console.error('deleteExpense error:', e); }
         }
 
         // Close modal when clicking outside

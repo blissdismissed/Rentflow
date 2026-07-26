@@ -1,16 +1,30 @@
 const express = require('express')
 const { authenticate } = require('../middleware/auth')
+const {
+  getFinancialProperties,
+  getPropertySummary,
+  getYearDetail,
+  upsertMonthly,
+  upsertAnnualConfig,
+  upsertFinancialSettings,
+  addExpenseItem,
+  updateExpenseItem,
+  deleteExpenseItem,
+  toggleVisibility
+} = require('../controllers/financialController')
 
 const router = express.Router()
-
 router.use(authenticate)
 
-// Financial routes - to be implemented
-router.get('/', (req, res) => res.status(501).json({ message: 'Not implemented' }))
-router.get('/summary', (req, res) => res.status(501).json({ message: 'Not implemented' }))
-router.get('/reports', (req, res) => res.status(501).json({ message: 'Not implemented' }))
-router.post('/', (req, res) => res.status(501).json({ message: 'Not implemented' }))
-router.put('/:id', (req, res) => res.status(501).json({ message: 'Not implemented' }))
-router.delete('/:id', (req, res) => res.status(501).json({ message: 'Not implemented' }))
+router.get('/properties', getFinancialProperties)
+router.get('/:propertyId/summary', getPropertySummary)
+router.get('/:propertyId/year/:year', getYearDetail)
+router.post('/:propertyId/monthly', upsertMonthly)
+router.post('/:propertyId/annual-config', upsertAnnualConfig)
+router.post('/:propertyId/settings', upsertFinancialSettings)
+router.post('/:propertyId/expenses', addExpenseItem)
+router.put('/expenses/:id', updateExpenseItem)
+router.delete('/expenses/:id', deleteExpenseItem)
+router.patch('/:propertyId/visibility', toggleVisibility)
 
 module.exports = router

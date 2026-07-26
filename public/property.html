@@ -507,7 +507,6 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <a href="index.html" class="flex items-center space-x-3">
-                    <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo" class="h-16 w-16 sm:h-20 sm:w-20">
                     <span class="text-2xl sm:text-3xl font-display font-bold text-gray-900 leading-none mt-0.5">AspireTowards</span>
                 </a>
                 <div class="hidden md:flex items-center space-x-8">
@@ -697,13 +696,24 @@
 
     <!-- Main Content -->
     <div id="property-content" class="hidden">
+        <!-- Owner Preview Banner -->
+        <div id="owner-preview-banner" class="hidden bg-teal-700 text-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
+                <span class="text-sm font-medium">Owner preview — this is how guests see your property</span>
+                <div class="flex items-center space-x-3">
+                    <a id="owner-edit-link" href="#" class="text-sm bg-white text-teal-700 font-medium px-3 py-1 rounded hover:bg-teal-50 transition">Edit Property</a>
+                    <a href="/dashboard.html" class="text-sm underline hover:no-underline">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+
         <!-- Back Button -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <a href="properties.html" class="text-teal-600 hover:text-teal-700 flex items-center">
+            <a id="back-link" href="properties.html" class="text-teal-600 hover:text-teal-700 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
-                Back to Properties
+                <span id="back-link-text">Back to Properties</span>
             </a>
         </div>
 
@@ -1005,7 +1015,6 @@
                 <!-- About -->
                 <div class="col-span-1 md:col-span-2">
                     <div class="flex items-center space-x-3 mb-4">
-                        <img src="/assets/resources/aspiretowards-logo-optimized.png" alt="AspireTowards Logo" class="h-12 w-12">
                         <h3 class="text-xl font-display font-bold text-white">AspireTowards</h3>
                     </div>
                     <p class="text-gray-400 mb-4">
@@ -1330,9 +1339,16 @@
         // Get slug from URL
         const urlParams = new URLSearchParams(window.location.search)
         const slug = urlParams.get('slug')
+        const fromDashboard = urlParams.get('from') === 'dashboard'
 
         if (!slug) {
             window.location.href = 'properties.html'
+        }
+
+        if (fromDashboard) {
+            document.getElementById('owner-preview-banner').classList.remove('hidden')
+            document.getElementById('back-link').href = '/dashboard.html'
+            document.getElementById('back-link-text').textContent = 'Back to Dashboard'
         }
 
         // Load property details
@@ -1346,6 +1362,9 @@
                     bookedDates = data.property.bookedDates || []
                     displayProperty(data.property)
                     initializeDatePickers()
+                    if (fromDashboard) {
+                        document.getElementById('owner-edit-link').href = `/edit-property.html?id=${data.property.id}`
+                    }
                 } else {
                     throw new Error('Property not found')
                 }

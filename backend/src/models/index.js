@@ -13,6 +13,10 @@ const PropertySettings = require('./PropertySettings')
 const PropertyLockPin = require('./PropertyLockPin')
 const EmailTemplate = require('./EmailTemplate')
 const Review = require('./Review')
+const PropertyFinancialSettings = require('./PropertyFinancialSettings')
+const FinancialAnnualConfig = require('./FinancialAnnualConfig')
+const FinancialMonthly = require('./FinancialMonthly')
+const FinancialExpenseItem = require('./FinancialExpenseItem')
 
 // Define associations
 User.hasMany(Property, { foreignKey: 'userId', as: 'properties' })
@@ -92,6 +96,19 @@ Review.belongsTo(Booking, { foreignKey: 'bookingId', as: 'booking' })
 Guest.hasMany(Review, { foreignKey: 'guestId', as: 'reviews' })
 Review.belongsTo(Guest, { foreignKey: 'guestId', as: 'guest' })
 
+// Financial tracking associations
+Property.hasOne(PropertyFinancialSettings, { foreignKey: 'propertyId', as: 'financialSettings' })
+PropertyFinancialSettings.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' })
+
+Property.hasMany(FinancialAnnualConfig, { foreignKey: 'propertyId', as: 'annualConfigs' })
+FinancialAnnualConfig.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' })
+
+Property.hasMany(FinancialMonthly, { foreignKey: 'propertyId', as: 'monthlyFinancials' })
+FinancialMonthly.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' })
+
+Property.hasMany(FinancialExpenseItem, { foreignKey: 'propertyId', as: 'expenseItems' })
+FinancialExpenseItem.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' })
+
 module.exports = {
   User,
   Property,
@@ -107,5 +124,9 @@ module.exports = {
   PropertySettings,
   PropertyLockPin,
   EmailTemplate,
-  Review
+  Review,
+  PropertyFinancialSettings,
+  FinancialAnnualConfig,
+  FinancialMonthly,
+  FinancialExpenseItem
 }
