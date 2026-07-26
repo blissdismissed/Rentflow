@@ -149,18 +149,57 @@ const getPropertySummary = async (req, res) => {
     const allConfigs = await FinancialAnnualConfig.findAll({ where: { propertyId: property.id } })
     const configByYear = Object.fromEntries(allConfigs.map(c => [c.year, c]))
 
-    // Group by year
+    // Group monthly records by year
     const yearMap = {}
     for (const row of allMonthly) {
       if (!yearMap[row.year]) yearMap[row.year] = []
       yearMap[row.year].push({ ...row.toJSON(), year: row.year, month: row.month })
     }
 
-    const years = Object.keys(yearMap).sort().map(year => {
+    // Years with full monthly detail
+    const yearsWithDetail = Object.keys(yearMap).sort().map(year => {
       const monthMetrics = yearMap[year].map(m => computeMonthMetrics(m, configByYear[year]?.scheduledMortgage))
       const annual = computeAnnualMetrics(monthMetrics.map((m, i) => ({ ...m, month: yearMap[year][i].month, year: parseInt(year) })), configByYear[year], purchasePrice)
-      return { year: parseInt(year), ...annual }
+      return { year: parseInt(year), hasMonthlyDetail: true, ...annual }
     })
+
+    // Years with only annual summary (no monthly records)
+    const yearsFromSummary = allConfigs
+      .filter(c => c.grossIncomeAnnual != null && !yearMap[c.year])
+      .map(config => {
+        const grossIncome     = parseFloat(config.grossIncomeAnnual || 0)
+        const managementFee   = parseFloat(config.managementFeeAnnual || 0)
+        const platformCharges = parseFloat(config.platformChargesAnnual || 0)
+        const cleaningFee     = parseFloat(config.cleaningFeeAnnual || 0)
+        const utilities       = parseFloat(config.utilitiesAnnual || 0)
+        const maintenance     = parseFloat(config.maintenanceAnnual || 0)
+        const otherExpenses   = parseFloat(config.otherExpensesAnnual || 0)
+        const grossExpenses   = platformCharges + cleaningFee + utilities + maintenance + otherExpenses
+        const netIncome       = grossIncome - managementFee - grossExpenses
+        const hoaPayment      = parseFloat(config.hoaAnnual || 0)
+        const actualMortgage  = parseFloat(config.actualMortgageAnnual || 0)
+        const ti              = parseFloat(config.taxesInsurance || 0)
+        const scheduledMort   = parseFloat(config.scheduledMortgage || 0)
+        const nightsBooked    = parseInt(config.nightsBookedAnnual || 0)
+        const numReservations = parseInt(config.numReservationsAnnual || 0)
+
+        return {
+          year: config.year,
+          hasMonthlyDetail: false,
+          grossIncome, managementFee, platformCharges, cleaningFee,
+          utilities, maintenance, otherExpenses, grossExpenses, netIncome,
+          nightsBooked, numReservations,
+          hoaPayment, actualMortgagePaid: actualMortgage,
+          taxesInsurance: ti, scheduledMortgage: scheduledMort,
+          grossProfits: netIncome - hoaPayment - actualMortgage - ti,
+          percentageOfIncome: grossIncome > 0 ? netIncome / grossIncome : 0,
+          avgLengthOfStay: numReservations > 0 ? nightsBooked / numReservations : 0,
+          noi: purchasePrice > 0 ? (netIncome - hoaPayment) / purchasePrice : null,
+          notes: config.notes || '',
+        }
+      })
+
+    const years = [...yearsWithDetail, ...yearsFromSummary].sort((a, b) => a.year - b.year)
 
     // All-time totals and averages
     let allTimeTotals = null
@@ -371,6 +410,104 @@ const deleteExpenseItem = async (req, res) => {
   }
 }
 
+// POST /api/financials/parse-caribbean-statement — parse a Caribbean Resorts PDF statement
+const parseCaribbeaStatement = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' })
+
+    const pdfParse = require('pdf-parse')
+    const data = await pdfParse(req.file.buffer)
+    const text = data.text
+
+    // Date range → month + year
+    const dateMatch = text.match(/From Date:\s*(\d{2})\/(\d{2})\/(\d{4})/)
+    if (!dateMatch) return res.status(400).json({ success: false, message: 'Could not find date range in statement' })
+    const month = parseInt(dateMatch[1])
+    const year  = parseInt(dateMatch[3])
+
+    // Gross income
+    const grossMatch = text.match(/Total Room Revenue:\s*\$([0-9,]+\.?\d*)/)
+    const grossIncome = grossMatch ? parseFloat(grossMatch[1].replace(/,/g, '')) : 0
+
+    // Guest nights (MTD = first number)
+    const nightsMatch = text.match(/Guest Nights Sold\s+(\d+)/)
+    const nightsBooked = nightsMatch ? parseInt(nightsMatch[1]) : 0
+
+    // Count reservation rows by date-range pattern
+    const reservationRows = (text.match(/\d{2}\/\d{2}\/\d{4}\s+\d{2}\/\d{2}\/\d{4}/g) || [])
+    const numReservations = reservationRows.length
+
+    // Known expense line names on Caribbean statements
+    const KNOWN_EXPENSES = [
+      'Management Commission',
+      'Credit Card',
+      'Monthly Telephone Charge',
+      'Replacement Fee',
+      'Annual General Maintenance',
+      'Annual Recreation Fee',
+      'Reno Project Credit',
+      'Labor Cost',
+      'Parts Cost',
+      'Housekeeping',
+      'Pool/Grounds',
+      'Cable TV',
+      'Internet',
+    ]
+
+    const rawExpenses = []
+    let managementFee = 0
+    let platformCharges = 0
+
+    for (const name of KNOWN_EXPENSES) {
+      const esc = name.replace(/[()[\].*+?^${}|]/g, '\\$&')
+      const posM = text.match(new RegExp(`${esc}\\s+\\$([0-9,]+\\.\\d{2})`))
+      const negM = text.match(new RegExp(`${esc}\\s+\\(\\$([0-9,]+\\.\\d{2})\\)`))
+      if (!posM && !negM) continue
+      const amount = posM
+        ? parseFloat(posM[1].replace(/,/g, ''))
+        : -parseFloat(negM[1].replace(/,/g, ''))
+      rawExpenses.push({ name, amount })
+      if (name === 'Management Commission') managementFee = amount
+      else platformCharges += amount
+    }
+
+    // Net due to owner
+    const netMatch = text.match(/Net Due to \(from\) Owner\s+\$([0-9,]+\.?\d*)/)
+    const netDue = netMatch ? parseFloat(netMatch[1].replace(/,/g, '')) : null
+
+    res.json({
+      success: true,
+      parsed: { month, year, grossIncome, managementFee, platformCharges: parseFloat(platformCharges.toFixed(2)), nightsBooked, numReservations, rawExpenses, netDue }
+    })
+  } catch (err) {
+    console.error('parseCaribbeaStatement error:', err)
+    res.status(500).json({ success: false, message: 'Failed to parse PDF: ' + err.message })
+  }
+}
+
+// POST /api/financials/:propertyId/year-summary — upsert annual summary (no monthly detail)
+const upsertYearSummary = async (req, res) => {
+  try {
+    const { propertyId } = req.params
+    const property = await Property.findOne({ where: { id: propertyId, userId: req.user.id } })
+    if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
+
+    const { year, scheduledMortgage, taxesInsurance, notes, ...summaryFields } = req.body
+    if (!year) return res.status(400).json({ success: false, message: 'year required' })
+
+    const [config, created] = await FinancialAnnualConfig.findOrCreate({
+      where: { propertyId, year },
+      defaults: { propertyId, year, scheduledMortgage, taxesInsurance, notes, ...summaryFields }
+    })
+    if (!created) await config.update({ scheduledMortgage, taxesInsurance, notes, ...summaryFields })
+
+    res.json({ success: true, config })
+  } catch (err) {
+    console.error('upsertYearSummary error:', err)
+    res.status(500).json({ success: false, message: 'Server error' })
+  }
+}
+
 // PATCH /api/financials/:propertyId/visibility — toggle publiclyVisible
 const toggleVisibility = async (req, res) => {
   try {
@@ -392,8 +529,10 @@ module.exports = {
   upsertMonthly,
   upsertAnnualConfig,
   upsertFinancialSettings,
+  upsertYearSummary,
   addExpenseItem,
   updateExpenseItem,
   deleteExpenseItem,
-  toggleVisibility
+  toggleVisibility,
+  parseCaribbeaStatement,
 }

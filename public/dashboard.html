@@ -518,6 +518,9 @@
                         class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                         <option value="">Select property...</option>
                     </select>
+                    <button id="fin-set-default-btn" onclick="setFinDefaultProperty()" class="hidden text-xs text-teal-600 hover:text-teal-800 whitespace-nowrap">
+                        Set as default
+                    </button>
                     <!-- Visibility toggle -->
                     <div id="fin-visibility-wrap" class="hidden items-center gap-2">
                         <span class="text-sm text-gray-500">Public listing:</span>
@@ -616,6 +619,11 @@
                         class="px-4 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 transition flex items-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         Add / Edit Month
+                    </button>
+                    <button onclick="openImportModal()"
+                        class="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        Import CSV
                     </button>
                 </div>
 
@@ -839,6 +847,129 @@
                 <div class="p-6 border-t flex justify-end gap-3">
                     <button onclick="closeExpenseModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
                     <button onclick="saveExpenseItem()" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CSV Import Modal -->
+        <div id="fin-import-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+                <div class="flex justify-between items-center p-6 border-b flex-shrink-0">
+                    <h3 class="text-lg font-semibold text-gray-900">Import Data</h3>
+                    <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6 flex-shrink-0 border-b">
+                    <div class="flex flex-wrap gap-4 items-end">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Import type</label>
+                            <select id="fin-import-type" onchange="resetImport()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="monthly">Monthly Summary (CSV)</option>
+                                <option value="expenses">Expense Items (CSV)</option>
+                                <option value="annual-summary">Annual Totals — all years (CSV)</option>
+                                <option value="caribbean-pdf">Caribbean Statement (PDF)</option>
+                            </select>
+                        </div>
+                        <div id="fin-import-year-wrap">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                            <select id="fin-import-year" class="px-3 py-2 border border-gray-300 rounded-lg text-sm"></select>
+                        </div>
+                        <div id="fin-import-csv-template-btns" class="flex gap-2">
+                            <button onclick="downloadTemplate('monthly')" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Monthly template
+                            </button>
+                            <button onclick="downloadTemplate('expenses')" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Expenses template
+                            </button>
+                        </div>
+                        <div id="fin-import-annual-template-btn" class="hidden">
+                            <button onclick="downloadTemplate('annual-summary')" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Annual summary template
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-4" id="fin-import-file-wrap">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" id="fin-import-file-label">Choose file</label>
+                        <input type="file" id="fin-import-file" accept=".csv,.pdf" onchange="handleImportFile()"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                        <p id="fin-import-type-hint" class="mt-1 text-xs text-gray-400"></p>
+                    </div>
+                    <div id="fin-import-error" class="hidden mt-2 text-sm text-red-600"></div>
+                </div>
+
+                <!-- CSV Preview table -->
+                <div id="fin-import-preview" class="hidden flex-1 overflow-auto p-6">
+                    <p class="text-sm font-medium text-gray-700 mb-3" id="fin-import-preview-label"></p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-xs border border-gray-200 rounded-lg overflow-hidden">
+                            <thead id="fin-import-preview-head" class="bg-gray-50"></thead>
+                            <tbody id="fin-import-preview-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Caribbean PDF verification form -->
+                <div id="fin-import-caribbean-verify" class="hidden flex-1 overflow-auto p-6">
+                    <p class="text-sm font-medium text-gray-700 mb-4">Review &amp; edit extracted values before saving:</p>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Month</label>
+                            <select id="fin-verify-month" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                                <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                                <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Year</label>
+                            <input id="fin-verify-year" type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Gross Income (Total Room Revenue)</label>
+                            <input id="fin-verify-grossIncome" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Management Commission</label>
+                            <input id="fin-verify-managementFee" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Platform Charges (all other expenses)</label>
+                            <input id="fin-verify-platformCharges" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Guest Nights Sold</label>
+                            <input id="fin-verify-nightsBooked" type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1"># Reservations</label>
+                            <input id="fin-verify-numReservations" type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Net Due to Owner (reference only)</label>
+                            <input id="fin-verify-netDue" type="number" step="0.01" readonly class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
+                        </div>
+                    </div>
+                    <div id="fin-verify-raw-expenses" class="hidden">
+                        <p class="text-xs font-medium text-gray-500 mb-2">Expense breakdown from statement (for reference):</p>
+                        <div id="fin-verify-expense-lines" class="space-y-0.5 text-xs text-gray-600 bg-gray-50 rounded-lg p-3 font-mono"></div>
+                        <p class="text-xs text-gray-400 mt-2">Platform Charges = sum of all lines except Management Commission. Edit the field above if the total is off.</p>
+                    </div>
+                </div>
+
+                <div class="p-6 border-t flex-shrink-0 flex justify-between items-center">
+                    <p class="text-xs text-gray-400" id="fin-import-footer-note">Existing records for the same month/year will be overwritten.</p>
+                    <div class="flex gap-3">
+                        <button onclick="closeImportModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                        <button id="fin-import-confirm-btn" onclick="confirmImport()" disabled
+                            class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                            Import
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1785,13 +1916,39 @@ Total: $${props.totalAmount}`);
                     sel.appendChild(opt);
                 });
 
-                if (finState.propertyId) {
-                    sel.value = finState.propertyId;
-                    await setFinProperty(finState.propertyId);
+                // Determine which property to select
+                let toSelect = finState.propertyId;
+                if (!toSelect) {
+                    if (finState.properties.length === 1) {
+                        // Only one property — auto-select it
+                        toSelect = finState.properties[0].id;
+                    } else if (finState.properties.length > 1) {
+                        // Check for a saved default
+                        const saved = localStorage.getItem('fin_default_property_id');
+                        if (saved && finState.properties.find(p => p.id === saved)) {
+                            toSelect = saved;
+                        }
+                    }
                 }
+
+                if (toSelect) {
+                    sel.value = toSelect;
+                    await setFinProperty(toSelect);
+                }
+
+                // Show "Set as default" button only when multiple properties exist
+                document.getElementById('fin-set-default-btn').classList.toggle('hidden', finState.properties.length <= 1);
             } catch(e) {
                 console.error('loadFinances error:', e);
             }
+        }
+
+        function setFinDefaultProperty() {
+            if (!finState.propertyId) return;
+            localStorage.setItem('fin_default_property_id', finState.propertyId);
+            const btn = document.getElementById('fin-set-default-btn');
+            btn.textContent = '✓ Default set';
+            setTimeout(() => { btn.textContent = 'Set as default'; }, 2000);
         }
 
         async function setFinProperty(propertyId) {
@@ -1887,7 +2044,9 @@ Total: $${props.totalAmount}`);
 
             let html = rows.map(y => {
                 return `<tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="drillToYear(${y.year})">
-                    <td class="px-4 py-3 font-medium text-teal-600 sticky left-0 bg-white hover:bg-gray-50">${y.year}</td>
+                    <td class="px-4 py-3 font-medium text-teal-600 sticky left-0 bg-white hover:bg-gray-50">
+                        ${y.year}${!y.hasMonthlyDetail ? ' <span class="text-xs text-gray-400 font-normal" title="Annual total only — no monthly breakdown">est.</span>' : ''}
+                    </td>
                     <td class="px-4 py-3 text-right">${finFmt(y.grossIncome)}</td>
                     <td class="px-4 py-3 text-right text-gray-600">${finFmt(y.managementFee)}</td>
                     <td class="px-4 py-3 text-right text-gray-600">${finFmt(y.grossExpenses)}</td>
@@ -2253,6 +2412,459 @@ Total: $${props.totalAmount}`);
 
         // Run on page load
         initDashboard();
+
+        // ─── CSV Import ───────────────────────────────────────────────────────────
+
+        const importState = { rows: [], type: 'monthly' };
+
+        const MONTH_MAP = {
+            january:1, february:2, march:3, april:4, may:5, june:6,
+            july:7, august:8, september:9, october:10, november:11, december:12,
+            jan:1, feb:2, mar:3, apr:4, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12
+        };
+
+        function parseMonthValue(val) {
+            if (!val) return null;
+            const s = String(val).trim().toLowerCase();
+            if (MONTH_MAP[s]) return MONTH_MAP[s];
+            const n = parseInt(s);
+            if (n >= 1 && n <= 12) return n;
+            return null;
+        }
+
+        function parseMoney(val) {
+            if (val === null || val === undefined) return 0;
+            return parseFloat(String(val).replace(/[$,\s]/g, '')) || 0;
+        }
+
+        function parseCSV(text) {
+            const lines = text.split(/\r?\n/).filter(l => l.trim());
+            const rows = [];
+            for (const line of lines) {
+                const cells = [];
+                let cur = '', inQuote = false;
+                for (let i = 0; i < line.length; i++) {
+                    const ch = line[i];
+                    if (ch === '"') { inQuote = !inQuote; }
+                    else if (ch === ',' && !inQuote) { cells.push(cur.trim()); cur = ''; }
+                    else { cur += ch; }
+                }
+                cells.push(cur.trim());
+                rows.push(cells);
+            }
+            return rows;
+        }
+
+        // Normalise a header string for matching
+        function normHeader(s) {
+            return String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        // Map raw CSV rows → monthly upsert payloads
+        function mapMonthlyRows(rawRows) {
+            // Find header row (first row that contains a month-like value OR has 'month' header)
+            let headerIdx = 0;
+            for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+                const normed = rawRows[i].map(normHeader);
+                if (normed.includes('month') || normed.includes('grossincome') || normed.includes('gross')) {
+                    headerIdx = i; break;
+                }
+            }
+            const headers = rawRows[headerIdx].map(normHeader);
+            const dataRows = rawRows.slice(headerIdx + 1);
+
+            const col = (aliases) => {
+                for (const a of aliases) {
+                    const idx = headers.indexOf(a);
+                    if (idx !== -1) return idx;
+                }
+                return -1;
+            };
+
+            const cols = {
+                month:          col(['month']),
+                grossIncome:    col(['grossincome','gross']),
+                managementFee:  col(['managementfee','managmentfee','mgmtfee','managementfees']),
+                platformCharges:col(['platformcharges','charges','grosscharges']),
+                cleaningFee:    col(['cleaningfee','cleaning']),
+                utilities:      col(['utilities']),
+                maintenance:    col(['maintenance','mantenance']),
+                otherExpenses:  col(['otherexpenses','other']),
+                nightsBooked:   col(['nightsbooked','nights']),
+                numReservations:col(['numreservations','reservations','ofreservations','noofreservations']),
+                hoaPayment:     col(['hoapayment','hoa']),
+                actualMortgagePaid: col(['actualmortgagepaid','actualpayments','actualpaid','actualmortgagepaymentsmade']),
+            };
+
+            const results = [];
+            for (const row of dataRows) {
+                if (!row.some(c => c)) continue; // skip blank rows
+                const month = parseMonthValue(cols.month !== -1 ? row[cols.month] : null);
+                if (!month) continue; // skip totals/summary rows
+
+                const get = (key) => cols[key] !== -1 ? parseMoney(row[cols[key]]) : 0;
+                results.push({
+                    month,
+                    grossIncome:     get('grossIncome'),
+                    managementFee:   get('managementFee'),
+                    platformCharges: get('platformCharges'),
+                    cleaningFee:     get('cleaningFee'),
+                    utilities:       get('utilities'),
+                    maintenance:     get('maintenance'),
+                    otherExpenses:   get('otherExpenses'),
+                    nightsBooked:    parseInt(cols.nightsBooked !== -1 ? row[cols.nightsBooked] : 0) || 0,
+                    numReservations: parseInt(cols.numReservations !== -1 ? row[cols.numReservations] : 0) || 0,
+                    hoaPayment:      get('hoaPayment'),
+                    actualMortgagePaid: get('actualMortgagePaid'),
+                });
+            }
+            return results;
+        }
+
+        // Map raw CSV rows → expense item payloads
+        function mapExpenseRows(rawRows) {
+            let headerIdx = 0;
+            for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+                const normed = rawRows[i].map(normHeader);
+                if (normed.includes('month') || normed.includes('expense') || normed.includes('amount')) {
+                    headerIdx = i; break;
+                }
+            }
+            const headers = rawRows[headerIdx].map(normHeader);
+            const dataRows = rawRows.slice(headerIdx + 1);
+            const col = (aliases) => { for (const a of aliases) { const i = headers.indexOf(a); if (i !== -1) return i; } return -1; };
+
+            const cols = {
+                month:       col(['month']),
+                date:        col(['date','expensedate']),
+                expenseName: col(['expense','expensename','description']),
+                vendor:      col(['vendor']),
+                amount:      col(['amount']),
+                tag:         col(['tag','category']),
+            };
+
+            const VALID_TAGS = ['utilities','housekeeping','maintenance','hoa','other'];
+            return rawRows.slice(headerIdx + 1).filter(r => r.some(c => c)).map(row => {
+                const month = parseMonthValue(cols.month !== -1 ? row[cols.month] : null);
+                if (!month) return null;
+                const rawTag = cols.tag !== -1 ? row[cols.tag].toLowerCase() : 'other';
+                const tag = VALID_TAGS.includes(rawTag) ? rawTag : 'other';
+                return {
+                    month,
+                    expenseDate:  cols.date !== -1 ? row[cols.date] || null : null,
+                    expenseName:  cols.expenseName !== -1 ? row[cols.expenseName] : '',
+                    vendor:       cols.vendor !== -1 ? row[cols.vendor] : '',
+                    amount:       cols.amount !== -1 ? parseMoney(row[cols.amount]) : null,
+                    tag,
+                };
+            }).filter(Boolean);
+        }
+
+        function openImportModal() {
+            const yearSel = document.getElementById('fin-import-year');
+            const years = finState.summaryData?.years?.map(y => y.year) || [];
+            const cur = new Date().getFullYear();
+            if (!years.includes(cur)) years.push(cur);
+            years.sort((a, b) => b - a);
+            yearSel.innerHTML = years.map(y => `<option value="${y}" ${y === finState.year ? 'selected' : ''}>${y}</option>`).join('');
+            resetImport();
+            document.getElementById('fin-import-modal').classList.remove('hidden');
+        }
+
+        function closeImportModal() {
+            document.getElementById('fin-import-modal').classList.add('hidden');
+            document.getElementById('fin-import-file').value = '';
+        }
+
+        function resetImport() {
+            importState.rows = [];
+            const type = document.getElementById('fin-import-type').value;
+            const isPdf = type === 'caribbean-pdf';
+            const isAnnual = type === 'annual-summary';
+
+            document.getElementById('fin-import-preview').classList.add('hidden');
+            document.getElementById('fin-import-caribbean-verify').classList.add('hidden');
+            document.getElementById('fin-import-error').classList.add('hidden');
+            document.getElementById('fin-import-confirm-btn').disabled = true;
+            document.getElementById('fin-import-confirm-btn').textContent = 'Import';
+            document.getElementById('fin-import-file').value = '';
+
+            // Year selector: hide for expenses, annual-summary, and caribbean-pdf (year comes from PDF)
+            document.getElementById('fin-import-year-wrap').classList.toggle('hidden', type !== 'monthly');
+
+            // Template buttons
+            document.getElementById('fin-import-csv-template-btns').classList.toggle('hidden', isPdf || isAnnual);
+            document.getElementById('fin-import-annual-template-btn').classList.toggle('hidden', !isAnnual);
+
+            // File input accepts
+            const fileInput = document.getElementById('fin-import-file');
+            fileInput.accept = isPdf ? '.pdf' : '.csv';
+            document.getElementById('fin-import-file-label').textContent = isPdf ? 'Choose Caribbean statement PDF' : 'Choose CSV file';
+
+            // Hint text
+            const hints = {
+                'monthly': 'One row per month. Download the template to see expected columns.',
+                'expenses': 'One row per expense item. Columns: Month, Date, Expense, Vendor, Amount, Tag.',
+                'annual-summary': 'One row per year. Used for historical years without monthly detail. Download template below.',
+                'caribbean-pdf': 'Upload the PDF statement you download from the Caribbean Resorts owner portal.',
+            };
+            document.getElementById('fin-import-type-hint').textContent = hints[type] || '';
+
+            // Footer note
+            document.getElementById('fin-import-footer-note').textContent = isPdf
+                ? 'HOA and mortgage fields are not in the statement — enter those separately in the month editor.'
+                : 'Existing records for the same month/year will be overwritten.';
+        }
+
+        async function handleImportFile() {
+            const file = document.getElementById('fin-import-file').files[0];
+            if (!file) return;
+            const type = document.getElementById('fin-import-type').value;
+
+            if (type === 'caribbean-pdf') {
+                await handleCaribbeaPdfFile(file);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const rawRows = parseCSV(e.target.result);
+                    let rows;
+                    if (type === 'annual-summary') rows = mapAnnualSummaryRows(rawRows);
+                    else if (type === 'monthly') rows = mapMonthlyRows(rawRows);
+                    else rows = mapExpenseRows(rawRows);
+
+                    if (rows.length === 0) {
+                        showImportError('No valid data rows found. Make sure the file has a header row and a Year or Month column.');
+                        return;
+                    }
+
+                    importState.rows = rows;
+                    showImportPreview(rows, type);
+                    document.getElementById('fin-import-error').classList.add('hidden');
+                    document.getElementById('fin-import-confirm-btn').disabled = false;
+                    document.getElementById('fin-import-confirm-btn').textContent = `Import ${rows.length} row${rows.length !== 1 ? 's' : ''}`;
+                } catch (err) {
+                    showImportError('Failed to parse file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function handleCaribbeaPdfFile(file) {
+            document.getElementById('fin-import-confirm-btn').disabled = true;
+            document.getElementById('fin-import-confirm-btn').textContent = 'Parsing PDF...';
+            document.getElementById('fin-import-error').classList.add('hidden');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const token = localStorage.getItem('accessToken');
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/parse-caribbean-statement`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Parse failed');
+
+                // Populate verification form
+                const p = data.parsed;
+                document.getElementById('fin-verify-month').value = p.month;
+                document.getElementById('fin-verify-year').value = p.year;
+                document.getElementById('fin-verify-grossIncome').value = p.grossIncome;
+                document.getElementById('fin-verify-managementFee').value = p.managementFee;
+                document.getElementById('fin-verify-platformCharges').value = p.platformCharges;
+                document.getElementById('fin-verify-nightsBooked').value = p.nightsBooked;
+                document.getElementById('fin-verify-numReservations').value = p.numReservations;
+                document.getElementById('fin-verify-netDue').value = p.netDue || '';
+
+                if (p.rawExpenses && p.rawExpenses.length > 0) {
+                    const lines = p.rawExpenses.map(e => {
+                        const amt = e.amount < 0
+                            ? `(${finFmt(Math.abs(e.amount))})`
+                            : finFmt(e.amount);
+                        return `<div class="flex justify-between"><span>${e.name}</span><span class="${e.amount < 0 ? 'text-green-600' : ''}">${amt}</span></div>`;
+                    }).join('');
+                    document.getElementById('fin-verify-expense-lines').innerHTML = lines;
+                    document.getElementById('fin-verify-raw-expenses').classList.remove('hidden');
+                }
+
+                document.getElementById('fin-import-caribbean-verify').classList.remove('hidden');
+                document.getElementById('fin-import-confirm-btn').disabled = false;
+                document.getElementById('fin-import-confirm-btn').textContent = 'Save to Dashboard';
+            } catch (err) {
+                showImportError('PDF parse failed: ' + err.message);
+                document.getElementById('fin-import-confirm-btn').textContent = 'Import';
+            }
+        }
+
+        // Map CSV rows for annual-summary import (one row per year)
+        function mapAnnualSummaryRows(rawRows) {
+            let headerIdx = 0;
+            for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+                const normed = rawRows[i].map(normHeader);
+                if (normed.includes('year') || normed.includes('grossincome')) { headerIdx = i; break; }
+            }
+            const headers = rawRows[headerIdx].map(normHeader);
+            const col = (aliases) => { for (const a of aliases) { const i = headers.indexOf(a); if (i !== -1) return i; } return -1; };
+            const cols = {
+                year:               col(['year']),
+                grossIncome:        col(['grossincome','gross']),
+                managementFee:      col(['managementfee','managmentfee','mgmtfee']),
+                platformCharges:    col(['platformcharges','charges']),
+                cleaningFee:        col(['cleaningfee','cleaning']),
+                utilities:          col(['utilities']),
+                maintenance:        col(['maintenance']),
+                otherExpenses:      col(['otherexpenses','other']),
+                nightsBooked:       col(['nightsbooked','nights']),
+                numReservations:    col(['numreservations','reservations']),
+                hoaAnnual:          col(['hoaannual','hoa']),
+                actualMortgageAnnual: col(['actualmortgageannual','actualmortgage','actualpaid']),
+                scheduledMortgage:  col(['scheduledmortgage','mortgage']),
+                taxesInsurance:     col(['taxesinsurance','ti','taxinsurance']),
+                notes:              col(['notes','note']),
+            };
+            return rawRows.slice(headerIdx + 1).filter(r => r.some(c => c)).map(row => {
+                const year = parseInt(cols.year !== -1 ? row[cols.year] : null);
+                if (!year || isNaN(year)) return null;
+                const get = (k) => cols[k] !== -1 ? parseMoney(row[cols[k]]) : null;
+                const getInt = (k) => cols[k] !== -1 ? (parseInt(row[cols[k]]) || null) : null;
+                return {
+                    year,
+                    grossIncomeAnnual:     get('grossIncome'),
+                    managementFeeAnnual:   get('managementFee'),
+                    platformChargesAnnual: get('platformCharges'),
+                    cleaningFeeAnnual:     get('cleaningFee'),
+                    utilitiesAnnual:       get('utilities'),
+                    maintenanceAnnual:     get('maintenance'),
+                    otherExpensesAnnual:   get('otherExpenses'),
+                    nightsBookedAnnual:    getInt('nightsBooked'),
+                    numReservationsAnnual: getInt('numReservations'),
+                    hoaAnnual:             get('hoaAnnual'),
+                    actualMortgageAnnual:  get('actualMortgageAnnual'),
+                    scheduledMortgage:     get('scheduledMortgage'),
+                    taxesInsurance:        get('taxesInsurance'),
+                    notes:                 cols.notes !== -1 ? row[cols.notes] : null,
+                };
+            }).filter(Boolean);
+        }
+
+        function showImportError(msg) {
+            const el = document.getElementById('fin-import-error');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            document.getElementById('fin-import-preview').classList.add('hidden');
+            document.getElementById('fin-import-confirm-btn').disabled = true;
+        }
+
+        function showImportPreview(rows, type) {
+            document.getElementById('fin-import-preview-label').textContent = `${rows.length} row${rows.length !== 1 ? 's' : ''} detected — review before importing:`;
+
+            let headers, getRow;
+            if (type === 'monthly') {
+                headers = ['Month','Gross Income','Mgmt Fee','Charges/Expenses','Nights','Res.','HOA','Actual Paid'];
+                getRow = r => [MONTH_NAMES[r.month - 1], finFmt(r.grossIncome), finFmt(r.managementFee),
+                    finFmt(r.platformCharges + r.cleaningFee + r.utilities + r.maintenance + r.otherExpenses),
+                    r.nightsBooked, r.numReservations, finFmt(r.hoaPayment), finFmt(r.actualMortgagePaid)];
+            } else if (type === 'annual-summary') {
+                headers = ['Year','Gross Income','Mgmt Fee','Charges','Nights','HOA','Notes'];
+                getRow = r => [r.year, finFmt(r.grossIncomeAnnual), finFmt(r.managementFeeAnnual),
+                    finFmt(r.platformChargesAnnual), r.nightsBookedAnnual ?? '—', finFmt(r.hoaAnnual), r.notes || ''];
+            } else {
+                headers = ['Month','Date','Expense','Vendor','Amount','Tag'];
+                getRow = r => [MONTH_NAMES[r.month - 1], r.expenseDate || '—', r.expenseName, r.vendor, finFmt(r.amount), r.tag];
+            }
+
+            document.getElementById('fin-import-preview-head').innerHTML =
+                `<tr>${headers.map(h => `<th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 bg-gray-50">${h}</th>`).join('')}</tr>`;
+            document.getElementById('fin-import-preview-body').innerHTML = rows.map(r =>
+                `<tr class="border-t border-gray-100">${getRow(r).map(v => `<td class="px-3 py-1.5 text-xs text-gray-700">${v}</td>`).join('')}</tr>`
+            ).join('');
+            document.getElementById('fin-import-preview').classList.remove('hidden');
+        }
+
+        async function confirmImport() {
+            const btn = document.getElementById('fin-import-confirm-btn');
+            const type = document.getElementById('fin-import-type').value;
+            const year = parseInt(document.getElementById('fin-import-year').value);
+
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                if (type === 'caribbean-pdf') {
+                    // Read from verification form
+                    const payload = {
+                        year:            parseInt(document.getElementById('fin-verify-year').value),
+                        month:           parseInt(document.getElementById('fin-verify-month').value),
+                        grossIncome:     parseFloat(document.getElementById('fin-verify-grossIncome').value) || 0,
+                        managementFee:   parseFloat(document.getElementById('fin-verify-managementFee').value) || 0,
+                        platformCharges: parseFloat(document.getElementById('fin-verify-platformCharges').value) || 0,
+                        nightsBooked:    parseInt(document.getElementById('fin-verify-nightsBooked').value) || 0,
+                        numReservations: parseInt(document.getElementById('fin-verify-numReservations').value) || 0,
+                    };
+                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                        method: 'POST', headers: authHeaders(),
+                        body: JSON.stringify(payload)
+                    });
+                } else if (type === 'annual-summary') {
+                    for (const row of importState.rows) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/year-summary`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify(row)
+                        });
+                    }
+                } else if (type === 'monthly') {
+                    for (const row of importState.rows) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify({ year, ...row })
+                        });
+                    }
+                } else {
+                    for (const row of importState.rows) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/expenses`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify({ year, ...row })
+                        });
+                    }
+                }
+                closeImportModal();
+                finState.summaryData = null;
+                await loadFinYear(finState.year);
+            } catch (err) {
+                showImportError('Import failed: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = type === 'caribbean-pdf' ? 'Save to Dashboard' : `Import ${importState.rows.length} rows`;
+            }
+        }
+
+        function downloadTemplate(type) {
+            let csv, filename;
+            if (type === 'monthly') {
+                csv = 'Month,Gross Income,Management Fee,Platform Charges,Cleaning Fee,Utilities,Maintenance,Other Expenses,Nights Booked,# Reservations,HOA Payment,Actual Mortgage Paid\n';
+                csv += MONTH_NAMES.map(m => `${m},0,0,0,0,0,0,0,0,0,0,0`).join('\n');
+                filename = 'monthly-template.csv';
+            } else if (type === 'annual-summary') {
+                csv = 'Year,Gross Income,Management Fee,Platform Charges,Cleaning Fee,Utilities,Maintenance,Other Expenses,Nights Booked,# Reservations,HOA Annual,Actual Mortgage Annual,Scheduled Mortgage (monthly),Taxes & Insurance (annual),Notes\n';
+                csv += '2018,0,0,0,0,0,0,0,0,0,0,0,901,2300,First year\n';
+                csv += '2019,0,0,0,0,0,0,0,0,0,0,0,901,2300,\n';
+                filename = 'annual-summary-template.csv';
+            } else {
+                csv = 'Month,Date,Expense,Vendor,Amount,Tag\n';
+                csv += 'January,2024-01-15,Electric Bill,Power Company,125.00,utilities\n';
+                csv += 'January,2024-01-20,Cleaning,Cleaner Name,80.00,housekeeping\n';
+                filename = 'expenses-template.csv';
+            }
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+        }
     </script>
 </body>
 </html>

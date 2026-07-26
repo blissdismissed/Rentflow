@@ -367,9 +367,9 @@
                     localStorage.setItem('refreshToken', data.data.refreshToken);
                     localStorage.setItem('user', JSON.stringify(data.data.user));
 
-                    // Redirect to home page after delay
+                    // Redirect to dashboard after successful registration
                     setTimeout(() => {
-                        window.location.href = '/index.html';
+                        window.location.href = '/dashboard.html';
                     }, 1500);
                 } else {
                     showMessage(data.message || 'Registration failed');

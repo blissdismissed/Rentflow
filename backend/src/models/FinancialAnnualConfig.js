@@ -14,7 +14,19 @@ FinancialAnnualConfig.init(
     year: { type: DataTypes.INTEGER, allowNull: false },
     scheduledMortgage: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
     taxesInsurance: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
-    notes: { type: DataTypes.TEXT, allowNull: true }
+    notes: { type: DataTypes.TEXT, allowNull: true },
+    // Annual summary totals (used when monthly detail is not available)
+    grossIncomeAnnual:     { type: DataTypes.DECIMAL(12, 2), allowNull: true },
+    managementFeeAnnual:   { type: DataTypes.DECIMAL(12, 2), allowNull: true },
+    platformChargesAnnual: { type: DataTypes.DECIMAL(12, 2), allowNull: true },
+    cleaningFeeAnnual:     { type: DataTypes.DECIMAL(12, 2), allowNull: true },
+    utilitiesAnnual:       { type: DataTypes.DECIMAL(12, 2), allowNull: true },
+    maintenanceAnnual:     { type: DataTypes.DECIMAL(12, 2), allowNull: true },
+    otherExpensesAnnual:   { type: DataTypes.DECIMAL(12, 2), allowNull: true },
+    nightsBookedAnnual:    { type: DataTypes.INTEGER, allowNull: true },
+    numReservationsAnnual: { type: DataTypes.INTEGER, allowNull: true },
+    hoaAnnual:             { type: DataTypes.DECIMAL(12, 2), allowNull: true },
+    actualMortgageAnnual:  { type: DataTypes.DECIMAL(12, 2), allowNull: true }
   },
   {
     sequelize,

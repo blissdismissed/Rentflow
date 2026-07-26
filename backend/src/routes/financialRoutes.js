@@ -1,4 +1,5 @@
 const express = require('express')
+const multer = require('multer')
 const { authenticate } = require('../middleware/auth')
 const {
   getFinancialProperties,
@@ -7,20 +8,26 @@ const {
   upsertMonthly,
   upsertAnnualConfig,
   upsertFinancialSettings,
+  upsertYearSummary,
   addExpenseItem,
   updateExpenseItem,
   deleteExpenseItem,
-  toggleVisibility
+  toggleVisibility,
+  parseCaribbeaStatement,
 } = require('../controllers/financialController')
 
 const router = express.Router()
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } })
+
 router.use(authenticate)
 
 router.get('/properties', getFinancialProperties)
+router.post('/parse-caribbean-statement', upload.single('file'), parseCaribbeaStatement)
 router.get('/:propertyId/summary', getPropertySummary)
 router.get('/:propertyId/year/:year', getYearDetail)
 router.post('/:propertyId/monthly', upsertMonthly)
 router.post('/:propertyId/annual-config', upsertAnnualConfig)
+router.post('/:propertyId/year-summary', upsertYearSummary)
 router.post('/:propertyId/settings', upsertFinancialSettings)
 router.post('/:propertyId/expenses', addExpenseItem)
 router.put('/expenses/:id', updateExpenseItem)
