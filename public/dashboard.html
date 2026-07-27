@@ -3019,7 +3019,7 @@ Total: $${props.totalAmount}`);
                 nightsBooked:   col(['nightsbooked','nights','guestnights']),
                 numReservations:col(['numreservations','reservations','ofreservations','noofreservations','reservations','noreservations']),
                 hoaPayment:     col(['hoapayment','hoa','hoamonthly']),
-                actualMortgagePaid: col(['actualmortgagepaid','actualpayments','actualpaid','actualmortgagepaymentsmade','actualmortgage','actualpaymentsmade']),
+                actualMortgagePaid: col(['actualmortgagepaid','actualpayments','actualpaid','actualmortgagepaymentsmade','actualmortgage','actualpaymentsmade','mortgage','mortgagepaid','mortgagepayment']),
             };
 
             // If still no month column, try first column as month fallback
@@ -3742,7 +3742,7 @@ Total: $${props.totalAmount}`);
                     }
                     closeImportModal();
                     finState.summaryData = null;
-                    await loadFinYear(finState.year);
+                    await loadFinYear(year);
                     const msg = skipped > 0 ? `${saved} month(s) imported, ${skipped} skipped (already had data)` : `${saved} month(s) imported`;
                     showUndoToast(`${msg} — undo?`, { type, propertyId, monthlyIds });
                     return;
