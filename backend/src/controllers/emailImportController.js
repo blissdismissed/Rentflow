@@ -113,6 +113,26 @@ async function sendResultEmail(toEmail, results) {
   }
 }
 
+async function forwardVerificationEmail(body, html, subject, from) {
+  const adminEmail = process.env.ADMIN_EMAIL || process.env.SENDGRID_FROM_EMAIL
+  if (!adminEmail || !process.env.SENDGRID_API_KEY) return
+  try {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+    await sgMail.send({
+      to: adminEmail,
+      from: { email: FROM_EMAIL, name: 'AspireTowards Import' },
+      subject: `[Forwarded] ${subject || 'Email verification'}`,
+      text: `Original sender: ${from}\n\n${body || '(no text body)'}`,
+      html: html
+        ? `<p><em>Original sender: ${from}</em></p><hr>${html}`
+        : undefined,
+    })
+    console.log(`Email import: forwarded verification email from ${from} to ${adminEmail}`)
+  } catch (err) {
+    console.error('Email import: failed to forward verification email:', err.message)
+  }
+}
+
 const processEmailImport = async (req, res) => {
   // Respond immediately — SendGrid retries if it doesn't get a quick 200
   res.sendStatus(200)
@@ -120,6 +140,14 @@ const processEmailImport = async (req, res) => {
   try {
     const fromEmail = extractEmail(req.body.from)
     if (!fromEmail) return
+
+    // Forward any verification/confirmation email (e.g. Gmail forwarding setup) to admin
+    const bodyText = req.body.text || ''
+    const isVerification = /google\.com|mail-settings|accounts\.google|forwarding.*confirm|confirm.*forward/i.test(fromEmail + bodyText)
+    if (isVerification) {
+      await forwardVerificationEmail(bodyText, req.body.html, req.body.subject, fromEmail)
+      return
+    }
 
     const user = await User.findOne({ where: { email: fromEmail } })
     if (!user) {
