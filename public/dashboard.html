@@ -100,6 +100,24 @@
             border-color: #EF4444;
             color: #991B1B;
         }
+
+        /* All-Years summary table — sortable + resizable columns */
+        #fin-summary-table th {
+            position: relative;
+            user-select: none;
+        }
+        #fin-summary-table th.sortable { cursor: pointer; }
+        #fin-summary-table th.sortable:hover { background-color: #e5e7eb; }
+        #fin-summary-table th .sort-icon { margin-left: 4px; opacity: 0.35; font-size: 10px; }
+        #fin-summary-table th.sort-active .sort-icon { opacity: 1; color: #0F766E; }
+        .col-resize-handle {
+            position: absolute;
+            right: 0; top: 0; bottom: 0;
+            width: 5px;
+            cursor: col-resize;
+            z-index: 1;
+        }
+        .col-resize-handle:hover, .col-resize-handle.dragging { background: #0F766E; opacity: 0.4; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -653,30 +671,8 @@
                 <!-- Summary table -->
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
-                            <thead>
-                                <tr class="bg-gray-50 border-b border-gray-200">
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 sticky left-0 bg-gray-50">Year</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Gross Income</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Mgmt Fees</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Expenses</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Net Income</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">%</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Nights</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Res.</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Occ.</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">HOA</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Mortgage</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Actual Paid</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Extra Paid</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">T&amp;I</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Gross Profits</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Breakeven</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Notes</th>
-                                    <th class="px-4 py-3"></th>
-                                    <th class="px-4 py-3"></th>
-                                </tr>
-                            </thead>
+                        <table id="fin-summary-table" class="min-w-full text-sm">
+                            <thead id="fin-summary-head"></thead>
                             <tbody id="fin-summary-body"></tbody>
                         </table>
                     </div>
@@ -697,11 +693,24 @@
                             Mortgage &amp; T&amp;I
                         </button>
                     </div>
-                    <button onclick="openMonthModal(null)"
-                        class="px-4 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 transition flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Add / Edit Month
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openMonthModal(null)"
+                            class="px-4 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 transition flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Add / Edit Month
+                        </button>
+                        <button id="fin-delete-year-btn" onclick="confirmDeleteYearFromDetail()" class="px-3 py-2 text-sm border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Delete Year
+                        </button>
+                    </div>
+                </div>
+                <!-- Inline delete confirmation for year (shown from Year Detail view) -->
+                <div id="fin-delete-year-detail-confirm" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 text-sm">
+                    <span id="fin-delete-year-detail-msg" class="text-red-700 font-medium"></span>
+                    <span class="text-red-500 text-xs">Removes all monthly records, totals, and expense items. Mortgage &amp; T&amp;I config is kept.</span>
+                    <button onclick="executeDeleteYearFromDetail()" class="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700">Yes, delete</button>
+                    <button onclick="cancelDeleteYearFromDetail()" class="px-3 py-1 border border-gray-300 text-gray-600 text-xs rounded-lg hover:bg-gray-50">Cancel</button>
                 </div>
 
                 <!-- Monthly table -->
@@ -944,7 +953,6 @@
                             <select id="fin-import-type" onchange="resetImport()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
                                 <option value="monthly">Monthly Summary (CSV)</option>
                                 <option value="expenses">Expense Items (CSV)</option>
-                                <option value="annual-summary">Annual Totals — all years (CSV)</option>
                                 <option value="caribbean-pdf">Caribbean Statement (PDF)</option>
                                 <option value="evolve-csv">Evolve Booking Report (CSV)</option>
                             </select>
@@ -1180,7 +1188,7 @@
             <!-- Bottom Bar -->
             <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
                 <p class="text-sm text-gray-500">
-                    © 2025 AspireTowards. All rights reserved.
+                    © 2026 AspireTowards. All rights reserved.
                 </p>
                 <div class="flex space-x-6 mt-4 md:mt-0">
                     <a href="#" class="text-sm hover:text-white transition">Privacy Policy</a>
@@ -2150,20 +2158,101 @@ Total: $${props.totalAmount}`);
             } catch(e) { console.error('loadFinSummary error:', e); }
         }
 
-        function renderSummary(data) {
-            const { years = [], allTimeTotals, purchasePrice } = data;
+        // ── All-Years table: column definitions, sort, resize ─────────────
+        const FIN_SUMMARY_COLS = [
+            { key: 'year',              label: 'Year',         align: 'left',  sticky: true, getValue: y => y.year },
+            { key: 'grossIncome',       label: 'Gross Income', align: 'right', getValue: y => parseFloat(y.grossIncome || 0) },
+            { key: 'managementFee',     label: 'Mgmt Fees',    align: 'right', getValue: y => parseFloat(y.managementFee || 0) },
+            { key: 'grossExpenses',     label: 'Expenses',     align: 'right', getValue: y => parseFloat(y.grossExpenses || 0) },
+            { key: 'netIncome',         label: 'Net Income',   align: 'right', getValue: y => parseFloat(y.netIncome || 0) },
+            { key: 'percentageOfIncome',label: '%',            align: 'right', getValue: y => parseFloat(y.percentageOfIncome || 0) },
+            { key: 'nightsBooked',      label: 'Nights',       align: 'right', getValue: y => y.nightsBooked || 0 },
+            { key: 'numReservations',   label: 'Res.',         align: 'right', getValue: y => y.numReservations || 0 },
+            { key: 'occupancyRatio',    label: 'Occ.',         align: 'right', getValue: y => y.occupancyRatio || 0 },
+            { key: 'hoaPayment',        label: 'HOA',          align: 'right', getValue: y => parseFloat(y.hoaPayment || 0) },
+            { key: 'scheduledMortgage', label: 'Mortgage',     align: 'right', getValue: y => parseFloat(y.scheduledMortgage || 0) },
+            { key: 'actualMortgagePaid',label: 'Actual Paid',  align: 'right', getValue: y => parseFloat(y.actualMortgagePaid || 0) },
+            { key: 'extraPaid',         label: 'Extra Paid',   align: 'right', getValue: y => parseFloat(y.extraPaid || 0) },
+            { key: 'taxesInsurance',    label: 'T&I',          align: 'right', getValue: y => parseFloat(y.taxesInsurance || 0) },
+            { key: 'grossProfits',      label: 'Gross Profits',align: 'right', getValue: y => parseFloat(y.grossProfits || 0) },
+            { key: 'breakEvenIdeal',    label: 'Breakeven',    align: 'right', getValue: y => parseFloat(y.breakEvenIdeal || 0) },
+            { key: 'notes',             label: 'Notes',        align: 'left',  getValue: y => y.notes || '' },
+        ];
 
-            document.getElementById('fin-total-net').textContent = allTimeTotals ? finFmtSigned(allTimeTotals.netIncome) : '—';
-            const profitEl = document.getElementById('fin-total-profit');
-            if (allTimeTotals) {
-                profitEl.textContent = finFmtSigned(allTimeTotals.grossProfits);
-                profitEl.className = 'text-2xl font-bold mt-1 ' + finColorClass(allTimeTotals.grossProfits);
+        const finSortState = { col: 'year', dir: 'desc' };
+        const FIN_COL_WIDTHS_KEY = 'fin_summary_col_widths';
+
+        function loadFinColWidths() {
+            try { return JSON.parse(localStorage.getItem(FIN_COL_WIDTHS_KEY) || '{}'); } catch { return {}; }
+        }
+        function saveFinColWidth(key, px) {
+            const w = loadFinColWidths(); w[key] = px;
+            localStorage.setItem(FIN_COL_WIDTHS_KEY, JSON.stringify(w));
+        }
+
+        function sortSummaryBy(col) {
+            if (finSortState.col === col) {
+                finSortState.dir = finSortState.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                finSortState.col = col;
+                finSortState.dir = col === 'year' ? 'desc' : 'desc';
             }
-            document.getElementById('fin-noi').textContent = allTimeTotals?.noi != null ? finPct(allTimeTotals.noi) : '—';
-            document.getElementById('fin-purchase-price').textContent = purchasePrice ? finFmt(purchasePrice) : '—';
+            renderSummaryHeader();
+            renderSummaryRows(finState.summaryData);
+        }
 
-            const tbody = document.getElementById('fin-summary-body');
-            const rows = [...years];
+        function renderSummaryHeader() {
+            const savedWidths = loadFinColWidths();
+            const cols = FIN_SUMMARY_COLS;
+            const thCells = cols.map(c => {
+                const isSort = finSortState.col === c.key;
+                const icon = isSort ? (finSortState.dir === 'asc' ? '▲' : '▼') : '⇕';
+                const stickyClass = c.sticky ? 'sticky left-0 bg-gray-50' : '';
+                const alignClass = c.align === 'right' ? 'text-right' : 'text-left';
+                const widthStyle = savedWidths[c.key] ? `min-width:${savedWidths[c.key]}px;` : '';
+                return `<th data-col="${c.key}" class="sortable px-4 py-3 ${alignClass} font-semibold text-gray-700 whitespace-nowrap ${stickyClass} ${isSort ? 'sort-active' : ''}" style="${widthStyle}" onclick="sortSummaryBy('${c.key}')">
+                    ${c.label}<span class="sort-icon">${icon}</span>
+                    <div class="col-resize-handle" onclick="event.stopPropagation()" onmousedown="initColResize(event, '${c.key}')"></div>
+                </th>`;
+            }).join('');
+            // Two non-sortable action columns
+            document.getElementById('fin-summary-head').innerHTML =
+                `<tr class="bg-gray-50 border-b border-gray-200">${thCells}<th class="px-4 py-3"></th><th class="px-4 py-3"></th></tr>`;
+        }
+
+        function initColResize(e, colKey) {
+            e.preventDefault();
+            const th = e.target.closest('th');
+            const startX = e.clientX;
+            const startWidth = th.getBoundingClientRect().width;
+            const handle = e.target;
+            handle.classList.add('dragging');
+
+            function onMove(ev) {
+                const newW = Math.max(60, startWidth + ev.clientX - startX);
+                th.style.minWidth = newW + 'px';
+            }
+            function onUp(ev) {
+                handle.classList.remove('dragging');
+                const finalW = Math.max(60, startWidth + ev.clientX - startX);
+                saveFinColWidth(colKey, finalW);
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            }
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        }
+
+        function renderSummaryRows(data) {
+            if (!data) return;
+            const { years = [], allTimeTotals } = data;
+            const colDef = FIN_SUMMARY_COLS.find(c => c.key === finSortState.col);
+            const rows = [...years].sort((a, b) => {
+                const av = colDef ? colDef.getValue(a) : a.year;
+                const bv = colDef ? colDef.getValue(b) : b.year;
+                const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+                return finSortState.dir === 'asc' ? cmp : -cmp;
+            });
 
             let html = rows.map(y => {
                 return `<tr id="fin-yr-row-${y.year}" class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="drillToYear(${y.year})">
@@ -2223,11 +2312,27 @@ Total: $${props.totalAmount}`);
                     <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.taxesInsurance)}</td>
                     <td class="px-4 py-3 text-right ${finColorClass(allTimeTotals.grossProfits)}">${finFmtSigned(allTimeTotals.grossProfits)}</td>
                     <td class="px-4 py-3 text-right">—</td>
-                    <td class="px-4 py-3" colspan="2"></td>
+                    <td class="px-4 py-3" colspan="3"></td>
                 </tr>`;
             }
 
-            tbody.innerHTML = html;
+            document.getElementById('fin-summary-body').innerHTML = html;
+        }
+
+        function renderSummary(data) {
+            const { allTimeTotals, purchasePrice } = data;
+
+            document.getElementById('fin-total-net').textContent = allTimeTotals ? finFmtSigned(allTimeTotals.netIncome) : '—';
+            const profitEl = document.getElementById('fin-total-profit');
+            if (allTimeTotals) {
+                profitEl.textContent = finFmtSigned(allTimeTotals.grossProfits);
+                profitEl.className = 'text-2xl font-bold mt-1 ' + finColorClass(allTimeTotals.grossProfits);
+            }
+            document.getElementById('fin-noi').textContent = allTimeTotals?.noi != null ? finPct(allTimeTotals.noi) : '—';
+            document.getElementById('fin-purchase-price').textContent = purchasePrice ? finFmt(purchasePrice) : '—';
+
+            renderSummaryHeader();
+            renderSummaryRows(data);
         }
 
         function drillToYear(year) {
@@ -2251,6 +2356,32 @@ Total: $${props.totalAmount}`);
                 const body = await res.json();
                 if (!res.ok) throw new Error(body.error || body.message || 'Delete failed');
                 await loadFinSummary();
+            } catch (e) {
+                alert('Delete failed: ' + e.message);
+            }
+        }
+
+        // ── Year delete from Year Detail view ────────────────────────────
+        function confirmDeleteYearFromDetail() {
+            document.getElementById('fin-delete-year-detail-msg').textContent = `Delete all ${finState.year} data?`;
+            document.getElementById('fin-delete-year-detail-confirm').classList.remove('hidden');
+        }
+        function cancelDeleteYearFromDetail() {
+            document.getElementById('fin-delete-year-detail-confirm').classList.add('hidden');
+        }
+        async function executeDeleteYearFromDetail() {
+            const pid = finState.propertyId;
+            const year = finState.year;
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${pid}/year/${year}`, {
+                    method: 'DELETE', headers: authHeaders()
+                });
+                const body = await res.json();
+                if (!res.ok) throw new Error(body.error || body.message || 'Delete failed');
+                cancelDeleteYearFromDetail();
+                // Reload the year view (months will be empty) and refresh summary cache
+                finState.summaryData = null;
+                await loadFinYear(year);
             } catch (e) {
                 alert('Delete failed: ' + e.message);
             }

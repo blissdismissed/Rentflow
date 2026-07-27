@@ -164,43 +164,8 @@ const getPropertySummary = async (req, res) => {
       return { year: parseInt(year), hasMonthlyDetail: true, ...annual }
     })
 
-    // Years with only annual summary (no monthly records)
-    const yearsFromSummary = allConfigs
-      .filter(c => c.grossIncomeAnnual != null && !yearMap[c.year])
-      .map(config => {
-        const grossIncome     = parseFloat(config.grossIncomeAnnual || 0)
-        const managementFee   = parseFloat(config.managementFeeAnnual || 0)
-        const platformCharges = parseFloat(config.platformChargesAnnual || 0)
-        const cleaningFee     = parseFloat(config.cleaningFeeAnnual || 0)
-        const utilities       = parseFloat(config.utilitiesAnnual || 0)
-        const maintenance     = parseFloat(config.maintenanceAnnual || 0)
-        const otherExpenses   = parseFloat(config.otherExpensesAnnual || 0)
-        const grossExpenses   = platformCharges + cleaningFee + utilities + maintenance + otherExpenses
-        const netIncome       = grossIncome - managementFee - grossExpenses
-        const hoaPayment      = parseFloat(config.hoaAnnual || 0)
-        const actualMortgage  = parseFloat(config.actualMortgageAnnual || 0)
-        const ti              = parseFloat(config.taxesInsurance || 0)
-        const scheduledMort   = parseFloat(config.scheduledMortgage || 0)
-        const nightsBooked    = parseInt(config.nightsBookedAnnual || 0)
-        const numReservations = parseInt(config.numReservationsAnnual || 0)
-
-        return {
-          year: config.year,
-          hasMonthlyDetail: false,
-          grossIncome, managementFee, platformCharges, cleaningFee,
-          utilities, maintenance, otherExpenses, grossExpenses, netIncome,
-          nightsBooked, numReservations,
-          hoaPayment, actualMortgagePaid: actualMortgage,
-          taxesInsurance: ti, scheduledMortgage: scheduledMort,
-          grossProfits: netIncome - hoaPayment - actualMortgage - ti,
-          percentageOfIncome: grossIncome > 0 ? netIncome / grossIncome : 0,
-          avgLengthOfStay: numReservations > 0 ? nightsBooked / numReservations : 0,
-          noi: purchasePrice > 0 ? (netIncome - hoaPayment) / purchasePrice : null,
-          notes: config.notes || '',
-        }
-      })
-
-    const years = [...yearsWithDetail, ...yearsFromSummary].sort((a, b) => a.year - b.year)
+    // All years derive exclusively from monthly records
+    const years = yearsWithDetail.sort((a, b) => a.year - b.year)
 
     // All-time totals and averages
     let allTimeTotals = null

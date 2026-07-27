@@ -209,8 +209,9 @@ class BookingController {
               email: guestEmail || null,
               name: guestName,
               phoneNumber: guestPhone || null,
-              totalStays: 0,
-              totalSpent: 0,
+              totalStays: 1,
+              totalSpent: totalAmount || 0,
+              lastStayDate: checkOut,
               marketingOptIn: true,
             })
           } else {
@@ -218,6 +219,10 @@ class BookingController {
               name: guest.name || guestName,
               phoneNumber: guest.phoneNumber || guestPhone || null,
               email: guest.email || guestEmail || null,
+              totalStays: (guest.totalStays || 0) + 1,
+              totalSpent: parseFloat(guest.totalSpent || 0) + parseFloat(totalAmount || 0),
+              lastStayDate: !guest.lastStayDate || new Date(checkOut) > new Date(guest.lastStayDate)
+                ? checkOut : guest.lastStayDate,
             })
           }
           await GuestStay.create({
