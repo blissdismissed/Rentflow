@@ -1358,9 +1358,9 @@
                 let property, fetchedBookedDates = []
 
                 if (fromDashboard && propertyId) {
-                    // Owner preview — use private authenticated endpoint
+                    // Owner preview — use private authenticated endpoint (not /api/public)
                     const token = localStorage.getItem('token')
-                    const response = await fetch(`${API_URL}/properties/${propertyId}`, {
+                    const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/properties/${propertyId}`, {
                         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
                     })
                     const data = await response.json()
