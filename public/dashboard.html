@@ -663,8 +663,8 @@
                         <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">NOI (All Time)</p>
                         <p class="text-2xl font-bold text-gray-900 mt-1" id="fin-noi">—</p>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-4">
-                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Purchase Price</p>
+                    <div class="bg-white rounded-xl shadow-sm p-4 cursor-pointer group" onclick="editPurchasePrice()" title="Click to edit">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Purchase Price <span class="text-gray-300 group-hover:text-gray-400">✎</span></p>
                         <p class="text-2xl font-bold text-gray-900 mt-1" id="fin-purchase-price">—</p>
                     </div>
                 </div>
@@ -2681,6 +2681,48 @@ Total: $${props.totalAmount}`);
             input.addEventListener('keydown', e => {
                 if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
                 if (e.key === 'Escape') { loadFinYear(finState.year); }
+            });
+        }
+
+        function editPurchasePrice() {
+            const display = document.getElementById('fin-purchase-price');
+            if (display.querySelector('input')) return;
+            const current = finState.summaryData?.purchasePrice || finState.yearData?.purchasePrice || 0;
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = '1';
+            input.value = current || '';
+            input.placeholder = '0';
+            input.className = 'w-36 px-2 py-1 border border-teal-400 rounded text-xl font-bold focus:outline-none';
+            display.innerHTML = '';
+            display.appendChild(input);
+            input.focus();
+            input.select();
+
+            const save = async () => {
+                const val = parseFloat(input.value) || null;
+                try {
+                    const resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/settings`, {
+                        method: 'POST', headers: authHeaders(),
+                        body: JSON.stringify({ purchasePrice: val })
+                    });
+                    if (resp.ok) {
+                        display.textContent = val ? finFmt(val) : '—';
+                        // Refresh summary so NOI recalculates
+                        finState.summaryData = null;
+                        loadFinSummary();
+                    } else {
+                        display.textContent = current ? finFmt(current) : '—';
+                    }
+                } catch(e) {
+                    console.error('editPurchasePrice save error:', e);
+                    display.textContent = current ? finFmt(current) : '—';
+                }
+            };
+            input.addEventListener('blur', save);
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+                if (e.key === 'Escape') { display.textContent = current ? finFmt(current) : '—'; }
             });
         }
 

@@ -349,11 +349,14 @@ const upsertFinancialSettings = async (req, res) => {
     if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
 
     const { purchasePrice, dataSource } = req.body
+    const updates = {}
+    if (purchasePrice !== undefined) updates.purchasePrice = purchasePrice
+    if (dataSource !== undefined) updates.dataSource = dataSource
     const [settings, created] = await PropertyFinancialSettings.findOrCreate({
       where: { propertyId },
-      defaults: { propertyId, purchasePrice, dataSource }
+      defaults: { propertyId, ...updates }
     })
-    if (!created) await settings.update({ purchasePrice, dataSource })
+    if (!created && Object.keys(updates).length > 0) await settings.update(updates)
 
     res.json({ success: true, settings })
   } catch (err) {
