@@ -136,18 +136,26 @@ async function forwardVerificationEmail(body, html, subject, from) {
 }
 
 const processEmailImport = async (req, res) => {
-  // Respond immediately — SendGrid retries if it doesn't get a quick 200
+  // Respond immediately — Resend retries if it doesn't get a quick 200
   res.sendStatus(200)
 
   try {
-    const fromEmail = extractEmail(req.body.from)
-    if (!fromEmail) return
+    // Resend webhook events wrap the payload: { type: 'email.received', data: { from, to, ... } }
+    // Fall back to req.body directly for any future format changes
+    const payload = req.body.data || req.body
+    console.log('Email import webhook received, type:', req.body.type, 'from:', payload.from)
+
+    const fromEmail = extractEmail(payload.from)
+    if (!fromEmail) {
+      console.log('Email import: could not extract sender from payload', JSON.stringify(req.body).slice(0, 300))
+      return
+    }
 
     // Forward any verification/confirmation email (e.g. Gmail forwarding setup) to admin
-    const bodyText = req.body.text || ''
+    const bodyText = payload.text || ''
     const isVerification = /google\.com|mail-settings|accounts\.google|forwarding.*confirm|confirm.*forward/i.test(fromEmail + bodyText)
     if (isVerification) {
-      await forwardVerificationEmail(bodyText, req.body.html, req.body.subject, fromEmail)
+      await forwardVerificationEmail(bodyText, payload.html, payload.subject, fromEmail)
       return
     }
 
@@ -158,7 +166,7 @@ const processEmailImport = async (req, res) => {
     }
 
     // Resend inbound sends attachments as base64 in JSON
-    const attachments = req.body.attachments || []
+    const attachments = payload.attachments || []
     const pdfs = attachments.filter(a =>
       a.content_type === 'application/pdf' || a.filename?.toLowerCase().endsWith('.pdf')
     )
