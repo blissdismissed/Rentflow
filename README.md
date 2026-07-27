@@ -209,10 +209,14 @@ ssh -i your-key.pem ec2-user@<ec2-public-ip>
 cd /var/www/aspiretowards/Rentflow
 git pull origin master
 
+# Go to backend directory
+cd backend
+
 # Install any new dependencies
 npm install --production
 
 # Run new migrations
+
 npm run migrate
 
 # Restart the app
