@@ -1,4 +1,4 @@
-const sgMail = require('@sendgrid/mail')
+const { Resend } = require('resend')
 const User = require('../models/User')
 const Property = require('../models/Property')
 const FinancialExpenseItem = require('../models/FinancialExpenseItem')
@@ -89,44 +89,46 @@ async function saveBromleyData(parsed, propertyId) {
 }
 
 async function sendResultEmail(toEmail, results) {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.log('Email import result (no SendGrid key):', JSON.stringify(results))
+  if (!process.env.RESEND_API_KEY) {
+    console.log('Email import result (no Resend key):', JSON.stringify(results))
     return
   }
   try {
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+    const r = new Resend(process.env.RESEND_API_KEY)
     const successCount = results.filter(r => !r.error).length
     const lines = results.map(r =>
       r.error
         ? `• ${r.filename}: ${r.error}`
         : `• ${r.filename} → ${r.property}: ${r.detail}${r.total ? ` ($${r.total.toFixed(2)})` : ''}`
     )
-    await sgMail.send({
-      to: toEmail,
-      from: { email: FROM_EMAIL, name: 'AspireTowards' },
+    const { error } = await r.emails.send({
+      to: [toEmail],
+      from: `AspireTowards <${FROM_EMAIL}>`,
       subject: `Import complete — ${successCount} of ${results.length} file(s) processed`,
       text: `Your email import results:\n\n${lines.join('\n')}\n\nView your dashboard: https://aspiretowards.com/dashboard.html`,
       html: `<p><strong>Your email import results:</strong></p><ul>${lines.map(l => `<li style="margin:4px 0">${l}</li>`).join('')}</ul><p><a href="https://aspiretowards.com/dashboard.html">View Dashboard →</a></p>`,
     })
+    if (error) throw new Error(error.message)
   } catch (err) {
-    console.error('Email import: confirmation send failed:', err.response?.body || err.message)
+    console.error('Email import: confirmation send failed:', err.message)
   }
 }
 
 async function forwardVerificationEmail(body, html, subject, from) {
   const adminEmail = process.env.ADMIN_EMAIL || process.env.SENDGRID_FROM_EMAIL
-  if (!adminEmail || !process.env.SENDGRID_API_KEY) return
+  if (!adminEmail || !process.env.RESEND_API_KEY) return
   try {
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-    await sgMail.send({
-      to: adminEmail,
-      from: { email: FROM_EMAIL, name: 'AspireTowards Import' },
+    const r = new Resend(process.env.RESEND_API_KEY)
+    const { error } = await r.emails.send({
+      to: [adminEmail],
+      from: `AspireTowards Import <${FROM_EMAIL}>`,
       subject: `[Forwarded] ${subject || 'Email verification'}`,
       text: `Original sender: ${from}\n\n${body || '(no text body)'}`,
       html: html
         ? `<p><em>Original sender: ${from}</em></p><hr>${html}`
         : undefined,
     })
+    if (error) throw new Error(error.message)
     console.log(`Email import: forwarded verification email from ${from} to ${adminEmail}`)
   } catch (err) {
     console.error('Email import: failed to forward verification email:', err.message)

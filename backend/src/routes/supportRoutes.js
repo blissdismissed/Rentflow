@@ -2,7 +2,7 @@
 const express = require('express')
 const router = express.Router()
 const { authenticate } = require('../middleware/auth')
-const sgMail = require('@sendgrid/mail')
+const { Resend } = require('resend')
 
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'aspiretowards@gmail.com'
 const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'noreply@aspiretowards.com'
@@ -20,13 +20,13 @@ router.post('/contact', authenticate, async (req, res) => {
     const categoryLabel = { bug: 'Bug Report', feature: 'Feature Request', billing: 'Billing', general: 'General Question', other: 'Other' }[category] || category
 
     let emailError = null
-    if (process.env.SENDGRID_API_KEY) {
+    if (process.env.RESEND_API_KEY) {
       try {
-        sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-        await sgMail.send({
-          to: SUPPORT_EMAIL,
-          from: { email: FROM_EMAIL, name: FROM_NAME },
-          replyTo: user.email,
+        const r = new Resend(process.env.RESEND_API_KEY)
+        const { error } = await r.emails.send({
+          to: [SUPPORT_EMAIL],
+          from: `${FROM_NAME} <${FROM_EMAIL}>`,
+          reply_to: user.email,
           subject: `[${categoryLabel}] ${subject}`,
           text: `From: ${userName} <${user.email}>\nCategory: ${categoryLabel}\nSubject: ${subject}\n\n${message}`,
           html: `
@@ -40,13 +40,14 @@ router.post('/contact', authenticate, async (req, res) => {
               <div style="background:#f9fafb;padding:16px;border-radius:8px;white-space:pre-wrap">${message.replace(/</g, '&lt;')}</div>
             </div>`
         })
+        if (error) throw new Error(error.message)
         console.log(`Support email sent to ${SUPPORT_EMAIL} from ${user.email}: [${categoryLabel}] ${subject}`)
       } catch (emailErr) {
         emailError = emailErr.message
-        console.error('Support email send failed:', emailErr.response?.body || emailErr.message)
+        console.error('Support email send failed:', emailErr.message)
       }
     } else {
-      console.warn('SENDGRID_API_KEY not set — support email not sent. Message from:', user.email, '|', categoryLabel, '|', subject)
+      console.warn('RESEND_API_KEY not set — support email not sent. Message from:', user.email, '|', categoryLabel, '|', subject)
     }
 
     // Always return success — message was received even if email delivery failed

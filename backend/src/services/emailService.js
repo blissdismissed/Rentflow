@@ -1,13 +1,30 @@
-const sgMail = require('@sendgrid/mail');
+const { Resend } = require('resend');
 
-// Initialize SendGrid with API key
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-if (!SENDGRID_API_KEY) {
-  console.error('⚠️ WARNING: SENDGRID_API_KEY is not set in environment variables!');
-  console.error('Emails will NOT be sent until SendGrid is configured.');
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+if (!RESEND_API_KEY) {
+  console.error('⚠️ WARNING: RESEND_API_KEY is not set in environment variables!');
+  console.error('Emails will NOT be sent until Resend is configured.');
 } else {
-  sgMail.setApiKey(SENDGRID_API_KEY);
-  console.log('✅ SendGrid initialized successfully');
+  console.log('✅ Resend initialized successfully');
+}
+
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+
+// Adapter: accepts SendGrid-style msg object, sends via Resend
+async function sendEmail(msg) {
+  if (!resend) throw new Error('Resend not configured — set RESEND_API_KEY');
+  const from = typeof msg.from === 'object'
+    ? `${msg.from.name} <${msg.from.email}>`
+    : msg.from;
+  const { error } = await resend.emails.send({
+    from,
+    to: Array.isArray(msg.to) ? msg.to : [msg.to],
+    subject: msg.subject,
+    html: msg.html,
+    text: msg.text,
+    reply_to: msg.replyTo,
+  });
+  if (error) throw Object.assign(new Error(error.message), { response: { body: error } });
 }
 
 const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || process.env.FROM_EMAIL || 'noreply@aspiretowards.com';
@@ -200,7 +217,7 @@ We'll notify you as soon as the host responds to your request.
         `
       };
 
-      await sgMail.send(msg);
+      await sendEmail(msg);
       console.log(`✅ Booking request confirmation email sent to guest: ${booking.guestEmail}`);
       return { success: true };
     } catch (error) {
@@ -399,7 +416,7 @@ ${FRONTEND_URL}/dashboard/bookings.html
         `
       };
 
-      await sgMail.send(msg);
+      await sendEmail(msg);
       console.log(`Booking request email sent to host: ${host.email}`);
       return { success: true };
     } catch (error) {
@@ -596,7 +613,7 @@ We look forward to hosting you!
         `
       };
 
-      await sgMail.send(msg);
+      await sendEmail(msg);
       console.log(`Booking approval email sent to guest: ${booking.guestEmail}`);
       return { success: true };
     } catch (error) {
@@ -751,7 +768,7 @@ Need assistance? Contact us at ${FROM_EMAIL}
         `
       };
 
-      await sgMail.send(msg);
+      await sendEmail(msg);
       console.log(`Booking decline email sent to guest: ${booking.guestEmail}`);
       return { success: true };
     } catch (error) {
@@ -1021,7 +1038,7 @@ Questions? Contact us at ${FROM_EMAIL}
         `
       };
 
-      await sgMail.send(msg);
+      await sendEmail(msg);
       console.log(`Balance reminder email sent to guest: ${booking.guestEmail}`);
       return { success: true };
     } catch (error) {
@@ -1040,9 +1057,9 @@ Questions? Contact us at ${FROM_EMAIL}
    */
   async sendCustomEmail(to, subject, htmlContent, plainTextContent = null) {
     try {
-      if (!SENDGRID_API_KEY) {
-        console.warn('⚠️ SendGrid not configured. Email not sent.');
-        return { success: false, reason: 'SendGrid not configured' };
+      if (!RESEND_API_KEY) {
+        console.warn('⚠️ Resend not configured. Email not sent.');
+        return { success: false, reason: 'Resend not configured' };
       }
 
       const msg = {
@@ -1060,7 +1077,7 @@ Questions? Contact us at ${FROM_EMAIL}
         msg.text = plainTextContent;
       }
 
-      await sgMail.send(msg);
+      await sendEmail(msg);
       console.log(`✅ Custom email sent to: ${to} - Subject: ${subject}`);
       return { success: true };
     } catch (error) {

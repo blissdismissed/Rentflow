@@ -487,23 +487,24 @@ class GuestController {
         return res.json({ success: true, sent: 0, message: 'No eligible guests (must have email + marketing opt-in)' })
       }
 
-      const sgMail = require('@sendgrid/mail')
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+      const { Resend } = require('resend')
+      const r = new Resend(process.env.RESEND_API_KEY)
 
       const senderName = fromName || 'Rentflow'
-      const fromEmail = process.env.FROM_EMAIL
+      const fromEmail = process.env.FROM_EMAIL || process.env.SENDGRID_FROM_EMAIL
 
       let sent = 0
       const errors = []
       for (const guest of guests) {
         try {
-          await sgMail.send({
-            to: guest.email,
-            from: { email: fromEmail, name: senderName },
+          const { error } = await r.emails.send({
+            to: [guest.email],
+            from: `${senderName} <${fromEmail}>`,
             subject,
             text: message,
             html: message.replace(/\n/g, '<br>'),
           })
+          if (error) throw new Error(error.message)
           sent++
         } catch (e) {
           errors.push({ email: guest.email, error: e.message })
