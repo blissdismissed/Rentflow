@@ -3276,17 +3276,24 @@ Total: $${props.totalAmount}`);
                         body: JSON.stringify({ bookings: individualBookings })
                     });
                     const txnData = await txnRes.json();
+                    let guestMsg = '';
                     if (guestContacts.length > 0) {
-                        await fetch(`${window.CONFIG.API_BASE_URL}/api/guests/bulk-import`, {
+                        const gRes = await fetch(`${window.CONFIG.API_BASE_URL}/api/guests/bulk-import`, {
                             method: 'POST', headers: authHeaders(),
                             body: JSON.stringify({ propertyId: finState.propertyId, bookings: guestContacts })
                         });
+                        const gData = await gRes.json();
+                        if (!gRes.ok || !gData.success) {
+                            guestMsg = `\n\nGuest import failed: ${gData.message || gRes.status}`;
+                        } else {
+                            guestMsg = `\n${gData.results.created} guest(s) added, ${gData.results.updated} updated.`;
+                        }
                     }
                     closeImportModal();
                     finState.summaryData = null;
                     await loadFinYear(finState.year);
-                    if (txnData.updated > 0) {
-                        alert(`Import complete: ${txnData.created} new booking(s) added, ${txnData.updated} existing booking(s) updated, ${txnData.monthsRecomputed} month(s) recomputed.`);
+                    if (txnData.updated > 0 || guestMsg) {
+                        alert(`Import complete: ${txnData.created} new booking(s) added, ${txnData.updated} existing booking(s) updated, ${txnData.monthsRecomputed} month(s) recomputed.${guestMsg}`);
                     }
                     return;
                 } else if (type === 'annual-summary') {
