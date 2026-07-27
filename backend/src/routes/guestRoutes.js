@@ -6,7 +6,7 @@ const router = express.Router()
 
 // All routes require authentication and owner/admin role
 router.use(authenticate)
-router.use(authorize(['owner', 'admin']))
+router.use(authorize('owner', 'admin'))
 
 // Guest management routes
 router.get('/', guestController.getGuests)

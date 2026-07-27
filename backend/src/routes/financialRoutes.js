@@ -16,6 +16,7 @@ const {
   deleteExpenseItem,
   toggleVisibility,
   parseCaribbeaStatement,
+  importBookingTransactions,
 } = require('../controllers/financialController')
 
 const router = express.Router()
@@ -30,6 +31,7 @@ router.get('/:propertyId/year/:year', getYearDetail)
 router.post('/:propertyId/monthly', upsertMonthly)
 router.post('/:propertyId/annual-config', upsertAnnualConfig)
 router.post('/:propertyId/year-summary', upsertYearSummary)
+router.post('/:propertyId/booking-transactions', importBookingTransactions)
 router.post('/:propertyId/settings', upsertFinancialSettings)
 router.delete('/:propertyId/year/:year', deleteYear)
 router.delete('/:propertyId/monthly/:monthlyId', deleteMonthly)

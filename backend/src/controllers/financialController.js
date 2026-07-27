@@ -3,6 +3,7 @@ const PropertyFinancialSettings = require('../models/PropertyFinancialSettings')
 const FinancialAnnualConfig = require('../models/FinancialAnnualConfig')
 const FinancialMonthly = require('../models/FinancialMonthly')
 const FinancialExpenseItem = require('../models/FinancialExpenseItem')
+const FinancialBookingTransaction = require('../models/FinancialBookingTransaction')
 
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December']
@@ -301,16 +302,20 @@ const upsertMonthly = async (req, res) => {
     const property = await Property.findOne({ where: { id: propertyId, userId: req.user.id } })
     if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
 
-    const { year, month, ...data } = req.body
+    const { year, month, skipIfExists, ...data } = req.body
     if (!year || !month) return res.status(400).json({ success: false, message: 'year and month required' })
 
     const [record, created] = await FinancialMonthly.findOrCreate({
       where: { propertyId, year, month },
       defaults: { propertyId, year, month, ...data }
     })
-    if (!created) await record.update(data)
 
-    res.json({ success: true, record })
+    if (!created) {
+      if (skipIfExists) return res.json({ success: true, skipped: true, record })
+      await record.update(data)
+    }
+
+    res.json({ success: true, skipped: false, record })
   } catch (err) {
     console.error('upsertMonthly error:', err)
     res.status(500).json({ success: false, message: 'Server error' })
@@ -571,6 +576,78 @@ const toggleVisibility = async (req, res) => {
   }
 }
 
+// POST /api/financials/:propertyId/booking-transactions
+// Upserts individual bookings by externalBookingId, then recomputes monthly totals
+// for all affected months from the stored transactions. Safe to re-import the same
+// CSV or overlapping date-range exports — duplicates are silently updated, not added.
+const importBookingTransactions = async (req, res) => {
+  try {
+    const { propertyId } = req.params
+    const property = await Property.findOne({ where: { id: propertyId, userId: req.user.id } })
+    if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
+
+    const { bookings = [] } = req.body
+    if (!bookings.length) return res.json({ success: true, created: 0, updated: 0, monthsRecomputed: 0 })
+
+    let created = 0, updated = 0
+    const affectedMonths = new Set()
+
+    for (const b of bookings) {
+      if (!b.externalBookingId) continue
+      const defaults = {
+        propertyId,
+        bookingSource: b.bookingSource || 'evolve',
+        year: b.year,
+        month: b.month,
+        grossAmount: parseFloat(b.grossAmount || 0),
+        nightsBooked: b.nightsBooked || null,
+        checkInDate: b.checkInDate || null,
+        checkOutDate: b.checkOutDate || null,
+        guestName: b.guestName || null,
+        status: b.status || null,
+      }
+      const [record, wasCreated] = await FinancialBookingTransaction.findOrCreate({
+        where: { propertyId, externalBookingId: b.externalBookingId },
+        defaults,
+      })
+      if (!wasCreated) {
+        // Update in case payout amount or status changed in a newer report
+        await record.update(defaults)
+        updated++
+      } else {
+        created++
+      }
+      affectedMonths.add(`${b.year}-${b.month}`)
+    }
+
+    // Recompute monthly totals from all stored transactions for each affected month
+    for (const key of affectedMonths) {
+      const [yearStr, monthStr] = key.split('-')
+      const year = parseInt(yearStr)
+      const month = parseInt(monthStr)
+
+      const txns = await FinancialBookingTransaction.findAll({ where: { propertyId, year, month } })
+      const grossIncome = txns.reduce((s, t) => s + parseFloat(t.grossAmount || 0), 0)
+      const nightsBooked = txns.reduce((s, t) => s + parseInt(t.nightsBooked || 0), 0)
+      const numReservations = txns.length
+
+      const [record, wasCreated] = await FinancialMonthly.findOrCreate({
+        where: { propertyId, year, month },
+        defaults: { propertyId, year, month, grossIncome, nightsBooked, numReservations, syncSource: 'evolve' },
+      })
+      if (!wasCreated) {
+        // Only update the Evolve-sourced fields; preserve manually entered fees/expenses
+        await record.update({ grossIncome, nightsBooked, numReservations, syncSource: 'evolve' })
+      }
+    }
+
+    res.json({ success: true, created, updated, monthsRecomputed: affectedMonths.size })
+  } catch (err) {
+    console.error('importBookingTransactions error:', err)
+    res.status(500).json({ success: false, message: 'Server error' })
+  }
+}
+
 module.exports = {
   getFinancialProperties,
   getPropertySummary,
@@ -586,4 +663,5 @@ module.exports = {
   deleteExpenseItem,
   toggleVisibility,
   parseCaribbeaStatement,
+  importBookingTransactions,
 }
