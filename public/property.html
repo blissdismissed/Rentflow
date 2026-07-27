@@ -1343,7 +1343,7 @@
         const fromDashboard = urlParams.get('from') === 'dashboard'
 
         if (!slug && !propertyId) {
-            window.location.href = 'properties.html'
+            window.location.href = fromDashboard ? 'dashboard.html' : 'properties.html'
         }
 
         if (fromDashboard) {
@@ -1387,7 +1387,7 @@
             } catch (error) {
                 console.error('Error loading property:', error)
                 alert('Property not found')
-                window.location.href = 'properties.html'
+                window.location.href = fromDashboard ? 'dashboard.html' : 'properties.html'
             }
         }
 
