@@ -3735,7 +3735,7 @@ Total: $${props.totalAmount}`);
                     for (const row of importState.rows) {
                         const r = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/monthly`, {
                             method: 'POST', headers: authHeaders(),
-                            body: JSON.stringify({ year, ...row, skipIfExists: true })
+                            body: JSON.stringify({ year, ...row })
                         });
                         const d = await r.json();
                         if (d.skipped) { skipped++; } else { saved++; if (d.record?.id) monthlyIds.push(d.record.id); }
