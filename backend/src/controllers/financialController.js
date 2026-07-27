@@ -265,7 +265,7 @@ const getYearDetail = async (req, res) => {
     // Build all 12 months (fill zeros for missing), augmenting with expense item totals
     const months = Array.from({ length: 12 }, (_, i) => {
       const month = i + 1
-      const base = monthlyMap[month] || { year: parseInt(year), month, grossIncome: 0, managementFee: 0, cleaningFee: 0, utilities: 0, maintenance: 0, otherExpenses: 0, platformCharges: 0, nightsBooked: 0, numReservations: 0, hoaPayment: 0, actualMortgagePaid: 0 }
+      const base = monthlyMap[month]?.toJSON() || { year: parseInt(year), month, grossIncome: 0, managementFee: 0, cleaningFee: 0, utilities: 0, maintenance: 0, otherExpenses: 0, platformCharges: 0, nightsBooked: 0, numReservations: 0, hoaPayment: 0, actualMortgagePaid: 0 }
       const extras = expenseTotals[month] || {}
       const row = {
         ...base,
