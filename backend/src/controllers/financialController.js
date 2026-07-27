@@ -249,6 +249,7 @@ const getYearDetail = async (req, res) => {
       property: { id: property.id, name: property.name },
       year: parseInt(year),
       purchasePrice,
+      dataSource: settings?.dataSource || 'manual',
       annualConfig: annualConfig || null,
       months,
       annualTotals,
@@ -290,8 +291,13 @@ const upsertMonthly = async (req, res) => {
       await record.update(data)
     }
 
-    // Save individual expense line items from Caribbean PDF (replaces previous auto-import for same month)
+    // Caribbean PDF import: save individual expense line items and mark property as caribbean data source
     if (Array.isArray(rawExpenses) && rawExpenses.length > 0) {
+      // Mark this property as caribbean so the year detail shows the correct single-column layout
+      await PropertyFinancialSettings.findOrCreate({ where: { propertyId }, defaults: { propertyId, dataSource: 'caribbean' } })
+        .then(([s, created]) => { if (!created && s.dataSource !== 'caribbean') return s.update({ dataSource: 'caribbean' }) })
+
+      // Replace auto-imported expense items for this month
       await FinancialExpenseItem.destroy({ where: { propertyId, year, month, vendor: 'caribbean-pdf' } })
       for (const exp of rawExpenses) {
         if (exp.name === 'Management Commission') continue // already in managementFee field
