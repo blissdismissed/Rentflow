@@ -157,8 +157,10 @@ const processEmailImport = async (req, res) => {
       return
     }
 
-    const pdfs = (req.files || []).filter(f =>
-      f.mimetype === 'application/pdf' || f.originalname?.toLowerCase().endsWith('.pdf')
+    // Resend inbound sends attachments as base64 in JSON
+    const attachments = req.body.attachments || []
+    const pdfs = attachments.filter(a =>
+      a.content_type === 'application/pdf' || a.filename?.toLowerCase().endsWith('.pdf')
     )
 
     if (pdfs.length === 0) {
@@ -170,32 +172,31 @@ const processEmailImport = async (req, res) => {
 
     for (const file of pdfs) {
       try {
-        const { PDFParse } = require('pdf-parse')
-        const parser = new PDFParse({ data: file.buffer })
-        const d = await parser.getText()
-        await parser.destroy()
+        const pdfParse = require('pdf-parse')
+        const buffer = Buffer.from(file.content, 'base64')
+        const d = await pdfParse(buffer)
         const text = d.text
 
         const vendor = detectVendor(text)
         if (!vendor) {
-          results.push({ filename: file.originalname, error: 'Unrecognized document — not a known Bromley or Caribbean PDF' })
+          results.push({ filename: file.filename, error: 'Unrecognized document — not a known Bromley or Caribbean PDF' })
           continue
         }
 
         const property = await findPropertyForVendor(user.id, vendor)
         if (!property) {
-          results.push({ filename: file.originalname, error: `No ${vendor} property found in your account` })
+          results.push({ filename: file.filename, error: `No ${vendor} property found in your account` })
           continue
         }
 
         const parsed = parseBromleyText(text)
         const summary = await saveBromleyData(parsed, property.id)
-        results.push({ filename: file.originalname, property: property.name, ...summary })
+        results.push({ filename: file.filename, property: property.name, ...summary })
 
-        console.log(`Email import: ${file.originalname} → ${property.name} (${summary.count} items, user ${user.email})`)
+        console.log(`Email import: ${file.filename} → ${property.name} (${summary.count} items, user ${user.email})`)
       } catch (fileErr) {
-        console.error(`Email import: error processing ${file.originalname}:`, fileErr.message)
-        results.push({ filename: file.originalname, error: `Processing failed: ${fileErr.message}` })
+        console.error(`Email import: error processing ${file.filename}:`, fileErr.message)
+        results.push({ filename: file.filename, error: `Processing failed: ${fileErr.message}` })
       }
     }
 
