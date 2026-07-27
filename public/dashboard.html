@@ -1024,8 +1024,8 @@
                             <input id="fin-verify-managementFee" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Platform Charges (all other expenses)</label>
-                            <input id="fin-verify-platformCharges" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Other Expenses (all non-commission charges)</label>
+                            <input id="fin-verify-otherExpenses" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Guest Nights Sold</label>
@@ -3037,11 +3037,12 @@ Total: $${props.totalAmount}`);
 
                 // Populate verification form
                 const p = data.parsed;
+                importState.caribbeanRawExpenses = p.rawExpenses || [];
                 document.getElementById('fin-verify-month').value = p.month;
                 document.getElementById('fin-verify-year').value = p.year;
                 document.getElementById('fin-verify-grossIncome').value = p.grossIncome;
                 document.getElementById('fin-verify-managementFee').value = p.managementFee;
-                document.getElementById('fin-verify-platformCharges').value = p.platformCharges;
+                document.getElementById('fin-verify-otherExpenses').value = p.otherExpenses;
                 document.getElementById('fin-verify-nightsBooked').value = p.nightsBooked;
                 document.getElementById('fin-verify-numReservations').value = p.numReservations;
                 document.getElementById('fin-verify-netDue').value = p.netDue || '';
@@ -3276,9 +3277,10 @@ Total: $${props.totalAmount}`);
                         month:           parseInt(document.getElementById('fin-verify-month').value),
                         grossIncome:     parseFloat(document.getElementById('fin-verify-grossIncome').value) || 0,
                         managementFee:   parseFloat(document.getElementById('fin-verify-managementFee').value) || 0,
-                        platformCharges: parseFloat(document.getElementById('fin-verify-platformCharges').value) || 0,
+                        otherExpenses:   parseFloat(document.getElementById('fin-verify-otherExpenses').value) || 0,
                         nightsBooked:    parseInt(document.getElementById('fin-verify-nightsBooked').value) || 0,
                         numReservations: parseInt(document.getElementById('fin-verify-numReservations').value) || 0,
+                        rawExpenses:     importState.caribbeanRawExpenses || [],
                     };
                     await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
                         method: 'POST', headers: authHeaders(),

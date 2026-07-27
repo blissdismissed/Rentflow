@@ -261,13 +261,23 @@ const getYearDetail = async (req, res) => {
 }
 
 // POST /api/financials/:propertyId/monthly — upsert a month's data
+// Maps Caribbean expense names to FinancialExpenseItem tag values
+function tagForExpenseName(name) {
+  const n = name.toLowerCase()
+  if (/telephone|cable|internet|wifi/.test(n)) return 'utilities'
+  if (/pool|grounds|housekeeping|cleaning/.test(n)) return 'housekeeping'
+  if (/maintenance|labor|parts|reno|replacement/.test(n)) return 'maintenance'
+  if (/recreation|hoa/.test(n)) return 'hoa'
+  return 'other'
+}
+
 const upsertMonthly = async (req, res) => {
   try {
     const { propertyId } = req.params
     const property = await Property.findOne({ where: { id: propertyId, userId: req.user.id } })
     if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
 
-    const { year, month, skipIfExists, ...data } = req.body
+    const { year, month, skipIfExists, rawExpenses, ...data } = req.body
     if (!year || !month) return res.status(400).json({ success: false, message: 'year and month required' })
 
     const [record, created] = await FinancialMonthly.findOrCreate({
@@ -278,6 +288,21 @@ const upsertMonthly = async (req, res) => {
     if (!created) {
       if (skipIfExists) return res.json({ success: true, skipped: true, record })
       await record.update(data)
+    }
+
+    // Save individual expense line items from Caribbean PDF (replaces previous auto-import for same month)
+    if (Array.isArray(rawExpenses) && rawExpenses.length > 0) {
+      await FinancialExpenseItem.destroy({ where: { propertyId, year, month, vendor: 'caribbean-pdf' } })
+      for (const exp of rawExpenses) {
+        if (exp.name === 'Management Commission') continue // already in managementFee field
+        await FinancialExpenseItem.create({
+          propertyId, year, month,
+          expenseName: exp.name,
+          amount: parseFloat(Math.abs(exp.amount).toFixed(2)),
+          tag: tagForExpenseName(exp.name),
+          vendor: 'caribbean-pdf',
+        })
+      }
     }
 
     res.json({ success: true, skipped: false, record })
@@ -477,7 +502,7 @@ const parseCaribbeaStatement = async (req, res) => {
 
     const rawExpenses = []
     let managementFee = 0
-    let platformCharges = 0
+    let knownOtherExpenses = 0
 
     for (const name of KNOWN_EXPENSES) {
       const esc = name.replace(/[()[\].*+?^${}|]/g, '\\$&')
@@ -489,8 +514,27 @@ const parseCaribbeaStatement = async (req, res) => {
         : -parseFloat(negM[1].replace(/,/g, ''))
       rawExpenses.push({ name, amount })
       if (name === 'Management Commission') managementFee = amount
-      else platformCharges += amount
+      else knownOtherExpenses += amount
     }
+
+    // Try to read Total Expenses directly from the statement.
+    // Many Caribbean statement formats print a "Total Expenses" or "Total Owner Expenses" line.
+    // If found, use (totalExpenses - managementFee) to catch any line items not in KNOWN_EXPENSES.
+    const totalExpensesPatterns = [
+      /Total\s+(?:Owner\s+)?Expenses?\s+\$([0-9,]+\.\d{2})/i,
+      /Total\s+Charges?\s+\$([0-9,]+\.\d{2})/i,
+      /Total\s+Deductions?\s+\$([0-9,]+\.\d{2})/i,
+    ]
+    let totalExpensesFromPdf = null
+    for (const pat of totalExpensesPatterns) {
+      const m = text.match(pat)
+      if (m) { totalExpensesFromPdf = parseFloat(m[1].replace(/,/g, '')); break }
+    }
+
+    // Prefer total-from-PDF minus management; fall back to summing known items
+    const otherExpenses = totalExpensesFromPdf != null
+      ? parseFloat((totalExpensesFromPdf - managementFee).toFixed(2))
+      : parseFloat(knownOtherExpenses.toFixed(2))
 
     // Net due to owner
     const netMatch = text.match(/Net Due to \(from\) Owner\s+\$([0-9,]+\.?\d*)/)
@@ -498,7 +542,7 @@ const parseCaribbeaStatement = async (req, res) => {
 
     res.json({
       success: true,
-      parsed: { month, year, grossIncome, managementFee, platformCharges: parseFloat(platformCharges.toFixed(2)), nightsBooked, numReservations, rawExpenses, netDue }
+      parsed: { month, year, grossIncome, managementFee, otherExpenses, nightsBooked, numReservations, rawExpenses, netDue }
     })
   } catch (err) {
     console.error('parseCaribbeaStatement error:', err)
