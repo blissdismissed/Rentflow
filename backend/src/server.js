@@ -28,6 +28,7 @@ const emailImportRoutes = require('./routes/emailImportRoutes')
 const emailScheduler = require('./jobs/emailScheduler')
 
 const app = express()
+app.set('trust proxy', 1) // Nginx reverse proxy forwards real client IPs
 
 // Initialize Passport
 app.use(passport.initialize())

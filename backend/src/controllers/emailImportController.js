@@ -181,7 +181,14 @@ const processEmailImport = async (req, res) => {
     for (const file of pdfs) {
       try {
         const pdfParse = require('pdf-parse')
-        const buffer = Buffer.from(file.content, 'base64')
+        // Resend inbound attachment content field varies — log structure once for debugging
+        console.log('Email import: attachment fields:', Object.keys(file), 'content type:', file.content_type || file.type)
+        const rawContent = file.content ?? file.data ?? file.body
+        if (!rawContent) {
+          results.push({ filename: file.filename || file.name, error: 'Attachment content missing from webhook payload' })
+          continue
+        }
+        const buffer = Buffer.from(rawContent, 'base64')
         const d = await pdfParse(buffer)
         const text = d.text
 
