@@ -9,6 +9,8 @@ const {
   upsertAnnualConfig,
   upsertFinancialSettings,
   upsertYearSummary,
+  deleteMonthly,
+  deleteYear,
   addExpenseItem,
   updateExpenseItem,
   deleteExpenseItem,
@@ -29,6 +31,8 @@ router.post('/:propertyId/monthly', upsertMonthly)
 router.post('/:propertyId/annual-config', upsertAnnualConfig)
 router.post('/:propertyId/year-summary', upsertYearSummary)
 router.post('/:propertyId/settings', upsertFinancialSettings)
+router.delete('/:propertyId/year/:year', deleteYear)
+router.delete('/:propertyId/monthly/:monthlyId', deleteMonthly)
 router.post('/:propertyId/expenses', addExpenseItem)
 router.put('/expenses/:id', updateExpenseItem)
 router.delete('/expenses/:id', deleteExpenseItem)

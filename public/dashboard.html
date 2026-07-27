@@ -606,14 +606,20 @@
                         <span id="fin-visibility-label" class="text-sm font-medium"></span>
                     </div>
                 </div>
-                <div class="flex bg-gray-100 rounded-lg p-1">
-                    <button id="fin-btn-summary" onclick="setFinView('summary')"
-                        class="px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow text-gray-900 transition">
-                        All Years
-                    </button>
-                    <button id="fin-btn-year" onclick="setFinView('year')"
-                        class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition">
-                        Year Detail
+                <div class="flex items-center gap-3">
+                    <div class="flex bg-gray-100 rounded-lg p-1">
+                        <button id="fin-btn-summary" onclick="setFinView('summary')"
+                            class="px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow text-gray-900 transition">
+                            All Years
+                        </button>
+                        <button id="fin-btn-year" onclick="setFinView('year')"
+                            class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition">
+                            Year Detail
+                        </button>
+                    </div>
+                    <button id="fin-import-btn" onclick="openImportModal()" class="hidden px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        Import
                     </button>
                 </div>
             </div>
@@ -668,6 +674,7 @@
                                     <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Breakeven</th>
                                     <th class="px-4 py-3 text-left font-semibold text-gray-700">Notes</th>
                                     <th class="px-4 py-3"></th>
+                                    <th class="px-4 py-3"></th>
                                 </tr>
                             </thead>
                             <tbody id="fin-summary-body"></tbody>
@@ -694,11 +701,6 @@
                         class="px-4 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 transition flex items-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         Add / Edit Month
-                    </button>
-                    <button onclick="openImportModal()"
-                        class="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                        Import CSV
                     </button>
                 </div>
 
@@ -2077,12 +2079,14 @@ Total: $${props.totalAmount}`);
                 document.getElementById('fin-empty').classList.remove('hidden');
                 document.getElementById('fin-summary-view').classList.add('hidden');
                 document.getElementById('fin-year-view').classList.add('hidden');
+                document.getElementById('fin-import-btn').classList.add('hidden');
                 wrap.classList.remove('flex');
                 wrap.classList.add('hidden');
                 return;
             }
             wrap.classList.remove('hidden');
             wrap.classList.add('flex');
+            document.getElementById('fin-import-btn').classList.remove('hidden');
             updateVisibilityToggle();
             document.getElementById('fin-empty').classList.add('hidden');
             await setFinView(finState.view);
@@ -2162,7 +2166,7 @@ Total: $${props.totalAmount}`);
             const rows = [...years];
 
             let html = rows.map(y => {
-                return `<tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="drillToYear(${y.year})">
+                return `<tr id="fin-yr-row-${y.year}" class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="drillToYear(${y.year})">
                     <td class="px-4 py-3 font-medium text-teal-600 sticky left-0 bg-white hover:bg-gray-50">
                         ${y.year}${!y.hasMonthlyDetail ? ' <span class="text-xs text-gray-400 font-normal" title="Annual total only — no monthly breakdown">est.</span>' : ''}
                     </td>
@@ -2183,6 +2187,21 @@ Total: $${props.totalAmount}`);
                     <td class="px-4 py-3 text-right ${finColorClass(y.breakEvenIdeal)}">${finFmtSigned(y.breakEvenIdeal)}</td>
                     <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">${y.notes || ''}</td>
                     <td class="px-4 py-3 text-teal-600 text-xs">Detail →</td>
+                    <td class="px-4 py-3" onclick="event.stopPropagation()">
+                        <button onclick="confirmDeleteYear(${y.year})" class="text-gray-300 hover:text-red-400 transition" title="Delete ${y.year} data">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                </tr>
+                <tr id="fin-yr-confirm-${y.year}" class="hidden bg-red-50 border-b border-red-100">
+                    <td colspan="19" class="px-4 py-3">
+                        <div class="flex items-center gap-3 text-sm">
+                            <span class="text-red-700 font-medium">Delete all ${y.year} data?</span>
+                            <span class="text-red-500 text-xs">Removes monthly records, annual totals, and expense items. Mortgage &amp; T&amp;I config is kept.</span>
+                            <button onclick="executeDeleteYear(${y.year})" class="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700">Yes, delete</button>
+                            <button onclick="cancelDeleteYear(${y.year})" class="px-3 py-1 border border-gray-300 text-gray-600 text-xs rounded-lg hover:bg-gray-50">Cancel</button>
+                        </div>
+                    </td>
                 </tr>`;
             }).join('');
 
@@ -2214,6 +2233,48 @@ Total: $${props.totalAmount}`);
         function drillToYear(year) {
             finState.year = year;
             setFinView('year');
+        }
+
+        // ── Year delete (All Years table) ──────────────────────────────
+        function confirmDeleteYear(year) {
+            document.getElementById(`fin-yr-confirm-${year}`).classList.remove('hidden');
+        }
+        function cancelDeleteYear(year) {
+            document.getElementById(`fin-yr-confirm-${year}`).classList.add('hidden');
+        }
+        async function executeDeleteYear(year) {
+            const pid = finState.propertyId;
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${pid}/year/${year}`, {
+                    method: 'DELETE', headers: authHeaders()
+                });
+                const body = await res.json();
+                if (!res.ok) throw new Error(body.error || body.message || 'Delete failed');
+                await loadFinSummary();
+            } catch (e) {
+                alert('Delete failed: ' + e.message);
+            }
+        }
+
+        // ── Monthly delete (Year Detail table) ────────────────────────
+        function confirmDeleteMonthly(month, id, monthName) {
+            document.getElementById(`fin-mo-confirm-${month}`).classList.remove('hidden');
+        }
+        function cancelDeleteMonthly(month) {
+            document.getElementById(`fin-mo-confirm-${month}`).classList.add('hidden');
+        }
+        async function executeDeleteMonthly(month, id) {
+            const pid = finState.propertyId;
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${pid}/monthly/${id}`, {
+                    method: 'DELETE', headers: authHeaders()
+                });
+                const body = await res.json();
+                if (!res.ok) throw new Error(body.error || body.message || 'Delete failed');
+                await loadFinYear(finState.year);
+            } catch (e) {
+                alert('Delete failed: ' + e.message);
+            }
         }
 
         async function initFinYear() {
@@ -2270,7 +2331,9 @@ Total: $${props.totalAmount}`);
                     ? [finFmt(m.cleaningFee), finFmt(m.utilities), finFmt(m.maintenance), finFmt(m.otherExpenses)]
                     : [finFmt(m.platformCharges)];
                 const net = finFmtSigned(m.netIncome);
-                return `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                const colSpan = 3 + expCells.length + 9;
+                const hasData = !!m.id;
+                return `<tr id="fin-mo-row-${m.month}" class="border-b border-gray-100 hover:bg-gray-50 text-sm">
                     <td class="px-3 py-2 font-medium text-gray-900">${m.monthName}</td>
                     <td class="px-3 py-2 text-right">${finFmt(m.grossIncome)}</td>
                     <td class="px-3 py-2 text-right text-gray-500">${finFmt(m.managementFee)}</td>
@@ -2283,10 +2346,23 @@ Total: $${props.totalAmount}`);
                     <td class="px-3 py-2 text-right">${(m.occupancyRatio * 100).toFixed(0)}%</td>
                     <td class="px-3 py-2 text-right">${finFmt(m.hoaPayment)}</td>
                     <td class="px-3 py-2 text-right">${finFmt(m.actualMortgagePaid)}</td>
-                    <td class="px-3 py-2 text-center">
+                    <td class="px-3 py-2 text-center flex items-center gap-2 justify-center">
                         <button onclick="openMonthModal(${m.month})" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
+                        ${hasData ? `<button onclick="confirmDeleteMonthly(${m.month}, '${m.id}', '${m.monthName}')" class="text-gray-300 hover:text-red-400 transition" title="Delete ${m.monthName} data">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>` : ''}
                     </td>
-                </tr>`;
+                </tr>
+                ${hasData ? `<tr id="fin-mo-confirm-${m.month}" class="hidden bg-red-50 border-b border-red-100 text-sm">
+                    <td colspan="${colSpan}" class="px-3 py-2">
+                        <div class="flex items-center gap-3">
+                            <span class="text-red-700 font-medium">Delete ${m.monthName} data?</span>
+                            <span class="text-red-500 text-xs">Clears all income, expenses, and stats for this month.</span>
+                            <button onclick="executeDeleteMonthly(${m.month}, '${m.id}')" class="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700">Yes, delete</button>
+                            <button onclick="cancelDeleteMonthly(${m.month})" class="px-3 py-1 border border-gray-300 text-gray-600 text-xs rounded-lg hover:bg-gray-50">Cancel</button>
+                        </div>
+                    </td>
+                </tr>` : ''}`;
             }).join('');
 
             if (totalsRow) {
@@ -2581,16 +2657,25 @@ Total: $${props.totalAmount}`);
 
         // Map raw CSV rows → monthly upsert payloads
         function mapMonthlyRows(rawRows) {
-            // Find header row (first row that contains a month-like value OR has 'month' header)
-            let headerIdx = 0;
-            for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+            // Find header row — search up to 10 rows for month/income keywords
+            let headerIdx = -1;
+            for (let i = 0; i < Math.min(10, rawRows.length); i++) {
                 const normed = rawRows[i].map(normHeader);
-                if (normed.includes('month') || normed.includes('grossincome') || normed.includes('gross')) {
+                if (normed.includes('month') || normed.includes('grossincome') || normed.includes('gross') || normed.includes('managementfee')) {
                     headerIdx = i; break;
                 }
             }
-            const headers = rawRows[headerIdx].map(normHeader);
-            const dataRows = rawRows.slice(headerIdx + 1);
+
+            // If no header row found, check if row 0 first col looks like a month (data starts at row 0)
+            let headers, dataRows;
+            if (headerIdx === -1) {
+                // No header — treat first column as month, assign positional column names
+                headers = rawRows[0].map((_, i) => `col${i}`);
+                dataRows = rawRows;
+            } else {
+                headers = rawRows[headerIdx].map(normHeader);
+                dataRows = rawRows.slice(headerIdx + 1);
+            }
 
             const col = (aliases) => {
                 for (const a of aliases) {
@@ -2602,24 +2687,27 @@ Total: $${props.totalAmount}`);
 
             const cols = {
                 month:          col(['month']),
-                grossIncome:    col(['grossincome','gross']),
-                managementFee:  col(['managementfee','managmentfee','mgmtfee','managementfees']),
-                platformCharges:col(['platformcharges','charges','grosscharges']),
+                grossIncome:    col(['grossincome','gross','totalincome','income']),
+                managementFee:  col(['managementfee','managmentfee','mgmtfee','managementfees','mgmt']),
+                platformCharges:col(['platformcharges','charges','grosscharges','othercharges']),
                 cleaningFee:    col(['cleaningfee','cleaning']),
-                utilities:      col(['utilities']),
-                maintenance:    col(['maintenance','mantenance']),
-                otherExpenses:  col(['otherexpenses','other']),
-                nightsBooked:   col(['nightsbooked','nights']),
-                numReservations:col(['numreservations','reservations','ofreservations','noofreservations']),
-                hoaPayment:     col(['hoapayment','hoa']),
-                actualMortgagePaid: col(['actualmortgagepaid','actualpayments','actualpaid','actualmortgagepaymentsmade']),
+                utilities:      col(['utilities','utility']),
+                maintenance:    col(['maintenance','mantenance','repairs']),
+                otherExpenses:  col(['otherexpenses','other','miscellaneous']),
+                nightsBooked:   col(['nightsbooked','nights','guestnights']),
+                numReservations:col(['numreservations','reservations','ofreservations','noofreservations','reservations','noreservations']),
+                hoaPayment:     col(['hoapayment','hoa','hoamonthly']),
+                actualMortgagePaid: col(['actualmortgagepaid','actualpayments','actualpaid','actualmortgagepaymentsmade','actualmortgage','actualpaymentsmade']),
             };
+
+            // If still no month column, try first column as month fallback
+            const monthColIdx = cols.month !== -1 ? cols.month : 0;
 
             const results = [];
             for (const row of dataRows) {
                 if (!row.some(c => c)) continue; // skip blank rows
-                const month = parseMonthValue(cols.month !== -1 ? row[cols.month] : null);
-                if (!month) continue; // skip totals/summary rows
+                const month = parseMonthValue(row[monthColIdx]);
+                if (!month) continue; // skip totals/summary/header rows
 
                 const get = (key) => cols[key] !== -1 ? parseMoney(row[cols[key]]) : 0;
                 results.push({
@@ -2789,10 +2877,11 @@ Total: $${props.totalAmount}`);
             formData.append('file', file);
 
             try {
-                const token = localStorage.getItem('accessToken');
+                const hdrs = authHeaders();
+                delete hdrs['Content-Type']; // browser sets this with boundary for FormData
                 const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/parse-caribbean-statement`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
+                    headers: hdrs,
                     body: formData
                 });
                 const data = await res.json();
@@ -2932,7 +3021,7 @@ Total: $${props.totalAmount}`);
             };
             return rawRows.slice(headerIdx + 1).filter(r => r.some(c => c)).map(row => {
                 const year = parseInt(cols.year !== -1 ? row[cols.year] : null);
-                if (!year || isNaN(year)) return null;
+                if (!year || isNaN(year) || year < 1990 || year > 2040) return null;
                 const get = (k) => cols[k] !== -1 ? parseMoney(row[cols[k]]) : null;
                 const getInt = (k) => cols[k] !== -1 ? (parseInt(row[cols[k]]) || null) : null;
                 return {
@@ -3118,9 +3207,8 @@ Total: $${props.totalAmount}`);
             if (search) url += `&search=${encodeURIComponent(search)}`;
             if (marketingOnly) url += `&marketingOptIn=true`;
 
-            const token = localStorage.getItem('accessToken');
             try {
-                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(url, { headers: authHeaders() });
                 const data = await res.json();
                 if (!data.success) throw new Error(data.message);
                 guestState.all = data.guests || [];

@@ -410,6 +410,55 @@ const deleteExpenseItem = async (req, res) => {
   }
 }
 
+// DELETE /api/financials/:propertyId/monthly/:monthlyId — delete one month's record
+const deleteMonthly = async (req, res) => {
+  try {
+    const { propertyId, monthlyId } = req.params
+    const property = await Property.findOne({ where: { id: propertyId, userId: req.user.id } })
+    if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
+
+    const record = await FinancialMonthly.findOne({ where: { id: monthlyId, propertyId } })
+    if (!record) return res.status(404).json({ success: false, message: 'Record not found' })
+
+    await record.destroy()
+    res.json({ success: true })
+  } catch (err) {
+    console.error('deleteMonthly error:', err)
+    res.status(500).json({ success: false, message: 'Server error' })
+  }
+}
+
+// DELETE /api/financials/:propertyId/year/:year — delete all monthly records + clear annual summary for a year
+const deleteYear = async (req, res) => {
+  try {
+    const { propertyId, year } = req.params
+    const property = await Property.findOne({ where: { id: propertyId, userId: req.user.id } })
+    if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
+
+    // Delete all monthly records for the year
+    const monthlyDeleted = await FinancialMonthly.destroy({ where: { propertyId, year } })
+
+    // Clear annual summary fields from annual_config (preserve mortgage/T&I)
+    const config = await FinancialAnnualConfig.findOne({ where: { propertyId, year } })
+    if (config) {
+      await config.update({
+        grossIncomeAnnual: null, managementFeeAnnual: null, platformChargesAnnual: null,
+        cleaningFeeAnnual: null, utilitiesAnnual: null, maintenanceAnnual: null,
+        otherExpensesAnnual: null, nightsBookedAnnual: null, numReservationsAnnual: null,
+        hoaAnnual: null, actualMortgageAnnual: null,
+      })
+    }
+
+    // Also delete expense items for the year
+    await FinancialExpenseItem.destroy({ where: { propertyId, year } })
+
+    res.json({ success: true, monthlyDeleted })
+  } catch (err) {
+    console.error('deleteYear error:', err)
+    res.status(500).json({ success: false, message: 'Server error' })
+  }
+}
+
 // POST /api/financials/parse-caribbean-statement — parse a Caribbean Resorts PDF statement
 const parseCaribbeaStatement = async (req, res) => {
   try {
@@ -530,6 +579,8 @@ module.exports = {
   upsertAnnualConfig,
   upsertFinancialSettings,
   upsertYearSummary,
+  deleteMonthly,
+  deleteYear,
   addExpenseItem,
   updateExpenseItem,
   deleteExpenseItem,
