@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings - AspireTowards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <a href="/dashboard.html" class="text-xl font-display font-bold text-gray-900">AspireTowards</a>
+                    <span class="text-gray-400">|</span>
+                    <span class="text-gray-600">Account Settings</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard.html" class="text-gray-600 hover:text-teal-600 transition">← Dashboard</a>
+                    <button id="logout-btn" class="text-red-600 hover:text-red-700 transition">Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-display font-bold text-gray-900">Account Settings</h1>
+            <p class="text-gray-600 mt-1">Manage your profile, password, and account details</p>
+        </div>
+
+        <!-- Status message -->
+        <div id="status-msg" class="hidden mb-4 px-4 py-3 rounded-lg text-sm font-medium"></div>
+
+        <!-- Profile Section -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-1">Profile</h2>
+            <p class="text-sm text-gray-500 mb-4">Your display name shown across the dashboard</p>
+            <form id="profile-form" onsubmit="saveProfile(event)">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                        <input type="text" id="first-name" name="firstName"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                            placeholder="First name" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                        <input type="text" id="last-name" name="lastName"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                            placeholder="Last name">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="user-email" disabled
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed">
+                    <p class="text-xs text-gray-400 mt-1">Email changes coming soon</p>
+                </div>
+                <button type="submit"
+                    class="px-5 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition">
+                    Save Profile
+                </button>
+            </form>
+        </div>
+
+        <!-- Change Password Section -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-1">Change Password</h2>
+            <p class="text-sm text-gray-500 mb-4">Must be at least 8 characters</p>
+            <form id="password-form" onsubmit="savePassword(event)">
+                <div class="space-y-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                        <input type="password" id="current-password" name="currentPassword"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                            placeholder="Enter current password" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                        <input type="password" id="new-password" name="newPassword"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                            placeholder="Enter new password" required minlength="8">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                        <input type="password" id="confirm-password" name="confirmPassword"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                            placeholder="Confirm new password" required minlength="8">
+                    </div>
+                </div>
+                <button type="submit"
+                    class="px-5 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition">
+                    Update Password
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api'
+            : '/api';
+
+        function authHeaders() {
+            return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` };
+        }
+
+        function showStatus(msg, isError = false) {
+            const el = document.getElementById('status-msg');
+            el.textContent = msg;
+            el.className = `mb-4 px-4 py-3 rounded-lg text-sm font-medium ${isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 4000);
+        }
+
+        async function loadUser() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/auth/login.html'; return; }
+            try {
+                const resp = await fetch(`${API_URL}/auth/me`, { headers: authHeaders() });
+                if (!resp.ok) { window.location.href = '/auth/login.html'; return; }
+                const data = await resp.json();
+                const user = data.data?.user || data.user || data;
+                document.getElementById('first-name').value = user.firstName || '';
+                document.getElementById('last-name').value = user.lastName || '';
+                document.getElementById('user-email').value = user.email || '';
+            } catch(e) {
+                console.error('Failed to load user:', e);
+            }
+        }
+
+        async function saveProfile(e) {
+            e.preventDefault();
+            const firstName = document.getElementById('first-name').value.trim();
+            const lastName = document.getElementById('last-name').value.trim();
+            try {
+                const resp = await fetch(`${API_URL}/auth/profile`, {
+                    method: 'PUT', headers: authHeaders(),
+                    body: JSON.stringify({ firstName, lastName })
+                });
+                const data = await resp.json();
+                if (resp.ok && data.success) {
+                    const user = data.data?.user || {};
+                    const stored = JSON.parse(localStorage.getItem('user') || '{}');
+                    stored.firstName = user.firstName || firstName;
+                    stored.lastName = user.lastName || lastName;
+                    stored.name = [stored.firstName, stored.lastName].filter(Boolean).join(' ');
+                    localStorage.setItem('user', JSON.stringify(stored));
+                    showStatus('Profile updated successfully');
+                } else {
+                    showStatus(data.message || 'Failed to update profile', true);
+                }
+            } catch(e) {
+                showStatus('Network error. Please try again.', true);
+            }
+        }
+
+        async function savePassword(e) {
+            e.preventDefault();
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            if (newPassword !== confirmPassword) {
+                showStatus('New passwords do not match', true);
+                return;
+            }
+            if (newPassword.length < 8) {
+                showStatus('Password must be at least 8 characters', true);
+                return;
+            }
+            try {
+                const resp = await fetch(`${API_URL}/auth/password`, {
+                    method: 'PUT', headers: authHeaders(),
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                const data = await resp.json();
+                if (resp.ok && data.success) {
+                    document.getElementById('password-form').reset();
+                    showStatus('Password updated successfully');
+                } else {
+                    showStatus(data.message || 'Failed to update password', true);
+                }
+            } catch(e) {
+                showStatus('Network error. Please try again.', true);
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            window.location.href = '/auth/login.html';
+        });
+
+        loadUser();
+    </script>
+</body>
+</html>
