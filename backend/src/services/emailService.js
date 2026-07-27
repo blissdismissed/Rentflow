@@ -37,7 +37,7 @@ console.log('  - From Email:', FROM_EMAIL);
 console.log('  - From Name:', FROM_NAME);
 console.log('  - Reply To Email:', REPLY_TO_EMAIL);
 console.log('  - Frontend URL:', FRONTEND_URL);
-console.log('  - SendGrid API Key:', SENDGRID_API_KEY ? '✓ Configured' : '✗ Missing');
+console.log('  - Resend API Key:', RESEND_API_KEY ? '✓ Configured' : '✗ Missing');
 
 /**
  * Email Service for RentFlow
