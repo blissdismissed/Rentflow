@@ -29,6 +29,28 @@ async function findPropertyForVendor(userId, vendor) {
 }
 
 async function saveBromleyData(parsed, propertyId) {
+  // Cleaning invoice — save each line item with expenseDate so the UI can group by cleaning date
+  if (parsed.type === 'cleaning') {
+    const created = []
+    for (const item of (parsed.lineItems || [])) {
+      const y = item.cleaningYear || parsed.year
+      const mo = item.cleaningMonth || parsed.startMonth
+      if (!y || !mo) continue
+      const rec = await FinancialExpenseItem.create({
+        propertyId, year: y, month: mo,
+        expenseName: item.description,
+        vendor: 'bromley', amount: item.amount, tag: item.tag,
+        expenseDate: item.cleaningDate || null,
+      })
+      created.push(rec)
+    }
+    const dateSet = new Set((parsed.lineItems || []).map(i => i.cleaningDate).filter(Boolean))
+    return {
+      docType: 'invoice', count: created.length, total: parsed.total,
+      detail: `${dateSet.size} cleaning(s) · ${created.length} item(s) totaling $${(parsed.total || 0).toFixed(2)}`
+    }
+  }
+
   if (parsed.docType === 'statement') {
     const created = []
     for (const line of (parsed.lines || [])) {

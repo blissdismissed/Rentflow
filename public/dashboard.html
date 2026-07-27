@@ -2645,7 +2645,47 @@ Total: $${props.totalAmount}`);
                     <div class="flex flex-wrap gap-x-4 gap-y-1.5">${legendItems}</div>
                     ` : '<p class="text-sm text-gray-400">No expense data yet</p>'}
                 </div>
-            </div>`;
+            </div>
+
+            ${(() => {
+                // Cleanings Analytics — Bromley only, requires housekeeping items with expenseDate
+                const cleanItems = (data.expenseItems || []).filter(i => i.vendor === 'bromley' && i.tag === 'housekeeping' && i.expenseDate);
+                if (!cleanItems.length) return '';
+
+                const byDate = {};
+                for (const item of cleanItems) {
+                    if (!byDate[item.expenseDate]) byDate[item.expenseDate] = [];
+                    byDate[item.expenseDate].push(item);
+                }
+                const cleanings = Object.values(byDate).map(its => {
+                    const total = its.reduce((s, i) => s + parseFloat(i.amount || 0), 0);
+                    const laborItem = its.find(i => /labor/i.test(i.expenseName));
+                    const laborAmt = laborItem ? parseFloat(laborItem.amount) : 0;
+                    const laborQty = laborItem ? parseFloat(laborItem.qty || 0) : 0;
+                    return { total, laborAmt, laborQty, suppliesAmt: total - laborAmt, itemCount: its.length };
+                });
+
+                const numC = cleanings.length;
+                const avg = arr => arr.reduce((s,v) => s+v, 0) / arr.length;
+                const median = arr => { const s=[...arr].sort((a,b)=>a-b); const m=Math.floor(s.length/2); return s.length%2 ? s[m] : (s[m-1]+s[m])/2; };
+
+                const totals = cleanings.map(c => c.total);
+                const labors = cleanings.map(c => c.laborAmt);
+                const supplies = cleanings.map(c => c.suppliesAmt);
+
+                const html = ['<div class="mt-4 bg-white rounded-xl shadow-sm p-4">',
+                    '<div class="flex items-center justify-between mb-3">',
+                    '<p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cleanings Analytics</p>',
+                    '<span class="text-xs text-gray-400">' + numC + ' cleaning event' + (numC !== 1 ? 's' : '') + ' · Bromley</span>',
+                    '</div>',
+                    '<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">',
+                    statCard('Avg Cleaning Cost', finFmt(avg(totals)), 'per S/C/M event', 'teal'),
+                    statCard('Median Cleaning Cost', finFmt(median(totals)), 'per S/C/M event', 'teal'),
+                    statCard('Avg Labor Cost', finFmt(avg(labors)), 'per cleaning', 'blue'),
+                    statCard('Avg Supplies Cost', finFmt(avg(supplies)), 'linen, bath & misc', 'gray'),
+                    '</div></div>'].join('');
+                return html;
+            })()}`;
         }
 
         function renderExpenseItems(data) {
@@ -2669,17 +2709,38 @@ Total: $${props.totalAmount}`);
             };
             const tagLabels = { utilities: 'Utilities', housekeeping: 'Housekeeping', maintenance: 'Maintenance', hoa: 'HOA', other: 'Other' };
 
-            document.getElementById('fin-expense-body').innerHTML = items.length === 0
+            // Group Bromley housekeeping items by cleaning date — show one row per S/C/M event
+            const cleaningGroups = {};
+            const displayItems = [];
+            for (const item of items) {
+                if (item.vendor === 'bromley' && item.tag === 'housekeeping' && item.expenseDate) {
+                    if (!cleaningGroups[item.expenseDate]) cleaningGroups[item.expenseDate] = { month: item.month, total: 0, count: 0, ids: [] };
+                    cleaningGroups[item.expenseDate].total += parseFloat(item.amount || 0);
+                    cleaningGroups[item.expenseDate].count++;
+                    cleaningGroups[item.expenseDate].ids.push(item.id);
+                } else {
+                    displayItems.push(item);
+                }
+            }
+            for (const [date, g] of Object.entries(cleaningGroups).sort(([a],[b]) => a.localeCompare(b))) {
+                displayItems.push({ _cleaningDate: date, month: g.month, expenseDate: date, expenseName: 'S/C/M Cleaning', vendor: 'bromley', amount: g.total, tag: 'housekeeping', _groupIds: g.ids, _groupCount: g.count });
+            }
+            displayItems.sort((a, b) => {
+                if (a.month !== b.month) return (a.month || 0) - (b.month || 0);
+                return (a.expenseDate || '').localeCompare(b.expenseDate || '');
+            });
+
+            document.getElementById('fin-expense-body').innerHTML = displayItems.length === 0
                 ? `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No expense items yet. Click + Add Expense to start.</td></tr>`
-                : items.map(item => `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                : displayItems.map(item => `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
                     <td class="px-4 py-2">${MONTH_NAMES[(item.month || 1) - 1]}</td>
                     <td class="px-4 py-2 text-gray-500">${item.expenseDate || '—'}</td>
-                    <td class="px-4 py-2">${item.expenseName || '—'}</td>
+                    <td class="px-4 py-2">${item.expenseName || '—'}${item._groupCount ? ` <span class="text-gray-400 text-xs">(${item._groupCount} items)</span>` : ''}</td>
                     <td class="px-4 py-2 text-gray-500">${item.vendor || '—'}</td>
                     <td class="px-4 py-2 text-right font-medium">${item.amount != null ? finFmt(item.amount) : '—'}</td>
                     <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tagColors[item.tag] || tagColors.other}">${item.tag}</span></td>
                     <td class="px-4 py-2 flex gap-2">
-                        ${itemized ? `<button onclick="openExpenseModal('${item.id}')" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
+                        ${itemized && item.id ? `<button onclick="openExpenseModal('${item.id}')" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
                         <button onclick="deleteExpense('${item.id}')" class="text-red-500 hover:text-red-700 text-xs">Del</button>` : ''}
                     </td>
                 </tr>`).join('');
@@ -3298,27 +3359,53 @@ Total: $${props.totalAmount}`);
                 // Doc info bar
                 const infoEl = document.getElementById('fin-bromley-doc-info');
                 if (data.docType === 'invoice') {
-                    const period = data.startMonth && data.endMonth && data.year
-                        ? (data.startMonth === data.endMonth
-                            ? `${MONTH_NAMES_SHORT[data.startMonth-1]} ${data.year}`
-                            : `${MONTH_NAMES_SHORT[data.startMonth-1]}–${MONTH_NAMES_SHORT[data.endMonth-1]} ${data.year}`)
-                        : (data.year || '');
-                    const invoiceLabel = (data.invoiceNumbers && data.invoiceNumbers.length > 1)
-                        ? `${data.invoiceNumbers.length} invoices (${data.invoiceNumbers[0]}…)`
-                        : (data.invoiceNumber || '—');
-                    infoEl.innerHTML = `<span><strong>Type:</strong> Invoice</span><span><strong>Date:</strong> ${data.date || '—'}</span><span><strong>Invoice(s):</strong> ${invoiceLabel}</span><span><strong>Period:</strong> ${period}</span><span><strong>Total:</strong> ${finFmt(data.total || 0)}</span>`;
-
-                    // Line items table
                     document.getElementById('fin-bromley-invoice-section').classList.remove('hidden');
                     document.getElementById('fin-bromley-statement-section').classList.add('hidden');
-                    document.getElementById('fin-bromley-items-body').innerHTML = (data.lineItems || []).map((item, i) =>
-                        `<tr class="border-b border-gray-100">
-                            <td class="px-3 py-2 font-mono text-xs text-gray-500">${item.code}</td>
-                            <td class="px-3 py-2">${item.description}${item.qty && item.qty !== 1 ? ` <span class="text-gray-400 text-xs">×${item.qty}</span>` : ''}</td>
-                            <td class="px-3 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tagColors[item.tag]||tagColors.other}">${item.tag}</span></td>
-                            <td class="px-3 py-2 text-right font-medium"><input type="number" step="0.01" value="${item.amount}" onchange="importState.bromleyParsed.lineItems[${i}].amount=parseFloat(this.value)||0" class="w-24 px-1 py-0.5 border border-gray-200 rounded text-right text-sm"></td>
-                        </tr>`
-                    ).join('');
+
+                    // Hide/show "Apply to" dropdown — not applicable for cleaning invoices (month comes from cleaning date)
+                    const applyModeWrap = document.getElementById('bromley-apply-mode')?.parentElement;
+                    if (applyModeWrap) applyModeWrap.classList.toggle('hidden', data.type === 'cleaning');
+
+                    if (data.type === 'cleaning') {
+                        // Group line items by cleaning date for preview
+                        const cleanGroups = {};
+                        for (const item of (data.lineItems || [])) {
+                            const d = item.cleaningDate || 'unknown';
+                            if (!cleanGroups[d]) cleanGroups[d] = { date: d, items: [], total: 0 };
+                            cleanGroups[d].items.push(item);
+                            cleanGroups[d].total += item.amount;
+                        }
+                        const groupArr = Object.values(cleanGroups).sort((a,b) => a.date.localeCompare(b.date));
+                        infoEl.innerHTML = `<span><strong>Type:</strong> Cleaning Invoice(s)</span><span><strong>Events:</strong> ${groupArr.length}</span><span><strong>Total:</strong> ${finFmt(data.total)}</span>`;
+                        document.getElementById('fin-bromley-items-body').innerHTML = groupArr.map(g =>
+                            `<tr class="border-b border-gray-100">
+                                <td class="px-3 py-2 font-mono text-xs text-gray-500">S/C/M</td>
+                                <td class="px-3 py-2">Cleaning ${g.date} <span class="text-gray-400 text-xs">(${g.items.length} items)</span></td>
+                                <td class="px-3 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">housekeeping</span></td>
+                                <td class="px-3 py-2 text-right font-medium">${finFmt(g.total)}</td>
+                            </tr>`
+                        ).join('');
+                        btn.textContent = `Save ${groupArr.length} cleaning event${groupArr.length !== 1 ? 's' : ''}`;
+                    } else {
+                        const period = data.startMonth && data.endMonth && data.year
+                            ? (data.startMonth === data.endMonth
+                                ? `${MONTH_NAMES_SHORT[data.startMonth-1]} ${data.year}`
+                                : `${MONTH_NAMES_SHORT[data.startMonth-1]}–${MONTH_NAMES_SHORT[data.endMonth-1]} ${data.year}`)
+                            : (data.year || '');
+                        const invoiceLabel = (data.invoiceNumbers && data.invoiceNumbers.length > 1)
+                            ? `${data.invoiceNumbers.length} invoices (${data.invoiceNumbers[0]}…)`
+                            : (data.invoiceNumber || '—');
+                        infoEl.innerHTML = `<span><strong>Type:</strong> Invoice</span><span><strong>Date:</strong> ${data.date || '—'}</span><span><strong>Invoice(s):</strong> ${invoiceLabel}</span><span><strong>Period:</strong> ${period}</span><span><strong>Total:</strong> ${finFmt(data.total || 0)}</span>`;
+                        document.getElementById('fin-bromley-items-body').innerHTML = (data.lineItems || []).map((item, i) =>
+                            `<tr class="border-b border-gray-100">
+                                <td class="px-3 py-2 font-mono text-xs text-gray-500">${item.code}</td>
+                                <td class="px-3 py-2">${item.description}${item.qty && item.qty !== 1 ? ` <span class="text-gray-400 text-xs">×${item.qty}</span>` : ''}</td>
+                                <td class="px-3 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tagColors[item.tag]||tagColors.other}">${item.tag}</span></td>
+                                <td class="px-3 py-2 text-right font-medium"><input type="number" step="0.01" value="${item.amount}" onchange="importState.bromleyParsed.lineItems[${i}].amount=parseFloat(this.value)||0" class="w-24 px-1 py-0.5 border border-gray-200 rounded text-right text-sm"></td>
+                            </tr>`
+                        ).join('');
+                        btn.textContent = `Save ${(data.lineItems||[]).length} expense items`;
+                    }
 
                 } else {
                     // Statement
@@ -3340,7 +3427,7 @@ Total: $${props.totalAmount}`);
 
                 document.getElementById('fin-import-bromley-verify').classList.remove('hidden');
                 btn.disabled = false;
-                btn.textContent = data.docType === 'invoice' ? `Save ${(data.lineItems||[]).length} expense items` : 'Save selected invoices';
+                if (data.docType !== 'invoice') btn.textContent = 'Save selected invoices';
             } catch(e) {
                 showImportError('Parse error: ' + e.message);
                 btn.textContent = 'Import';
@@ -3613,42 +3700,65 @@ Total: $${props.totalAmount}`);
                     const createdExpenseIds = [];
 
                     if (parsed.docType === 'invoice') {
-                        // Determine target months
-                        let months = [];
-                        if (parsed.startMonth && parsed.endMonth && parsed.year) {
-                            for (let m = parsed.startMonth; m <= parsed.endMonth; m++) months.push({ year: parsed.year, month: m });
-                        } else if (parsed.year) {
-                            // Fall back to the invoice date's month
-                            const d = parsed.date ? new Date(parsed.date) : null;
-                            const m = d ? d.getMonth() + 1 : 1;
-                            months = [{ year: parsed.year, month: m }];
-                        }
-                        if (applyMode === 'first') months = months.slice(0, 1);
-                        if (applyMode === 'last')  months = months.slice(-1);
-
-                        const divisor = months.length || 1;
-                        for (const { year: y, month: mo } of months) {
+                        if (parsed.type === 'cleaning') {
+                            // Cleaning invoice — save each line item with expenseDate for analytics grouping
                             for (const item of (parsed.lineItems || [])) {
+                                const y = item.cleaningYear || parsed.year;
+                                const mo = item.cleaningMonth || parsed.startMonth;
+                                if (!y || !mo) continue;
                                 const resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses`, {
                                     method: 'POST', headers: authHeaders(),
                                     body: JSON.stringify({
                                         year: y, month: mo,
                                         expenseName: item.description,
-                                        vendor: 'bromley',
-                                        amount: parseFloat((item.amount / divisor).toFixed(2)),
-                                        tag: item.tag,
+                                        vendor: 'bromley', amount: item.amount, tag: item.tag,
+                                        expenseDate: item.cleaningDate || null,
                                     })
                                 });
                                 const d = await resp.json();
                                 if (d.item?.id) createdExpenseIds.push(d.item.id);
                             }
+                            closeImportModal();
+                            finState.summaryData = null;
+                            await loadFinYear(finState.year);
+                            const dateSet = new Set((parsed.lineItems || []).map(i => i.cleaningDate).filter(Boolean));
+                            const n = dateSet.size;
+                            showUndoToast(`${n} cleaning event${n !== 1 ? 's' : ''} saved — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
+                        } else {
+                            // Regular invoice — line items split across months
+                            let months = [];
+                            if (parsed.startMonth && parsed.endMonth && parsed.year) {
+                                for (let m = parsed.startMonth; m <= parsed.endMonth; m++) months.push({ year: parsed.year, month: m });
+                            } else if (parsed.year) {
+                                const d = parsed.date ? new Date(parsed.date) : null;
+                                const m = d ? d.getMonth() + 1 : 1;
+                                months = [{ year: parsed.year, month: m }];
+                            }
+                            if (applyMode === 'first') months = months.slice(0, 1);
+                            if (applyMode === 'last')  months = months.slice(-1);
+                            const divisor = months.length || 1;
+                            for (const { year: y, month: mo } of months) {
+                                for (const item of (parsed.lineItems || [])) {
+                                    const resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses`, {
+                                        method: 'POST', headers: authHeaders(),
+                                        body: JSON.stringify({
+                                            year: y, month: mo,
+                                            expenseName: item.description,
+                                            vendor: 'bromley',
+                                            amount: parseFloat((item.amount / divisor).toFixed(2)),
+                                            tag: item.tag,
+                                        })
+                                    });
+                                    const d = await resp.json();
+                                    if (d.item?.id) createdExpenseIds.push(d.item.id);
+                                }
+                            }
+                            closeImportModal();
+                            finState.summaryData = null;
+                            await loadFinYear(finState.year);
+                            const n = (parsed.lineItems || []).length * months.length;
+                            showUndoToast(`${n} Bromley expense item${n !== 1 ? 's' : ''} saved — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
                         }
-                        closeImportModal();
-                        finState.summaryData = null;
-                        await loadFinYear(finState.year);
-                        const n = (parsed.lineItems || []).length * months.length;
-                        showUndoToast(`${n} Bromley expense item${n !== 1 ? 's' : ''} saved — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
-
                     } else {
                         // Statement — save selected lines as expense items
                         const checked = Array.from(document.querySelectorAll('.bromley-stmt-check:checked'));

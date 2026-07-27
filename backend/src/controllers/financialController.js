@@ -664,7 +664,7 @@ function tagBromleyItem(code, desc) {
   const s = (code + ' ' + desc).toLowerCase()
   if (/wtr|water|swr|sewer|electric|util/.test(s)) return 'utilities'
   if (/hoa|assoc|condomin/.test(s)) return 'hoa'
-  if (/housekeep|bhl|linen|bed|towel|bathmat|pillowcase|facecloth|barsoap|toilet|tissue|paper|clean/.test(s)) return 'housekeeping'
+  if (/housekeep|bhl|linen|bed|towel|bathmat|bath.set|bath.mat|pillowcase|facecloth|barsoap|toilet|tissue|paper|clean|amenity|shampoo/.test(s)) return 'housekeeping'
   return 'maintenance'
 }
 
@@ -722,8 +722,12 @@ function parseBromleyText(text) {
     if (tm) total = parseFloat(tm[1].replace(/,/g, ''))
   }
 
-  const lineItems = []
+  // Detect cleaning invoices by S/C/M marker or BHL housekeeping labor items
+  const isCleaningInvoice = /S\/C\/M/.test(text) || /\bBHL\b/.test(text)
+
+  // Parse all line items with their text positions
   const lineRe = /^(.+?)\s+([\d]+\.[\d]+)\s+EA\s+[\d]+\.[\d]+\s+([\d]+\.[\d]+)\s*$/gm
+  const rawItems = []
   let im
   while ((im = lineRe.exec(text)) !== null) {
     const full = im[1].trim(), qty = parseFloat(im[2]), amount = parseFloat(im[3])
@@ -738,10 +742,41 @@ function parseBromleyText(text) {
       const split = full.match(/^([A-Z][A-Z0-9_-]*?)([A-Z][a-z].+)$/)
       if (split) { code = split[1]; desc = split[2] }
     }
-    if (code && desc) lineItems.push({ code, description: desc.trim(), qty, amount, tag: tagBromleyItem(code, desc) })
+    if (code && desc) rawItems.push({ pos: im.index, code, description: desc.trim(), qty, amount, tag: tagBromleyItem(code, desc) })
   }
 
-  return { docType: 'invoice', date, invoiceNumber, invoiceNumbers, year, startMonth, endMonth, total, lineItems }
+  const lineItems = []
+  if (isCleaningInvoice && rawItems.length > 0) {
+    // Reference field pattern: "MM/DD/YY [S/C/M] CustomerNo" — marks each cleaning event's service date
+    // Multi-invoice PDFs have one reference date per invoice; items belong to nearest preceding date
+    const refDateRe = /(\d{1,2}\/\d{1,2}\/(\d{2,4}))\s+(?:S\/C\/M\s+)?\d{7}/g
+    const refMatches = [...text.matchAll(refDateRe)]
+
+    for (const { pos, ...item } of rawItems) {
+      if (refMatches.length > 0) {
+        let cleaningRef = null
+        for (const rm of refMatches) {
+          if (rm.index <= pos) cleaningRef = rm
+        }
+        const refStr = cleaningRef?.[1] || date
+        if (refStr) {
+          const parts = refStr.split('/')
+          let cy = parseInt(parts[2])
+          if (cy < 100) cy += 2000
+          const cm = parseInt(parts[0]), cd = parseInt(parts[1])
+          item.cleaningDate = `${cy}-${String(cm).padStart(2,'0')}-${String(cd).padStart(2,'0')}`
+          item.cleaningMonth = cm
+          item.cleaningYear = cy
+        }
+      }
+      lineItems.push(item)
+    }
+  } else {
+    for (const { pos, ...item } of rawItems) lineItems.push(item)
+  }
+
+  const invoiceType = isCleaningInvoice ? 'cleaning' : 'regular'
+  return { docType: 'invoice', type: invoiceType, date, invoiceNumber, invoiceNumbers, year, startMonth, endMonth, total, lineItems }
 }
 
 // POST /api/financials/parse-bromley-pdf — HTTP handler (used by dashboard import UI)
