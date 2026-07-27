@@ -39,6 +39,11 @@ class GuestController {
         ]
       }
 
+      // Validate sortBy to prevent SQL injection
+      const allowedSortCols = ['lastStayDate', 'totalStays', 'totalSpent', 'name', 'createdAt']
+      const safeSortBy = allowedSortCols.includes(sortBy) ? sortBy : 'lastStayDate'
+      const safeOrder = order === 'ASC' ? 'ASC' : 'DESC'
+
       // Get guests who have stayed at owner's properties
       const guests = await Guest.findAll({
         where: whereClause,
@@ -46,6 +51,7 @@ class GuestController {
           {
             model: GuestStay,
             as: 'stays',
+            required: true,
             where: propertyId ? { propertyId } : { propertyId: propertyIds },
             include: [
               {
@@ -54,14 +60,25 @@ class GuestController {
                 attributes: ['id', 'name']
               }
             ],
-            order: [['checkOut', 'DESC']]
           }
         ],
-        order: [[sortBy, order]],
+        order: [[safeSortBy, safeOrder]],
         distinct: true
       })
 
-      res.json({ success: true, guests })
+      // Sort each guest's stays by checkOut desc in JS (can't order nested includes in Sequelize)
+      guests.forEach(g => {
+        if (g.stays) g.stays.sort((a, b) => new Date(b.checkOut) - new Date(a.checkOut))
+      })
+
+      // Also send the owner's full property list so the filter dropdown is always populated
+      const properties = await Property.findAll({
+        where: { userId },
+        attributes: ['id', 'name'],
+        order: [['name', 'ASC']]
+      })
+
+      res.json({ success: true, guests, properties })
     } catch (error) {
       console.error('Error fetching guests:', error)
       res.status(500).json({ success: false, message: 'Error fetching guests', error: error.message })

@@ -3382,7 +3382,7 @@ Total: $${props.totalAmount}`);
                 guestState.all = data.guests || [];
                 guestState.selected.clear();
                 renderGuestsTable(guestState.all);
-                populateGuestsPropertyFilter(guestState.all);
+                populateGuestsPropertyFilter(data.properties || []);
                 updateGuestEmailBtn();
             } catch (err) {
                 document.getElementById('guests-table-body').innerHTML =
@@ -3390,18 +3390,12 @@ Total: $${props.totalAmount}`);
             }
         }
 
-        function populateGuestsPropertyFilter(guests) {
+        function populateGuestsPropertyFilter(properties) {
             const sel = document.getElementById('guests-property-filter');
             const cur = sel.value;
-            const propMap = {};
-            for (const g of guests) {
-                for (const stay of (g.stays || [])) {
-                    if (stay.property) propMap[stay.property.id] = stay.property.name;
-                }
-            }
-            const extraOpts = Object.entries(propMap).map(([id, name]) =>
-                `<option value="${id}" ${id === cur ? 'selected' : ''}>${name}</option>`).join('');
-            sel.innerHTML = `<option value="">All properties</option>` + extraOpts;
+            const opts = properties.map(p =>
+                `<option value="${p.id}" ${p.id === cur ? 'selected' : ''}>${p.name}</option>`).join('');
+            sel.innerHTML = `<option value="">All properties</option>` + opts;
         }
 
         function renderGuestsTable(guests) {
