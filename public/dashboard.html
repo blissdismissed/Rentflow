@@ -2075,9 +2075,18 @@ Total: $${props.totalAmount}`);
         function setFinDefaultProperty() {
             if (!finState.propertyId) return;
             localStorage.setItem('fin_default_property_id', finState.propertyId);
+            updateDefaultBtn();
+        }
+
+        function updateDefaultBtn() {
             const btn = document.getElementById('fin-set-default-btn');
-            btn.textContent = '✓ Default set';
-            setTimeout(() => { btn.textContent = 'Set as default'; }, 2000);
+            if (!btn) return;
+            const savedDefault = localStorage.getItem('fin_default_property_id');
+            const isDefault = savedDefault === finState.propertyId;
+            btn.textContent = isDefault ? '✓ Default' : 'Set as default';
+            btn.className = isDefault
+                ? 'text-xs text-teal-700 font-medium whitespace-nowrap'
+                : 'text-xs text-teal-600 hover:text-teal-800 whitespace-nowrap';
         }
 
         async function setFinProperty(propertyId) {
@@ -2096,6 +2105,7 @@ Total: $${props.totalAmount}`);
             wrap.classList.add('flex');
             document.getElementById('fin-import-btn').classList.remove('hidden');
             updateVisibilityToggle();
+            updateDefaultBtn();
             document.getElementById('fin-empty').classList.add('hidden');
             await setFinView(finState.view);
         }
@@ -2660,12 +2670,19 @@ Total: $${props.totalAmount}`);
                 notes: document.getElementById('fin-a-notes').value
             };
             try {
-                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/annual-config`, {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/annual-config`, {
                     method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
                 });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.message || 'Save failed');
                 closeAnnualConfigModal();
+                // Reload both year detail and summary so the new values appear everywhere
+                finState.summaryData = null;
                 await loadFinYear(finState.year);
-            } catch(e) { console.error('saveAnnualConfig error:', e); }
+            } catch(e) {
+                console.error('saveAnnualConfig error:', e);
+                alert('Failed to save Mortgage & T&I: ' + e.message);
+            }
         }
 
         // Expense item modal
