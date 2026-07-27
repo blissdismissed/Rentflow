@@ -434,8 +434,10 @@ const parseCaribbeaStatement = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' })
 
-    const pdfParse = require('pdf-parse')
-    const data = await pdfParse(req.file.buffer)
+    const { PDFParse } = require('pdf-parse')
+    const parser = new PDFParse({ data: req.file.buffer })
+    const data = await parser.getText()
+    await parser.destroy()
     const text = data.text
 
     // Date range → month + year
