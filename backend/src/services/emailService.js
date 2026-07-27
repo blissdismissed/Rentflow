@@ -27,9 +27,9 @@ async function sendEmail(msg) {
   if (error) throw Object.assign(new Error(error.message), { response: { body: error } });
 }
 
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || process.env.FROM_EMAIL || 'noreply@aspiretowards.com';
-const FROM_NAME = process.env.SENDGRID_FROM_NAME || 'AspireTowards';
-const REPLY_TO_EMAIL = process.env.SENDGRID_REPLY_TO || process.env.SENDGRID_FROM_EMAIL || 'aspiretowards@gmail.com';
+const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@aspiretowards.com';
+const FROM_NAME = process.env.EMAIL_FROM_NAME || 'AspireTowards';
+const REPLY_TO_EMAIL = process.env.EMAIL_REPLY_TO || FROM_EMAIL;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8000';
 
 console.log('📧 Email Service Configuration:');

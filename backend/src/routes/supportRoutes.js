@@ -5,8 +5,8 @@ const { authenticate } = require('../middleware/auth')
 const { Resend } = require('resend')
 
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'aspiretowards@gmail.com'
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'noreply@aspiretowards.com'
-const FROM_NAME = process.env.SENDGRID_FROM_NAME || 'AspireTowards'
+const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@aspiretowards.com'
+const FROM_NAME = process.env.EMAIL_FROM_NAME || 'AspireTowards'
 
 router.post('/contact', authenticate, async (req, res) => {
   try {

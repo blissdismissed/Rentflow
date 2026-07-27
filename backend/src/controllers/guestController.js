@@ -491,7 +491,7 @@ class GuestController {
       const r = new Resend(process.env.RESEND_API_KEY)
 
       const senderName = fromName || 'Rentflow'
-      const fromEmail = process.env.FROM_EMAIL || process.env.SENDGRID_FROM_EMAIL
+      const fromEmail = process.env.EMAIL_FROM
 
       let sent = 0
       const errors = []

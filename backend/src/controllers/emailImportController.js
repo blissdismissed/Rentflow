@@ -4,7 +4,7 @@ const Property = require('../models/Property')
 const FinancialExpenseItem = require('../models/FinancialExpenseItem')
 const { parseBromleyText } = require('./financialController')
 
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'booking@aspiretowards.com'
+const FROM_EMAIL = process.env.EMAIL_FROM || 'booking@aspiretowards.com'
 
 const MONTH_NAMES = ['January','February','March','April','May','June',
   'July','August','September','October','November','December']
@@ -115,7 +115,7 @@ async function sendResultEmail(toEmail, results) {
 }
 
 async function forwardVerificationEmail(body, html, subject, from) {
-  const adminEmail = process.env.ADMIN_EMAIL || process.env.SENDGRID_FROM_EMAIL
+  const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_FROM
   if (!adminEmail || !process.env.RESEND_API_KEY) return
   try {
     const r = new Resend(process.env.RESEND_API_KEY)
