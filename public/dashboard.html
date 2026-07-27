@@ -2341,17 +2341,26 @@ Total: $${props.totalAmount}`);
         }
         async function executeDeleteYearFromDetail() {
             const pid = finState.propertyId;
-            const year = finState.year;
+            const deletedYear = finState.year;
             try {
-                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${pid}/year/${year}`, {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${pid}/year/${deletedYear}`, {
                     method: 'DELETE', headers: authHeaders()
                 });
                 const body = await res.json();
                 if (!res.ok) throw new Error(body.error || body.message || 'Delete failed');
                 cancelDeleteYearFromDetail();
-                // Reload the year view (months will be empty) and refresh summary cache
                 finState.summaryData = null;
-                await loadFinYear(year);
+                await loadFinSummary();
+                // Build the new year list (same logic as initFinYear)
+                const years = finState.summaryData?.years?.map(y => y.year) || [];
+                const currentYear = new Date().getFullYear();
+                if (!years.includes(currentYear)) years.push(currentYear);
+                years.sort((a, b) => b - a);
+                // Navigate to the most recent remaining year (skip the deleted one)
+                const nextYear = years.find(y => y !== deletedYear) || years[0];
+                const sel = document.getElementById('fin-year-select');
+                sel.innerHTML = years.map(y => `<option value="${y}" ${y === nextYear ? 'selected' : ''}>${y}</option>`).join('');
+                await loadFinYear(nextYear);
             } catch (e) {
                 alert('Delete failed: ' + e.message);
             }
