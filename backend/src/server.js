@@ -23,6 +23,7 @@ const lockPinRoutes = require('./routes/lockPinRoutes')
 const propertySettingsRoutes = require('./routes/propertySettingsRoutes')
 const emailTemplateRoutes = require('./routes/emailTemplateRoutes')
 const reviewRoutes = require('./routes/reviewRoutes')
+const supportRoutes = require('./routes/supportRoutes')
 const emailScheduler = require('./jobs/emailScheduler')
 
 const app = express()
@@ -112,6 +113,9 @@ app.use('/api/properties', emailTemplateRoutes)
 
 // Review routes
 app.use('/api', reviewRoutes)
+
+// Support routes
+app.use('/api/support', supportRoutes)
 
 // Public routes (no authentication required)
 app.use('/api/public', publicRoutes)
