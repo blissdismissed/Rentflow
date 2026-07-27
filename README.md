@@ -206,7 +206,7 @@ ssh -i your-key.pem ec2-user@<ec2-public-ip>
 
 ```bash
 # On EC2 — pull latest code
-cd /path/to/app
+cd /var/www/aspiretowards/Rentflow
 git pull origin master
 
 # Install any new dependencies
