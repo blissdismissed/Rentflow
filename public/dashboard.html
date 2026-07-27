@@ -837,7 +837,7 @@
                             <input type="number" step="0.01" id="fin-m-hoa" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Actual Mortgage Paid</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Actual Mortgage Paid This Month</label>
                             <input type="number" step="0.01" id="fin-m-mortgage" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
                         </div>
                     </div>
@@ -2460,7 +2460,7 @@ Total: $${props.totalAmount}`);
             const expCols = itemized
                 ? ['Cleaning', 'Utilities', 'Maint.', 'Other']
                 : ['Platform Charges'];
-            const restCols = ['Net Income', '%', 'Nights', 'Res.', 'Avg Stay', 'Occ.', 'HOA', 'Actual Paid', ''];
+            const restCols = ['Net Income', '%', 'Nights', 'Res.', 'Avg Stay', 'Occ.', 'HOA', 'Mortgage Paid', ''];
             const allCols = [...baseCols, ...expCols, ...restCols];
             header.innerHTML = allCols.map(c => `<th class="px-3 py-3 text-${c ? (c === 'Month' ? 'left' : 'right') : 'right'} font-semibold text-gray-700 whitespace-nowrap text-sm">${c}</th>`).join('');
 
@@ -2485,8 +2485,8 @@ Total: $${props.totalAmount}`);
                     <td class="px-3 py-2 text-right">${m.numReservations || 0}</td>
                     <td class="px-3 py-2 text-right">${m.avgLengthOfStay ? m.avgLengthOfStay.toFixed(2) : '—'}</td>
                     <td class="px-3 py-2 text-right">${(m.occupancyRatio * 100).toFixed(0)}%</td>
-                    <td class="px-3 py-2 text-right">${finFmt(m.hoaPayment)}</td>
-                    <td class="px-3 py-2 text-right">${finFmt(m.actualMortgagePaid)}</td>
+                    <td class="px-3 py-2 text-right cursor-pointer hover:bg-teal-50 group" title="Click to edit HOA" onclick="inlineEditCell(this, ${m.month}, '${m.id || ''}', 'hoaPayment', ${m.hoaPayment || 0})">${finFmt(m.hoaPayment)}<span class="ml-1 text-gray-300 group-hover:text-teal-400 text-xs hidden group-hover:inline">✎</span></td>
+                    <td class="px-3 py-2 text-right cursor-pointer hover:bg-teal-50 group" title="Click to edit Actual Mortgage Paid" onclick="inlineEditCell(this, ${m.month}, '${m.id || ''}', 'actualMortgagePaid', ${m.actualMortgagePaid || 0})">${finFmt(m.actualMortgagePaid)}<span class="ml-1 text-gray-300 group-hover:text-teal-400 text-xs hidden group-hover:inline">✎</span></td>
                     <td class="px-3 py-2 text-center flex items-center gap-2 justify-center">
                         <button onclick="openMonthModal(${m.month})" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
                         ${hasData ? `<button onclick="confirmDeleteMonthly(${m.month}, '${m.id}', '${m.monthName}')" class="text-gray-300 hover:text-red-400 transition" title="Delete ${m.monthName} data">
@@ -2650,6 +2650,36 @@ Total: $${props.totalAmount}`);
                 closeMonthModal();
                 await loadFinYear(finState.year);
             } catch(e) { console.error('saveMonth error:', e); }
+        }
+
+        // Inline editing for HOA and Actual Mortgage Paid columns
+        function inlineEditCell(td, month, monthId, field, currentValue) {
+            if (td.querySelector('input')) return; // already editing
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = '0.01';
+            input.value = currentValue || '';
+            input.className = 'w-24 px-1 py-0.5 border border-teal-400 rounded text-right text-sm focus:outline-none';
+            td.innerHTML = '';
+            td.appendChild(input);
+            input.focus();
+            input.select();
+
+            const save = async () => {
+                const val = parseFloat(input.value) || 0;
+                try {
+                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                        method: 'POST', headers: authHeaders(),
+                        body: JSON.stringify({ year: finState.year, month, [field]: val })
+                    });
+                    await loadFinYear(finState.year);
+                } catch(e) { console.error('inlineEditCell save error:', e); }
+            };
+            input.addEventListener('blur', save);
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+                if (e.key === 'Escape') { loadFinYear(finState.year); }
+            });
         }
 
         // Annual config modal
