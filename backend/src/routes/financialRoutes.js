@@ -18,6 +18,7 @@ const {
   deleteExpenseItem,
   toggleVisibility,
   parseCaribbeaStatement,
+  parseBromleyPdf,
   importBookingTransactions,
 } = require('../controllers/financialController')
 
@@ -28,6 +29,7 @@ router.use(authenticate)
 
 router.get('/properties', getFinancialProperties)
 router.post('/parse-caribbean-statement', upload.single('file'), parseCaribbeaStatement)
+router.post('/parse-bromley-pdf', upload.single('file'), parseBromleyPdf)
 router.get('/:propertyId/summary', getPropertySummary)
 router.get('/:propertyId/year/:year', getYearDetail)
 router.post('/:propertyId/monthly', upsertMonthly)

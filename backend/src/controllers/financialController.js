@@ -613,6 +613,154 @@ const parseCaribbeaStatement = async (req, res) => {
   }
 }
 
+// POST /api/financials/parse-bromley-pdf — parse a Bromley Mountain invoice or statement PDF
+const MONTH_ABBR = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 }
+
+function tagBromleyItem(code, desc) {
+  const s = (code + ' ' + desc).toLowerCase()
+  if (/wtr|water|swr|sewer|electric|util/.test(s)) return 'utilities'
+  if (/hoa|assoc|condomin/.test(s)) return 'hoa'
+  if (/housekeep|bhl|linen|bed|towel|bathmat|pillowcase|facecloth|barsoap|toilet|tissue|paper|clean/.test(s)) return 'housekeeping'
+  return 'maintenance'
+}
+
+function tagBromleyStatement(reference) {
+  const s = reference.toLowerCase()
+  if (/water|sewer|electric|util/.test(s)) return 'utilities'
+  if (/hoa|assoc/.test(s)) return 'hoa'
+  if (/s\/c\/m|clean|housekeep/.test(s)) return 'housekeeping'
+  return 'maintenance'
+}
+
+const parseBromleyPdf = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' })
+
+    const { PDFParse } = require('pdf-parse')
+    const parser = new PDFParse({ data: req.file.buffer })
+    const d = await parser.getText()
+    await parser.destroy()
+    const text = d.text
+
+    // Detect type: statements have "STATEMENT" prominently, invoices have "Invoice"
+    const isStatement = /^\s*STATEMENT/m.test(text)
+
+    if (isStatement) {
+      // ── Statement parser ──────────────────────────────────────────
+      const dateMatch = text.match(/DATE:\s*(\d{1,2}\/\d{1,2}\/(\d{4}))/)
+      const date = dateMatch ? dateMatch[1] : null
+      const year = dateMatch ? parseInt(dateMatch[2]) : null
+
+      const totalMatch = text.match(/Total:\s+([\d,]+\.\d{2})/)
+      const total = totalMatch ? parseFloat(totalMatch[1].replace(/,/g, '')) : null
+
+      // Each invoice row: DOCNUM  DATE  IN  REFERENCE  DUEDATE  AMOUNT
+      const lines = []
+      const rowRe = /(\S+)\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+IN\s+(.+?)\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+([\d,]+\.\d{2})/g
+      let m
+      while ((m = rowRe.exec(text)) !== null) {
+        const reference = m[3].trim()
+        lines.push({
+          documentNumber: m[1],
+          date: m[2],
+          reference,
+          dueDate: m[4],
+          amount: parseFloat(m[5].replace(/,/g, '')),
+          tag: tagBromleyStatement(reference)
+        })
+      }
+
+      return res.json({ success: true, docType: 'statement', date, year, total, lines })
+    }
+
+    // ── Invoice parser ────────────────────────────────────────────────
+    // First "Date:" in the document (may be a multi-invoice bundle PDF)
+    const dateMatch = text.match(/Date:\s*(\d{1,2}\/\d{1,2}\/(\d{4}))/)
+    const date = dateMatch ? dateMatch[1] : null
+
+    // Collect all invoice numbers (may be multiple in a bundle)
+    const invoiceNumbers = [...text.matchAll(/^Invoice:\s*([\w\/-]+)/gm)].map(n => n[1])
+    const invoiceNumber = invoiceNumbers[0] || null
+
+    // Service period: "Service period Jul-Sep2026" or similar (quarterly billing)
+    let startMonth = null, endMonth = null, year = null
+    const periodMatch = text.match(/[Ss]ervice period\s+([A-Za-z]{3})-([A-Za-z]{3,9})(\d{2,4})/)
+    if (periodMatch) {
+      startMonth = MONTH_ABBR[periodMatch[1].toLowerCase()] || null
+      endMonth   = MONTH_ABBR[periodMatch[2].slice(0,3).toLowerCase()] || null
+      year = parseInt(periodMatch[3])
+      if (year < 100) year += 2000
+    }
+    if (!year && dateMatch) year = parseInt(dateMatch[2])
+    // Derive month from invoice date when no service period line is present
+    if (!startMonth && date) {
+      startMonth = endMonth = parseInt(date.split('/')[0])
+    }
+
+    // Sum all "Amount due" values — handles multi-invoice bundle PDFs
+    const amountDueMatches = [...text.matchAll(/Amount due\s+([\d,]+\.\d{2})/g)]
+    let total = null
+    if (amountDueMatches.length > 0) {
+      total = parseFloat(amountDueMatches.reduce((s, m) => s + parseFloat(m[1].replace(/,/g, '')), 0).toFixed(2))
+    } else {
+      const tm = text.match(/Total amount\s+([\d,]+\.\d{2})/)
+      if (tm) total = parseFloat(tm[1].replace(/,/g, ''))
+    }
+
+    // Line items: step 1 — anchor from right to extract qty + amount
+    // Handles variable quantities (2.75 EA, 4.00 EA), hyphens/underscores in codes,
+    // and codes concatenated directly with description (e.g. QUEEN-BRLQueen Bed)
+    const lineItems = []
+    const lineRe = /^(.+?)\s+([\d]+\.[\d]+)\s+EA\s+[\d]+\.[\d]+\s+([\d]+\.[\d]+)\s*$/gm
+    let im
+    while ((im = lineRe.exec(text)) !== null) {
+      const full = im[1].trim()
+      const qty = parseFloat(im[2])
+      const amount = parseFloat(im[3])
+      if (amount <= 0) continue
+
+      let code, desc
+
+      // Step 2a: if there's a space after an all-caps code, split there
+      const spaceIdx = full.search(/\s/)
+      if (spaceIdx > 0) {
+        const prefix = full.slice(0, spaceIdx)
+        if (/^[A-Z][A-Z0-9_-]*$/.test(prefix)) {
+          code = prefix
+          desc = full.slice(spaceIdx + 1)
+        }
+      }
+
+      // Step 2b: no space (or prefix had lowercase) — find code/description boundary
+      // Description always starts with an UpperLower pattern (natural language word)
+      if (!code) {
+        const split = full.match(/^([A-Z][A-Z0-9_-]*?)([A-Z][a-z].+)$/)
+        if (split) { code = split[1]; desc = split[2] }
+      }
+
+      if (code && desc) {
+        lineItems.push({ code, description: desc.trim(), qty, amount, tag: tagBromleyItem(code, desc) })
+      }
+    }
+
+    return res.json({
+      success: true,
+      docType: 'invoice',
+      date,
+      invoiceNumber,
+      invoiceNumbers,
+      year,
+      startMonth,
+      endMonth,
+      total,
+      lineItems
+    })
+  } catch (err) {
+    console.error('parseBromleyPdf error:', err)
+    res.status(500).json({ success: false, message: 'Failed to parse PDF: ' + err.message })
+  }
+}
+
 // POST /api/financials/:propertyId/year-summary — upsert annual summary (no monthly detail)
 const upsertYearSummary = async (req, res) => {
   try {
@@ -740,5 +888,6 @@ module.exports = {
   deleteExpenseItem,
   toggleVisibility,
   parseCaribbeaStatement,
+  parseBromleyPdf,
   importBookingTransactions,
 }
