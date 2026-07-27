@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Primary SEO Meta Tags -->
+    <title>Vermont Vacation Rental - Bromley Mountain Ski Condo | Book Direct & Save</title>
+    <meta name="title" content="Vermont Vacation Rental - Bromley Mountain Ski Condo | Book Direct & Save">
+    <meta name="description" content="Book our Bromley Village ski condo directly. Perfect for winter skiing, fall foliage, and summer hiking on the Appalachian Trail. Save 15% + 10% crypto discount. No booking fees!">
+    <meta name="keywords" content="Bromley Mountain rental, Vermont ski condo, Appalachian trail lodging, fall foliage Vermont, direct booking Vermont, crypto vacation rental, winter ski rental, Vermont hiking">
+    <link rel="canonical" href="https://aspiretowards.com/property">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="product">
+    <meta property="og:url" content="https://aspiretowards.com/property">
+    <meta property="og:title" content="Vermont Vacation Rental - Bromley Mountain Ski Condo">
+    <meta property="og:description" content="Book our Bromley Village ski condo directly. Perfect for winter skiing, fall foliage, and summer hiking. Save 15% + 10% crypto discount.">
+    <meta property="og:image" content="https://aspiretowards.com/images/property-og.jpg">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Vermont Vacation Rental - Bromley Mountain Ski Condo">
+    <meta name="twitter:description" content="Book directly and save 15% + 10% crypto discount. Perfect for skiing, fall foliage, and hiking.">
+    <meta name="twitter:image" content="https://aspiretowards.com/images/property-twitter.jpg">
+
+    <!-- Additional SEO -->
+    <meta name="robots" content="index, follow">
+    <meta name="geo.region" content="US-VT">
+    <meta name="geo.placename" content="Bromley Village, Vermont">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/resources/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/resources/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/resources/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/resources/apple-touch-icon.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Web3 / Ethers.js - Using unpkg for better reliability -->
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"
+            onerror="console.error('Failed to load ethers.js from unpkg, trying jsdelivr...'); this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js'"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+        .gallery-main { height: 400px; border-radius: 16px 16px 0 0; overflow: hidden; }
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; height: 400px; }
+        .gallery-item { overflow: hidden; cursor: pointer; transition: all 0.3s; }
+        .gallery-item:hover { opacity: 0.9; transform: scale(1.02); }
+        .gallery-item:last-child { border-radius: 0 16px 16px 0; }
+        .sticky-booking { position: sticky; top: 100px; }
+        .amenity-icon { width: 24px; height: 24px; }
+
+        /* Mobile menu styles */
+        .mobile-menu { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        .mobile-menu.active { transform: translateX(0); }
+
+        /* Responsive gallery */
+        @media (max-width: 1023px) {
+            .gallery-main { height: 300px; border-radius: 16px; }
+            .gallery-grid { display: none !important; }
+        }
+
+        /* Prevent hover effects on touch devices */
+        @media (hover: none) {
+            .gallery-item:hover { opacity: 1; transform: none; }
+        }
+
+        /* Improved mobile spacing */
+        @media (max-width: 640px) {
+            .sticky-booking { position: relative; top: 0; }
+            button, a.btn, input[type="submit"] { min-height: 44px; }
+        }
+
+        /* Seasonal Theme Styles */
+        .seasonal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .seasonal-overlay.active {
+            opacity: 1;
+        }
+
+        /* Winter Theme */
+        .theme-winter {
+            background: linear-gradient(to bottom, #e0f2fe 0%, #dbeafe 50%, #e0f2fe 100%);
+            transition: background 0.8s ease;
+        }
+
+        .theme-winter .booking-card {
+            background: linear-gradient(135deg, rgba(219, 234, 254, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.15);
+        }
+
+        .theme-winter .primary-btn {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        }
+
+        .theme-winter nav {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-winter h1, .theme-winter h2 {
+            color: #1e40af !important;
+        }
+
+        .theme-winter .primary-btn:hover {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        }
+
+        .theme-winter .price-highlight {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        /* Autumn Theme */
+        .theme-autumn {
+            background: linear-gradient(to bottom, #fef3c7 0%, #fed7aa 50%, #fef3c7 100%);
+            transition: background 0.8s ease;
+        }
+
+        .theme-autumn .booking-card {
+            background: linear-gradient(135deg, rgba(254, 243, 199, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
+            border: 2px solid rgba(251, 146, 60, 0.4);
+            box-shadow: 0 10px 40px rgba(251, 146, 60, 0.15);
+        }
+
+        .theme-autumn .primary-btn {
+            background: linear-gradient(135deg, #92400e 0%, #d97706 100%);
+        }
+
+        .theme-autumn nav {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 2px solid rgba(251, 146, 60, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-autumn h1, .theme-autumn h2 {
+            color: #92400e !important;
+        }
+
+        .theme-autumn .primary-btn:hover {
+            background: linear-gradient(135deg, #78350f 0%, #b45309 100%);
+        }
+
+        .theme-autumn .price-highlight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        /* Summer Theme */
+        .theme-summer {
+            background: linear-gradient(to bottom, #dcfce7 0%, #bbf7d0 50%, #dcfce7 100%);
+            transition: background 0.8s ease;
+        }
+
+        .theme-summer .booking-card {
+            background: linear-gradient(135deg, rgba(220, 252, 231, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
+            border: 2px solid rgba(34, 197, 94, 0.4);
+            box-shadow: 0 10px 40px rgba(34, 197, 94, 0.15);
+        }
+
+        .theme-summer .primary-btn {
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+        }
+
+        .theme-summer nav {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 2px solid rgba(34, 197, 94, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-summer h1, .theme-summer h2 {
+            color: #15803d !important;
+        }
+
+        .theme-summer .primary-btn:hover {
+            background: linear-gradient(135deg, #166534 0%, #16a34a 100%);
+        }
+
+        .theme-summer .price-highlight {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #15803d;
+        }
+
+        /* Smooth transitions for theme changes */
+        .booking-card, .primary-btn, .price-highlight {
+            transition: all 0.8s ease-in-out;
+        }
+
+        /* Seasonal background patterns */
+        .season-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            pointer-events: none;
+        }
+
+        .season-bg.active {
+            opacity: 0.05;
+        }
+
+        /* Web3 Theme Styles */
+        .web3-gradient {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #3b82f6 100%);
+        }
+
+        .web3-glow {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(236, 72, 153, 0.2);
+        }
+
+        .theme-web3 .booking-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(17, 24, 39, 0.95) 100%);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            position: relative;
+            overflow: visible;
+        }
+
+        .theme-web3 .booking-card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 1rem;
+            padding: 2px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899, #3b82f6);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+            animation: border-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes border-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .theme-web3 .primary-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .theme-web3 .primary-btn:hover {
+            background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        .theme-web3 .price-highlight {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #e9d5ff;
+        }
+
+        /* Web3 Wallet Modal */
+        .wallet-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wallet-modal.active {
+            display: flex;
+        }
+
+        .wallet-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .wallet-option:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Crypto particle animation */
+        .crypto-particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            border-radius: 50%;
+            animation: float-particle 4s ease-in-out infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes float-particle {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(10px, -10px); }
+            50% { transform: translate(-5px, -20px); }
+            75% { transform: translate(-10px, -10px); }
+        }
+
+        /* Wallet connected badge */
+        .wallet-badge {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(139, 92, 246, 0.7); }
+        }
+
+        .web3-text {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        /* Web3 Discount Notification */
+        .discount-notification {
+            position: fixed;
+            top: 100px;
+            right: -400px;
+            width: 350px;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 2px solid rgba(139, 92, 246, 0.6);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.4);
+            z-index: 1000;
+            transition: right 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .discount-notification.show {
+            right: 20px;
+        }
+
+        .discount-notification::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 1rem;
+            padding: 2px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899, #3b82f6);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.8;
+            animation: border-pulse 3s ease-in-out infinite;
+        }
+
+        .confetti-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            border-radius: 50%;
+            animation: confetti-fall 3s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(400px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .discount-notification {
+                width: calc(100% - 40px);
+                right: -100%;
+                left: auto;
+            }
+            .discount-notification.show {
+                right: 20px;
+            }
+        }
+
+        /* Flatpickr Disabled Dates Styling */
+        .flatpickr-day.flatpickr-disabled,
+        .flatpickr-day.flatpickr-disabled:hover {
+            color: #991b1b !important;
+            background: #fee2e2 !important;
+            border-color: #fecaca !important;
+            cursor: not-allowed !important;
+            position: relative;
+            opacity: 0.8 !important;
+        }
+
+        /* Add subtle X mark over disabled dates */
+        .flatpickr-day.flatpickr-disabled::after {
+            content: '✕';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #dc2626;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Mobile-specific calendar styling */
+        @media (max-width: 640px) {
+            .flatpickr-calendar {
+                font-size: 16px !important;
+                width: 100% !important;
+                max-width: 340px !important;
+            }
+
+            .flatpickr-day {
+                height: 42px !important;
+                line-height: 42px !important;
+                max-width: 42px !important;
+            }
+
+            .flatpickr-day.flatpickr-disabled::after {
+                font-size: 22px !important;
+                font-weight: 900 !important;
+            }
+
+            .flatpickr-months {
+                padding-top: 12px !important;
+            }
+        }
+
+        /* Calendar legend that appears below the flatpickr calendar */
+        .flatpickr-calendar-legend {
+            margin-top: 8px;
+            padding: 10px 12px;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .flatpickr-calendar-legend svg {
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+            color: #dc2626;
+        }
+
+        /* Mobile legend */
+        @media (max-width: 640px) {
+            .flatpickr-calendar-legend {
+                font-size: 11px;
+                padding: 8px 10px;
+            }
+        }
+
+        /* Green styling for selected check-in date in checkout calendar */
+        .flatpickr-day.selected-checkin {
+            background: #10b981 !important;
+            color: white !important;
+            border-color: #059669 !important;
+            font-weight: 600 !important;
+        }
+
+        .flatpickr-day.selected-checkin:hover {
+            background: #059669 !important;
+        }
+
+        /* Hide red X on check-in date in checkout calendar */
+        .flatpickr-day.selected-checkin::after {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="index.html" class="flex items-center space-x-3">
+                    <span class="text-2xl sm:text-3xl font-display font-bold text-gray-900 leading-none mt-0.5">AspireTowards</span>
+                </a>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
+                    <a href="properties.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Properties</a>
+                    <a href="index.html#why-direct" class="text-gray-600 hover:text-teal-600 font-medium transition">Why Book Direct</a>
+                    <a href="index.html#contact" class="text-gray-600 hover:text-teal-600 font-medium transition">Contact</a>
+                    <button id="wallet-connect-btn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
+                            <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span id="wallet-btn-text">Connect Wallet</span>
+                    </button>
+                </div>
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu fixed inset-y-0 right-0 w-64 bg-white shadow-2xl z-50 md:hidden">
+        <div class="flex flex-col h-full">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 class="text-lg font-display font-bold text-gray-900">Menu</h2>
+                <button id="mobile-menu-close" class="p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <nav class="flex-1 overflow-y-auto p-4">
+                <a href="index.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Home</a>
+                <a href="properties.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Properties</a>
+                <a href="index.html#why-direct" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Why Book Direct</a>
+                <a href="index.html#contact" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Contact</a>
+                <a href="/auth/login.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Host Login</a>
+                <button id="wallet-connect-mobile" class="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
+                        <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>Connect Wallet</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
+
+    <!-- Web3 Discount Notification -->
+    <div id="discount-notification" class="discount-notification">
+        <div class="relative z-10">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg">Discount Unlocked!</h3>
+                </div>
+                <button onclick="closeDiscountNotification()" class="text-gray-400 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="mb-4">
+                <div class="text-5xl font-bold mb-2">
+                    <span class="web3-text">10% OFF</span>
+                </div>
+                <p class="text-gray-300 text-sm leading-relaxed">
+                    🎉 You've unlocked an exclusive <strong class="text-purple-400">10% discount</strong> by connecting your Web3 wallet!
+                </p>
+            </div>
+
+            <div class="bg-gray-800/50 rounded-lg p-3 mb-3">
+                <div class="flex items-center gap-2 mb-1">
+                    <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-green-400 text-xs font-semibold">Active Now</span>
+                </div>
+                <p class="text-gray-400 text-xs">Pay with BTC or ETH to apply discount at checkout</p>
+            </div>
+
+            <div class="flex gap-2">
+                <div class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-2 rounded-lg text-sm font-semibold">
+                    ₿ Bitcoin
+                </div>
+                <div class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center py-2 rounded-lg text-sm font-semibold">
+                    Ξ Ethereum
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Web3 Wallet Connect Modal -->
+    <div id="wallet-modal" class="wallet-modal">
+        <div class="bg-gray-900 rounded-2xl p-8 max-w-md w-full mx-4 relative" style="border: 2px solid rgba(139, 92, 246, 0.5);">
+            <button id="wallet-modal-close" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <h2 class="text-2xl font-bold text-white mb-2">Connect Your Wallet</h2>
+            <p class="text-gray-400 mb-6 text-sm">Choose your preferred wallet to unlock Web3 payments</p>
+
+            <div class="space-y-3">
+                <!-- MetaMask -->
+                <div class="wallet-option bg-gray-800 p-4 rounded-xl border border-gray-700 flex items-center justify-between" onclick="connectWallet('metamask')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22.05 10.43l-3.75-3.75-1.5 1.5 3.75 3.75-3.75 3.75 1.5 1.5 3.75-3.75a1.5 1.5 0 000-2.12z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">MetaMask</h3>
+                            <p class="text-gray-400 text-xs">Most popular wallet</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+
+                <!-- WalletConnect -->
+                <div class="wallet-option bg-gray-800 p-4 rounded-xl border border-gray-700 flex items-center justify-between" onclick="connectWallet('walletconnect')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">WalletConnect</h3>
+                            <p class="text-gray-400 text-xs">Scan with mobile</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+
+                <!-- Coinbase Wallet -->
+                <div class="wallet-option bg-gray-800 p-4 rounded-xl border border-gray-700 flex items-center justify-between" onclick="connectWallet('coinbase')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">Coinbase Wallet</h3>
+                            <p class="text-gray-400 text-xs">Secure & easy</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <p class="text-gray-500 text-xs">By connecting, you agree to our Terms of Service</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="flex justify-center items-center min-h-screen">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-teal-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Loading property details...</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="property-content" class="hidden">
+        <!-- Owner Preview Banner -->
+        <div id="owner-preview-banner" class="hidden bg-teal-700 text-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
+                <span class="text-sm font-medium">Owner preview — this is how guests see your property</span>
+                <div class="flex items-center space-x-3">
+                    <a id="owner-edit-link" href="#" class="text-sm bg-white text-teal-700 font-medium px-3 py-1 rounded hover:bg-teal-50 transition">Edit Property</a>
+                    <a href="/dashboard.html" class="text-sm underline hover:no-underline">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <a id="back-link" href="properties.html" class="text-teal-600 hover:text-teal-700 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                <span id="back-link-text">Back to Properties</span>
+            </a>
+        </div>
+
+        <!-- Property Header -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+            <h1 id="property-title" class="text-4xl font-display font-bold text-gray-900 mb-2"></h1>
+            <div class="flex items-center text-gray-600">
+                <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                </svg>
+                <span id="property-location"></span>
+            </div>
+        </div>
+
+        <!-- Photo Gallery -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-1">
+                <div id="main-image" class="gallery-main cursor-pointer lg:rounded-l-2xl lg:rounded-tr-none" onclick="openLightbox(0)"></div>
+                <div id="gallery-grid" class="gallery-grid hidden lg:grid lg:rounded-r-2xl"></div>
+            </div>
+        </div>
+
+        <!-- Image Lightbox Modal -->
+        <div id="lightbox" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden flex items-center justify-center">
+            <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white text-4xl font-light hover:text-gray-300 z-10">
+                &times;
+            </button>
+
+            <!-- Previous/Next buttons -->
+            <button onclick="changeLightboxImage(-1)" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-5xl font-light hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center">
+                ‹
+            </button>
+            <button onclick="changeLightboxImage(1)" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white text-5xl font-light hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center">
+                ›
+            </button>
+
+            <!-- Image container -->
+            <div class="max-w-7xl max-h-screen p-8 w-full h-full flex flex-col items-center justify-center">
+                <img id="lightbox-image" src="" alt="Property image" class="max-w-full max-h-full object-contain">
+                <p id="lightbox-caption" class="text-white text-center mt-4 text-lg"></p>
+            </div>
+        </div>
+
+        <!-- Property Details & Booking -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+            <!-- Mobile Booking Card (Shown at top on mobile only) -->
+            <div class="lg:hidden mb-6">
+                <div class="bg-white rounded-xl shadow-lg p-4">
+                    <div class="mb-4">
+                        <div class="flex items-baseline">
+                            <span class="text-2xl font-bold text-gray-900">$<span id="mobile-booking-price">0</span></span>
+                            <span class="text-gray-600 ml-2">/ night</span>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Booking Form -->
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Check-in</label>
+                            <input type="text" id="mobile-check-in" placeholder="Select date" readonly
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Check-out</label>
+                            <input type="text" id="mobile-check-out" placeholder="Select date" readonly
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Guests</label>
+                            <select id="mobile-num-guests" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
+                                <!-- Options populated dynamically -->
+                            </select>
+                        </div>
+
+                        <!-- Mobile Price Breakdown -->
+                        <div id="mobile-price-breakdown" class="hidden border-t border-gray-200 pt-3 space-y-2">
+                            <div class="flex justify-between text-sm text-gray-700">
+                                <span>$<span id="mobile-breakdown-price">0</span> × <span id="mobile-breakdown-nights">0</span> nights</span>
+                                <span>$<span id="mobile-breakdown-base">0</span></span>
+                            </div>
+                            <div id="mobile-breakdown-cleaning-row" class="flex justify-between text-sm text-gray-700 hidden">
+                                <span>Cleaning fee</span>
+                                <span>$<span id="mobile-breakdown-cleaning">0</span></span>
+                            </div>
+                            <div class="flex justify-between font-bold text-gray-900 border-t border-gray-200 pt-2">
+                                <span>Total</span>
+                                <span>$<span id="mobile-total-price">0</span></span>
+                            </div>
+                        </div>
+
+                        <button type="button" id="mobile-book-now" class="w-full bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition text-sm">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column - Details -->
+                <div class="lg:col-span-2">
+                    <!-- Quick Info -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
+                        <div class="flex flex-wrap items-center gap-4 sm:gap-8 text-gray-700">
+                            <div class="flex items-center">
+                                <svg class="w-6 h-6 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                                <span id="property-bedrooms"></span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-6 h-6 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                                </svg>
+                                <span id="property-bathrooms"></span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-6 h-6 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <span id="property-guests"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4">About This Property</h2>
+                        <p id="property-description" class="text-gray-700 leading-relaxed whitespace-pre-line"></p>
+                    </div>
+
+                    <!-- Amenities -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4">Amenities</h2>
+                        <div id="amenities-list" class="grid grid-cols-2 gap-4"></div>
+                    </div>
+
+                    <!-- House Rules -->
+                    <div id="house-rules-section" class="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6 hidden">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4">House Rules</h2>
+                        <div id="house-rules" class="text-gray-700 whitespace-pre-line"></div>
+                    </div>
+
+                    <!-- Cancellation Policy -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4">Cancellation Policy</h2>
+                        <p id="cancellation-policy" class="text-gray-700"></p>
+                    </div>
+                </div>
+
+                <!-- Right Column - Booking Card -->
+                <div class="lg:col-span-1">
+                    <div class="booking-card bg-white rounded-xl shadow-lg p-4 sm:p-6 sticky-booking relative overflow-hidden">
+                        <!-- Seasonal Background SVG Patterns -->
+                        <div id="winter-bg" class="season-bg">
+                            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <pattern id="snowflakes" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+                                        <path d="M50 20 L50 80 M20 50 L80 50 M30 30 L70 70 M70 30 L30 70" stroke="#3b82f6" stroke-width="2" fill="none"/>
+                                        <circle cx="50" cy="50" r="3" fill="#3b82f6"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#snowflakes)"/>
+                            </svg>
+                        </div>
+
+                        <div id="autumn-bg" class="season-bg">
+                            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <pattern id="leaves" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+                                        <path d="M40 10 Q30 20 40 40 Q50 20 40 10 M40 40 L40 50" stroke="#d97706" stroke-width="2" fill="none"/>
+                                        <path d="M20 30 Q15 35 20 45 Q25 35 20 30 M20 45 L20 52" stroke="#ea580c" stroke-width="1.5" fill="none"/>
+                                        <path d="M60 25 Q55 30 60 40 Q65 30 60 25 M60 40 L60 47" stroke="#f59e0b" stroke-width="1.5" fill="none"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#leaves)"/>
+                            </svg>
+                        </div>
+
+                        <div id="summer-bg" class="season-bg">
+                            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <pattern id="nature" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+                                        <path d="M30 60 Q30 40 40 40 Q40 50 45 50 Q45 40 50 40 Q60 40 60 60" stroke="#22c55e" stroke-width="2" fill="none"/>
+                                        <circle cx="70" cy="30" r="8" stroke="#fbbf24" stroke-width="2" fill="none"/>
+                                        <path d="M20 70 Q25 65 30 70" stroke="#16a34a" stroke-width="2" fill="none"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#nature)"/>
+                            </svg>
+                        </div>
+                        <div class="mb-6 relative z-10">
+                            <!-- Web3 Wallet Badge -->
+                            <div id="wallet-connected-badge" class="wallet-badge mb-3" style="display: none;">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
+                                    <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span id="wallet-address-display">0x1234...5678</span>
+                            </div>
+
+                            <div id="seasonal-message" class="text-sm font-medium mb-3 p-2 rounded-lg text-center" style="display: none;"></div>
+                            <div class="flex items-baseline">
+                                <span class="text-3xl font-bold text-gray-900">$<span id="booking-price">0</span></span>
+                                <span class="text-gray-600 ml-2">/ night</span>
+                            </div>
+                            <p id="cleaning-fee-display" class="text-sm text-gray-500 mt-1 hidden"></p>
+
+                            <!-- Crypto Price Display -->
+                            <div id="crypto-price-display" class="mt-2 text-sm" style="display: none;">
+                                <span class="web3-text font-bold">≈ <span id="crypto-eth-price">0.00</span> ETH</span>
+                                <span class="text-gray-400 mx-2">|</span>
+                                <span class="web3-text font-bold">≈ <span id="crypto-btc-price">0.0000</span> BTC</span>
+                            </div>
+                        </div>
+
+                        <!-- Booking Form -->
+                        <form id="booking-form" class="space-y-4 relative z-10">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Check-in</label>
+                                <input type="text" id="check-in" placeholder="Select date" readonly
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Check-out</label>
+                                <input type="text" id="check-out" placeholder="Select date" readonly
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Guests</label>
+                                <select id="num-guests" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                    <!-- Options populated dynamically -->
+                                </select>
+                            </div>
+
+                            <!-- Price Breakdown -->
+                            <div id="price-breakdown" class="hidden border-t border-gray-200 pt-4 space-y-2 relative z-10">
+                                <div class="flex justify-between text-gray-700">
+                                    <span>$<span id="breakdown-price">0</span> × <span id="breakdown-nights">0</span> nights</span>
+                                    <span>$<span id="breakdown-base">0</span></span>
+                                </div>
+                                <div id="breakdown-cleaning-row" class="flex justify-between text-gray-700 hidden">
+                                    <span>Cleaning fee</span>
+                                    <span>$<span id="breakdown-cleaning">0</span></span>
+                                </div>
+                                <div class="flex justify-between font-bold text-lg text-gray-900 border-t border-gray-200 pt-2">
+                                    <span>Total</span>
+                                    <span>$<span id="breakdown-total">0</span></span>
+                                </div>
+                                <div class="price-highlight bg-teal-50 rounded-lg p-3 text-sm">
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-gray-700">Deposit (10% now):</span>
+                                        <span class="font-semibold text-teal-700">$<span id="breakdown-deposit">0</span></span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-700">Balance (at check-in):</span>
+                                        <span class="font-semibold text-gray-700">$<span id="breakdown-balance">0</span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="booking-button"
+                                    class="primary-btn w-full bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                                Check Availability
+                            </button>
+
+                            <!-- Web3 Payment Option -->
+                            <div id="web3-payment-option" class="mt-4 p-4 rounded-lg border-2 border-dashed relative z-10" style="display: none; border-color: rgba(139, 92, 246, 0.5); background: rgba(139, 92, 246, 0.05);">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="web3-text text-sm font-bold">Pay with Crypto</span>
+                                    <div class="flex gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">₿</div>
+                                        <div class="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-bold">Ξ</div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-3">BTC & ETH accepted • <strong class="text-purple-600">10% discount applied</strong></p>
+                                <button type="button" id="crypto-payment-btn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition">
+                                    Book with Crypto
+                                </button>
+                            </div>
+
+                            <p class="text-xs text-gray-500 text-center">
+                                You won't be charged yet. Card will be authorized but not charged until host approves.
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <h3 class="text-xl font-display font-bold text-white">AspireTowards</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Book directly and save. No platform fees, just great properties at better prices.
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        Book direct • Save 15% • Crypto payments accepted
+                    </p>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">For Guests</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/index.html" class="hover:text-white transition">Home</a></li>
+                        <li><a href="/properties.html" class="hover:text-white transition">Browse Properties</a></li>
+                        <li><a href="#" class="hover:text-white transition">How It Works</a></li>
+                        <li><a href="#" class="hover:text-white transition">FAQs</a></li>
+                    </ul>
+                </div>
+
+                <!-- Property Owners -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">For Property Owners</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/auth/login.html" id="footer-auth-link" class="hover:text-teal-400 transition">Host Login</a></li>
+                        <li><a href="/auth/signup.html" class="hover:text-white transition">List Your Property</a></li>
+                        <li><a href="#" class="hover:text-white transition">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white transition">Resources</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm text-gray-500">
+                    © 2025 AspireTowards. All rights reserved.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-sm hover:text-white transition">Privacy Policy</a>
+                    <a href="#" class="text-sm hover:text-white transition">Terms of Service</a>
+                    <a href="#" class="text-sm hover:text-white transition">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/config.js"></script>
+    <script>
+        const API_URL = `${window.CONFIG.API_BASE_URL}/api/public`
+        let currentProperty = null
+        let checkInPicker, checkOutPicker
+        let bookedDates = []
+        let currentSeason = null
+        let walletConnected = false
+        let userWalletAddress = null
+        let provider = null
+
+        // Seasonal theme configuration
+        const seasonalThemes = {
+            winter: {
+                name: 'Winter Wonderland',
+                message: '❄️ Perfect for skiing at Bromley Mountain!',
+                emoji: '⛷️',
+                gradient: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)'
+            },
+            autumn: {
+                name: 'Fall Foliage',
+                message: '🍂 Experience Vermont\'s stunning fall colors!',
+                emoji: '🍁',
+                gradient: 'linear-gradient(135deg, #92400e 0%, #d97706 100%)'
+            },
+            summer: {
+                name: 'Summer Adventure',
+                message: '🥾 Explore the Appalachian Trail & hiking!',
+                emoji: '🌲',
+                gradient: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)'
+            }
+        }
+
+        // Determine season based on check-in date
+        function getSeason(date) {
+            if (!date) return null
+
+            const month = date.getMonth() + 1 // 1-12
+
+            // Winter: December to April (12, 1, 2, 3, 4)
+            if (month === 12 || month >= 1 && month <= 4) {
+                return 'winter'
+            }
+            // Autumn: September to November (9, 10, 11)
+            else if (month >= 9 && month <= 11) {
+                return 'autumn'
+            }
+            // Summer: May to August (5, 6, 7, 8)
+            else {
+                return 'summer'
+            }
+        }
+
+        // Apply seasonal theme
+        function applySeasonalTheme(season) {
+            if (season === currentSeason) return
+
+            // Remove all theme classes
+            document.body.classList.remove('theme-winter', 'theme-autumn', 'theme-summer')
+
+            // Hide all season backgrounds
+            document.querySelectorAll('.season-bg').forEach(bg => bg.classList.remove('active'))
+
+            if (!season) {
+                currentSeason = null
+                document.getElementById('seasonal-message').style.display = 'none'
+                return
+            }
+
+            // Apply new theme
+            document.body.classList.add(`theme-${season}`)
+            currentSeason = season
+
+            // Show seasonal background
+            const bgElement = document.getElementById(`${season}-bg`)
+            if (bgElement) {
+                bgElement.classList.add('active')
+            }
+
+            // Update seasonal message
+            const theme = seasonalThemes[season]
+            const messageEl = document.getElementById('seasonal-message')
+            if (theme && messageEl) {
+                messageEl.textContent = theme.message
+                messageEl.style.display = 'block'
+                messageEl.className = `text-sm font-medium mb-3 p-2 rounded-lg text-center price-highlight`
+            }
+
+            console.log(`Applied ${season} theme`)
+        }
+
+        // Web3 Wallet Connection Functions
+        async function connectWallet(walletType) {
+            try {
+                console.log('🔗 Attempting to connect wallet:', walletType)
+
+                // Check if ethereum provider exists
+                if (typeof window.ethereum === 'undefined') {
+                    alert('Please install MetaMask or another Web3 wallet to use crypto payments!')
+                    window.open('https://metamask.io/download/', '_blank')
+                    return
+                }
+
+                // Check if ethers is loaded
+                if (typeof ethers === 'undefined') {
+                    console.error('❌ Ethers.js not loaded!')
+                    alert('Web3 library not loaded. Please refresh the page.')
+                    return
+                }
+
+                console.log('✅ Ethereum provider found, requesting accounts...')
+
+                // Request account access
+                provider = new ethers.providers.Web3Provider(window.ethereum)
+                const accounts = await provider.send("eth_requestAccounts", [])
+
+                console.log('📝 Accounts received:', accounts)
+
+                if (accounts.length > 0) {
+                    userWalletAddress = accounts[0]
+                    walletConnected = true
+
+                    console.log('✅ Wallet connected:', userWalletAddress)
+
+                    // Apply Web3 theme
+                    applyWeb3Theme()
+
+                    // Close modal
+                    document.getElementById('wallet-modal').classList.remove('active')
+
+                    // Update UI
+                    updateWalletUI()
+
+                    // Show discount notification with celebration
+                    showDiscountNotification()
+                } else {
+                    console.error('❌ No accounts returned')
+                    alert('No wallet accounts found. Please unlock your wallet.')
+                }
+            } catch (error) {
+                console.error('❌ Wallet connection error:', error)
+
+                // Provide specific error messages
+                if (error.code === 4001) {
+                    alert('Connection rejected. Please approve the connection in your wallet.')
+                } else if (error.code === -32002) {
+                    alert('Connection request pending. Please check your wallet.')
+                } else {
+                    alert(`Failed to connect wallet: ${error.message || 'Unknown error'}`)
+                }
+            }
+        }
+
+        function applyWeb3Theme() {
+            // Add Web3 theme class
+            document.body.classList.add('theme-web3')
+
+            // Show wallet badge
+            const badge = document.getElementById('wallet-connected-badge')
+            const addressDisplay = document.getElementById('wallet-address-display')
+            if (badge && addressDisplay && userWalletAddress) {
+                addressDisplay.textContent = formatAddress(userWalletAddress)
+                badge.style.display = 'inline-flex'
+            }
+
+            // Show crypto price display
+            document.getElementById('crypto-price-display').style.display = 'block'
+
+            // Show Web3 payment option
+            document.getElementById('web3-payment-option').style.display = 'block'
+
+            // Create crypto particles
+            createCryptoParticles()
+        }
+
+        function formatAddress(address) {
+            return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
+        }
+
+        function updateWalletUI() {
+            const btnText = document.getElementById('wallet-btn-text')
+            if (btnText) {
+                btnText.textContent = formatAddress(userWalletAddress)
+            }
+        }
+
+        // Create animated crypto particles
+        function createCryptoParticles() {
+            const bookingCard = document.querySelector('.booking-card')
+            if (!bookingCard) return
+
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div')
+                particle.className = 'crypto-particle'
+                particle.style.left = `${Math.random() * 100}%`
+                particle.style.top = `${Math.random() * 100}%`
+                particle.style.animationDelay = `${Math.random() * 4}s`
+                bookingCard.appendChild(particle)
+            }
+        }
+
+        // Mock crypto price conversion (in production, use real-time API)
+        function updateCryptoPrice(usdAmount) {
+            if (!walletConnected || !usdAmount) return
+
+            // Mock conversion rates (use CoinGecko or similar API in production)
+            const ethPrice = 3000 // USD per ETH
+            const btcPrice = 60000 // USD per BTC
+
+            const ethAmount = (usdAmount / ethPrice).toFixed(4)
+            const btcAmount = (usdAmount / btcPrice).toFixed(6)
+
+            document.getElementById('crypto-eth-price').textContent = ethAmount
+            document.getElementById('crypto-btc-price').textContent = btcAmount
+        }
+
+        // Wallet modal controls
+        function openWalletModal() {
+            document.getElementById('wallet-modal').classList.add('active')
+        }
+
+        function closeWalletModal() {
+            document.getElementById('wallet-modal').classList.remove('active')
+        }
+
+        // Show discount notification with confetti
+        function showDiscountNotification() {
+            const notification = document.getElementById('discount-notification')
+
+            // Create confetti burst
+            createConfetti()
+
+            // Show notification after brief delay
+            setTimeout(() => {
+                notification.classList.add('show')
+            }, 300)
+
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                closeDiscountNotification()
+            }, 10000)
+        }
+
+        function closeDiscountNotification() {
+            const notification = document.getElementById('discount-notification')
+            notification.classList.remove('show')
+        }
+
+        // Create confetti celebration
+        function createConfetti() {
+            const colors = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b']
+
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div')
+                    confetti.className = 'confetti-particle'
+                    confetti.style.left = `${Math.random() * 100}%`
+                    confetti.style.top = '100px'
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)]
+                    confetti.style.animationDelay = `${Math.random() * 0.3}s`
+                    confetti.style.animationDuration = `${2 + Math.random() * 2}s`
+
+                    document.body.appendChild(confetti)
+
+                    setTimeout(() => confetti.remove(), 4000)
+                }, i * 50)
+            }
+        }
+
+        // Event listeners for wallet buttons
+        document.getElementById('wallet-connect-btn')?.addEventListener('click', openWalletModal)
+        document.getElementById('wallet-connect-mobile')?.addEventListener('click', openWalletModal)
+        document.getElementById('wallet-modal-close')?.addEventListener('click', closeWalletModal)
+
+        // Get slug from URL
+        const urlParams = new URLSearchParams(window.location.search)
+        const slug = urlParams.get('slug')
+        const fromDashboard = urlParams.get('from') === 'dashboard'
+
+        if (!slug) {
+            window.location.href = 'properties.html'
+        }
+
+        if (fromDashboard) {
+            document.getElementById('owner-preview-banner').classList.remove('hidden')
+            document.getElementById('back-link').href = '/dashboard.html'
+            document.getElementById('back-link-text').textContent = 'Back to Dashboard'
+        }
+
+        // Load property details
+        async function loadProperty() {
+            try {
+                const response = await fetch(`${API_URL}/properties/${slug}`)
+                const data = await response.json()
+
+                if (data.success && data.property) {
+                    currentProperty = data.property
+                    bookedDates = data.property.bookedDates || []
+                    displayProperty(data.property)
+                    initializeDatePickers()
+                    if (fromDashboard) {
+                        document.getElementById('owner-edit-link').href = `/edit-property.html?id=${data.property.id}`
+                    }
+                } else {
+                    throw new Error('Property not found')
+                }
+            } catch (error) {
+                console.error('Error loading property:', error)
+                alert('Property not found')
+                window.location.href = 'properties.html'
+            }
+        }
+
+        // Display property
+        function displayProperty(property) {
+            document.getElementById('loading').classList.add('hidden')
+            document.getElementById('property-content').classList.remove('hidden')
+
+            // Title and location
+            document.getElementById('property-title').textContent = property.name
+            document.getElementById('property-location').textContent = `${property.city}, ${property.state}`
+            document.title = `${property.name} - AspireTowards`
+
+            // Quick info
+            document.getElementById('property-bedrooms').textContent = `${property.bedrooms} Bedroom${property.bedrooms !== 1 ? 's' : ''}`
+            document.getElementById('property-bathrooms').textContent = `${property.bathrooms} Bath${property.bathrooms !== 1 ? 's' : ''}`
+            document.getElementById('property-guests').textContent = `Sleeps ${property.maxGuests}`
+
+            // Description
+            document.getElementById('property-description').textContent = property.description || 'No description available'
+
+            // Gallery - Handle both string URLs and image objects
+            const rawImages = property.images || [property.featuredImage]
+            console.log('📦 Raw images from API:', rawImages)
+
+            const images = rawImages.filter(Boolean).map(img => {
+                // Handle both string URLs and image objects
+                if (typeof img === 'string') {
+                    console.log('  ✓ String image:', img)
+                    return img
+                }
+                if (img && img.url) {
+                    console.log('  ✓ Object image with URL:', img.url)
+                    return img.url
+                }
+                console.warn('  ⚠️  Invalid image format:', img)
+                return null
+            }).filter(Boolean) // Remove any null/undefined values
+
+            console.log('📸 Processed images:', images)
+
+            const mainImage = document.getElementById('main-image')
+            const firstImageUrl = images[0] || property.featuredImage || 'https://via.placeholder.com/800x600?text=Property'
+
+            console.log('🖼️  Main image URL:', firstImageUrl)
+
+            mainImage.style.backgroundImage = `url("${firstImageUrl}")`
+            mainImage.style.backgroundSize = 'cover'
+            mainImage.style.backgroundPosition = 'center'
+            mainImage.style.minHeight = '300px'
+
+            // Store images globally for lightbox
+            window.propertyImages = images
+
+            // Show gallery grid on desktop
+            if (images.length > 1) {
+                const galleryGrid = document.getElementById('gallery-grid')
+                galleryGrid.innerHTML = images.slice(1, 5).map((img, index) => `
+                    <div class="gallery-item" style="background-image: url('${img}'); background-size: cover; background-position: center;" onclick="openLightbox(${index + 1})"></div>
+                `).join('')
+                console.log(`✅ Gallery grid populated with ${images.length - 1} additional images`)
+            } else {
+                console.log('ℹ️  Only one image available, no gallery grid needed')
+            }
+
+            // Amenities
+            const amenitiesList = document.getElementById('amenities-list')
+            if (property.amenities && property.amenities.length > 0) {
+                amenitiesList.innerHTML = property.amenities.map(amenity => `
+                    <div class="flex items-center text-gray-700">
+                        <svg class="w-5 h-5 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        ${amenity}
+                    </div>
+                `).join('')
+            } else {
+                amenitiesList.innerHTML = '<p class="text-gray-500">No amenities listed</p>'
+            }
+
+            // House rules
+            if (property.houseRules) {
+                document.getElementById('house-rules-section').classList.remove('hidden')
+                document.getElementById('house-rules').textContent = property.houseRules
+            }
+
+            // Cancellation policy
+            const policyMap = {
+                'flexible': 'Free cancellation up to 24 hours before check-in',
+                'moderate': 'Free cancellation up to 5 days before check-in',
+                'strict': 'Free cancellation up to 14 days before check-in'
+            }
+            document.getElementById('cancellation-policy').textContent = policyMap[property.cancellationPolicy] || 'Contact host for details'
+
+            // Booking card (desktop and mobile)
+            document.getElementById('booking-price').textContent = property.basePrice
+            document.getElementById('mobile-booking-price').textContent = property.basePrice
+            if (property.cleaningFee > 0) {
+                document.getElementById('cleaning-fee-display').textContent = `+ $${property.cleaningFee} cleaning fee`
+                document.getElementById('cleaning-fee-display').classList.remove('hidden')
+            }
+
+            // Guests dropdown (desktop and mobile)
+            const guestsSelect = document.getElementById('num-guests')
+            const mobileGuestsSelect = document.getElementById('mobile-num-guests')
+            const guestOptions = Array.from({ length: property.maxGuests }, (_, i) => i + 1)
+                .map(num => `<option value="${num}">${num} guest${num !== 1 ? 's' : ''}</option>`)
+                .join('')
+            guestsSelect.innerHTML = guestOptions
+            mobileGuestsSelect.innerHTML = guestOptions
+
+            // Sync guest selectors
+            guestsSelect.addEventListener('change', () => {
+                mobileGuestsSelect.value = guestsSelect.value
+            })
+            mobileGuestsSelect.addEventListener('change', () => {
+                guestsSelect.value = mobileGuestsSelect.value
+            })
+        }
+
+        // Initialize date pickers
+        function initializeDatePickers() {
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+
+            // Minimum check-in is tomorrow (can't check in same day)
+            const tomorrow = new Date(today)
+            tomorrow.setDate(tomorrow.getDate() + 1)
+
+            console.log('📅 Initializing date pickers with booked dates:', bookedDates)
+            console.log('📅 Total booked date ranges:', bookedDates.length)
+
+            // Disable booked dates
+            // Note: Check-out day is available for next check-in, so we exclude it
+            const disabledDates = bookedDates.map(range => {
+                const startDate = new Date(range.start)
+                const endDate = new Date(range.end)
+
+                // Exclude the check-out day by subtracting 1 day
+                const endDateExclusive = new Date(endDate)
+                endDateExclusive.setDate(endDateExclusive.getDate() - 1)
+
+                console.log(`  🚫 Disabling: ${startDate.toISOString().split('T')[0]} to ${endDateExclusive.toISOString().split('T')[0]} (checkout day ${endDate.toISOString().split('T')[0]} is available)`)
+
+                return {
+                    from: startDate,
+                    to: endDateExclusive
+                }
+            })
+
+            console.log('🚫 Disabled date ranges for Flatpickr:', disabledDates)
+
+            if (disabledDates.length === 0) {
+                console.log('✅ No booked dates - all dates are available!')
+            } else {
+                console.log(`⚠️ ${disabledDates.length} date range(s) will be disabled in calendar`)
+            }
+
+            // Common flatpickr options for better mobile support
+            const commonOptions = {
+                disableMobile: false, // Allow native mobile calendar as fallback
+                allowInput: false, // Prevent manual input to avoid invalid dates
+                clickOpens: true,
+                static: false, // Let flatpickr choose positioning
+                onValueUpdate: function(selectedDates, dateStr, instance) {
+                    // Ensure input is readonly on mobile
+                    instance.input.setAttribute('readonly', 'readonly')
+                }
+            }
+
+            checkInPicker = flatpickr('#check-in', {
+                ...commonOptions,
+                minDate: tomorrow, // Can't check in today, earliest is tomorrow
+                dateFormat: 'Y-m-d',
+                disable: disabledDates,
+                onOpen: function(selectedDates, dateStr, instance) {
+                    // Add legend below the calendar when it opens
+                    addCalendarLegend(instance)
+                    console.log('📅 Check-in calendar opened')
+                },
+                onChange: function(selectedDates, dateStr, instance) {
+                    console.log('📅 Check-in date selected:', dateStr)
+
+                    if (selectedDates.length > 0) {
+                        // Detect and apply seasonal theme
+                        const season = getSeason(selectedDates[0])
+                        applySeasonalTheme(season)
+
+                        const checkInDate = selectedDates[0]
+                        const nextDay = new Date(checkInDate.getTime() + 86400000)
+
+                        // Set min date and default for checkout picker if it exists
+                        if (checkOutPicker) {
+                            checkOutPicker.set('minDate', nextDay)
+                            checkOutPicker.set('defaultDate', nextDay)
+                            // Navigate to the check-in month/year
+                            checkOutPicker.changeMonth(checkInDate.getMonth(), false)
+                            checkOutPicker.changeYear(checkInDate.getFullYear())
+                            checkOutPicker.open()
+                        }
+
+                        calculatePrice()
+                    } else {
+                        // Clear theme when date is cleared
+                        applySeasonalTheme(null)
+                    }
+                },
+                onClose: function(selectedDates, dateStr, instance) {
+                    console.log('📅 Check-in calendar closed')
+                }
+            })
+
+            checkOutPicker = flatpickr('#check-out', {
+                ...commonOptions,
+                minDate: new Date(tomorrow.getTime() + 86400000), // Minimum 1 night stay
+                dateFormat: 'Y-m-d',
+                disable: disabledDates,
+                onOpen: function(selectedDates, dateStr, instance) {
+                    // Add legend below the calendar when it opens
+                    addCalendarLegend(instance)
+                    console.log('📅 Check-out calendar opened')
+
+                    // Highlight the selected check-in date in green
+                    const checkInDate = checkInPicker.selectedDates[0]
+                    if (checkInDate) {
+                        setTimeout(() => {
+                            const checkInDateStr = instance.formatDate(checkInDate, 'Y-m-d')
+                            const dayElements = instance.calendarContainer.querySelectorAll('.flatpickr-day')
+                            dayElements.forEach(dayEl => {
+                                if (dayEl.dateObj && instance.formatDate(dayEl.dateObj, 'Y-m-d') === checkInDateStr) {
+                                    dayEl.classList.add('selected-checkin')
+                                }
+                            })
+                        }, 0)
+                    }
+                },
+                onChange: function(selectedDates, dateStr, instance) {
+                    console.log('📅 Check-out date selected:', dateStr)
+
+                    // Re-apply theme based on check-in date when checkout changes
+                    const checkInDate = checkInPicker.selectedDates[0]
+                    if (checkInDate) {
+                        const season = getSeason(checkInDate)
+                        applySeasonalTheme(season)
+                    }
+                    calculatePrice()
+                },
+                onClose: function(selectedDates, dateStr, instance) {
+                    console.log('📅 Check-out calendar closed')
+
+                    // Remove the check-in highlighting when closing
+                    const dayElements = instance.calendarContainer.querySelectorAll('.flatpickr-day.selected-checkin')
+                    dayElements.forEach(dayEl => {
+                        dayEl.classList.remove('selected-checkin')
+                    })
+                }
+            })
+
+            // Make inputs readonly to prevent keyboard on mobile
+            document.getElementById('check-in').setAttribute('readonly', 'readonly')
+            document.getElementById('check-out').setAttribute('readonly', 'readonly')
+
+            // Initialize mobile calendars with same settings
+            const mobileCheckInPicker = flatpickr('#mobile-check-in', {
+                ...commonOptions,
+                minDate: tomorrow,
+                onChange: function(selectedDates, dateStr) {
+                    // Sync with desktop
+                    document.getElementById('check-in').value = dateStr
+                    checkInPicker.setDate(dateStr)
+                    if (dateStr && mobileCheckOutPicker) {
+                        const checkInDate = new Date(dateStr)
+                        const nextDay = new Date(checkInDate)
+                        nextDay.setDate(checkInDate.getDate() + 1)
+                        mobileCheckOutPicker.set('minDate', nextDay)
+                    }
+                    calculatePrice()
+                }
+            })
+
+            const mobileCheckOutPicker = flatpickr('#mobile-check-out', {
+                ...commonOptions,
+                minDate: tomorrow,
+                onChange: function(selectedDates, dateStr) {
+                    // Sync with desktop
+                    document.getElementById('check-out').value = dateStr
+                    checkOutPicker.setDate(dateStr)
+                    calculatePrice()
+                }
+            })
+
+            // Sync desktop to mobile
+            checkInPicker.config.onChange.push((selectedDates, dateStr) => {
+                document.getElementById('mobile-check-in').value = dateStr
+                mobileCheckInPicker.setDate(dateStr)
+            })
+
+            checkOutPicker.config.onChange.push((selectedDates, dateStr) => {
+                document.getElementById('mobile-check-out').value = dateStr
+                mobileCheckOutPicker.setDate(dateStr)
+            })
+
+            // Make mobile inputs readonly
+            document.getElementById('mobile-check-in').setAttribute('readonly', 'readonly')
+            document.getElementById('mobile-check-out').setAttribute('readonly', 'readonly')
+
+            // Sync mobile book button
+            document.getElementById('mobile-book-now').addEventListener('click', () => {
+                document.getElementById('book-now').click()
+            })
+        }
+
+        // Add legend below the flatpickr calendar
+        function addCalendarLegend(instance) {
+            // Remove any existing legend first
+            const existingLegend = instance.calendarContainer.querySelector('.flatpickr-calendar-legend')
+            if (existingLegend) {
+                existingLegend.remove()
+            }
+
+            // Create new legend
+            const legend = document.createElement('div')
+            legend.className = 'flatpickr-calendar-legend'
+            legend.innerHTML = `
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Dates marked with <span style="font-weight: 600; color: #dc2626;">✕</span> are already booked or unavailable</span>
+            `
+
+            // Append legend below the calendar
+            instance.calendarContainer.appendChild(legend)
+        }
+
+        // Calculate price
+        async function calculatePrice() {
+            const checkIn = document.getElementById('check-in').value
+            const checkOut = document.getElementById('check-out').value
+
+            if (!checkIn || !checkOut) return
+
+            const url = `${API_URL}/properties/${slug}/availability?checkIn=${checkIn}&checkOut=${checkOut}`
+            console.log('🔍 Checking availability:', url)
+
+            try {
+                const response = await fetch(url)
+                console.log('📡 Response status:', response.status)
+
+                const data = await response.json()
+                console.log('📊 Response data:', JSON.stringify(data, null, 2))
+
+                // Handle 409 conflict - dates already booked
+                if (response.status === 409) {
+                    console.warn('⚠️ Date conflict detected')
+                    alert('Sorry! These dates are already booked. Please select different dates from the calendar.')
+
+                    // Clear the selections to force user to pick new dates
+                    checkInPicker.clear()
+                    checkOutPicker.clear()
+                    document.getElementById('price-breakdown').classList.add('hidden')
+                    document.getElementById('booking-button').disabled = true
+                    return
+                }
+
+                if (!response.ok) {
+                    const errorMessage = data.message || `Server returned ${response.status}`
+                    console.error('❌ Server error response:', errorMessage)
+                    throw new Error(errorMessage)
+                }
+
+                if (data.success && data.available) {
+                    const pricing = data.pricing
+
+                    // Show breakdown (desktop)
+                    document.getElementById('price-breakdown').classList.remove('hidden')
+                    document.getElementById('breakdown-price').textContent = pricing.pricePerNight
+                    document.getElementById('breakdown-nights').textContent = pricing.nights
+                    document.getElementById('breakdown-base').textContent = pricing.baseAmount
+                    document.getElementById('breakdown-total').textContent = pricing.subtotal
+                    document.getElementById('breakdown-deposit').textContent = pricing.depositAmount
+                    document.getElementById('breakdown-balance').textContent = pricing.balanceAmount
+
+                    if (pricing.cleaningFee > 0) {
+                        document.getElementById('breakdown-cleaning-row').classList.remove('hidden')
+                        document.getElementById('breakdown-cleaning').textContent = pricing.cleaningFee
+                    }
+
+                    // Show breakdown (mobile)
+                    document.getElementById('mobile-price-breakdown').classList.remove('hidden')
+                    document.getElementById('mobile-breakdown-price').textContent = pricing.pricePerNight
+                    document.getElementById('mobile-breakdown-nights').textContent = pricing.nights
+                    document.getElementById('mobile-breakdown-base').textContent = pricing.baseAmount
+                    document.getElementById('mobile-total-price').textContent = pricing.subtotal
+
+                    if (pricing.cleaningFee > 0) {
+                        document.getElementById('mobile-breakdown-cleaning-row').classList.remove('hidden')
+                        document.getElementById('mobile-breakdown-cleaning').textContent = pricing.cleaningFee
+                    }
+
+                    // Update crypto prices if wallet is connected
+                    if (walletConnected) {
+                        updateCryptoPrice(pricing.subtotal)
+                    }
+
+                    document.getElementById('booking-button').textContent = 'Request to Book'
+                    document.getElementById('booking-button').disabled = false
+
+                    console.log('✅ Availability check successful')
+                } else {
+                    const message = data.message || 'Property not available for selected dates'
+                    console.warn('⚠️ Property not available:', message)
+                    alert(message)
+
+                    // Clear selections and hide breakdown
+                    checkInPicker.clear()
+                    checkOutPicker.clear()
+                    document.getElementById('price-breakdown').classList.add('hidden')
+                    document.getElementById('booking-button').disabled = true
+                }
+            } catch (error) {
+                console.error('❌ Error checking availability:', error)
+                alert(`Unable to check availability. ${error.message}`)
+                document.getElementById('booking-button').disabled = true
+            }
+        }
+
+        // Handle booking submission
+        document.getElementById('booking-form').addEventListener('submit', function(e) {
+            e.preventDefault()
+
+            const checkIn = document.getElementById('check-in').value
+            const checkOut = document.getElementById('check-out').value
+            const guests = document.getElementById('num-guests').value
+
+            if (!checkIn || !checkOut) {
+                alert('Please select check-in and check-out dates')
+                return
+            }
+
+            // Redirect to booking page with details
+            window.location.href = `booking.html?slug=${slug}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`
+        })
+
+        // Check if user is logged in and update nav
+        function updateNavigation() {
+            const token = localStorage.getItem('token')
+            const footerAuthLink = document.getElementById('footer-auth-link')
+
+            if (token && footerAuthLink) {
+                footerAuthLink.href = '/dashboard.html'
+                footerAuthLink.textContent = 'Dashboard'
+            }
+        }
+
+        // Lightbox functionality
+        let currentLightboxIndex = 0
+
+        function openLightbox(index) {
+            currentLightboxIndex = index
+            const lightbox = document.getElementById('lightbox')
+            const lightboxImage = document.getElementById('lightbox-image')
+            const lightboxCaption = document.getElementById('lightbox-caption')
+
+            if (window.propertyImages && window.propertyImages[index]) {
+                lightboxImage.src = window.propertyImages[index]
+                lightboxCaption.textContent = `Image ${index + 1} of ${window.propertyImages.length}`
+                lightbox.classList.remove('hidden')
+                document.body.style.overflow = 'hidden'
+            }
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox')
+            lightbox.classList.add('hidden')
+            document.body.style.overflow = 'auto'
+        }
+
+        function changeLightboxImage(direction) {
+            if (!window.propertyImages) return
+
+            currentLightboxIndex += direction
+
+            // Loop around
+            if (currentLightboxIndex < 0) {
+                currentLightboxIndex = window.propertyImages.length - 1
+            } else if (currentLightboxIndex >= window.propertyImages.length) {
+                currentLightboxIndex = 0
+            }
+
+            const lightboxImage = document.getElementById('lightbox-image')
+            const lightboxCaption = document.getElementById('lightbox-caption')
+
+            lightboxImage.src = window.propertyImages[currentLightboxIndex]
+            lightboxCaption.textContent = `Image ${currentLightboxIndex + 1} of ${window.propertyImages.length}`
+        }
+
+        // Close lightbox on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeLightbox()
+            } else if (e.key === 'ArrowLeft') {
+                changeLightboxImage(-1)
+            } else if (e.key === 'ArrowRight') {
+                changeLightboxImage(1)
+            }
+        })
+
+        // Close lightbox when clicking outside the image
+        document.getElementById('lightbox')?.addEventListener('click', (e) => {
+            if (e.target.id === 'lightbox') {
+                closeLightbox()
+            }
+        })
+
+        // Load property on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateNavigation()
+            loadProperty()
+        })
+
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button')
+        const mobileMenu = document.getElementById('mobile-menu')
+        const mobileMenuClose = document.getElementById('mobile-menu-close')
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay')
+
+        function openMobileMenu() {
+            mobileMenu.classList.add('active')
+            mobileMenuOverlay.classList.remove('hidden')
+            document.body.style.overflow = 'hidden'
+        }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active')
+            mobileMenuOverlay.classList.add('hidden')
+            document.body.style.overflow = ''
+        }
+
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', openMobileMenu)
+            mobileMenuClose.addEventListener('click', closeMobileMenu)
+            mobileMenuOverlay.addEventListener('click', closeMobileMenu)
+        }
+    </script>
+</body>
+</html>

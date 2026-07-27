@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrations - A&A RentFlow</title>
+    <script>
+        // Auth protection - redirect to login if not authenticated
+        if (!localStorage.getItem('token')) {
+            window.location.href = '/src/pages/auth/login.html';
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+        .integration-card { transition: all 0.3s ease; }
+        .integration-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .status-connected { background-color: #10B981; }
+        .status-disconnected { background-color: #6B7280; }
+        .status-error { background-color: #EF4444; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen" data-page="integrations">
+    <!-- Header Component -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Integrations</h1>
+            <p class="text-gray-600">Connect your Airbnb, VRBO, and Booking.com accounts to sync listings and bookings</p>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div id="message-container" class="hidden mb-6"></div>
+
+        <!-- Integration Cards -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Airbnb Integration -->
+            <div class="integration-card bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="h-8 w-8 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm0 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10zm-1-6h2v2h-2v-2zm0-8h2v6h-2V8z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="font-semibold text-gray-900">Airbnb</h3>
+                            <div class="flex items-center mt-1">
+                                <span class="status-indicator status-disconnected" id="airbnb-status"></span>
+                                <span class="text-sm text-gray-600 ml-2" id="airbnb-status-text">Not Connected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-600 mb-4">Sync your Airbnb listings and reservations automatically</p>
+
+                <div id="airbnb-controls">
+                    <button onclick="connectAirbnb()" class="w-full bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors">
+                        Connect Airbnb
+                    </button>
+                </div>
+
+                <div id="airbnb-connected" class="hidden">
+                    <div class="text-sm text-gray-600 mb-3">
+                        <p>Last synced: <span id="airbnb-last-sync">Never</span></p>
+                        <p class="mt-1">Listings synced: <span id="airbnb-listing-count">0</span></p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="syncAirbnb()" class="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                            Sync Now
+                        </button>
+                        <button onclick="disconnectAirbnb()" class="flex-1 bg-red-50 text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-red-100 transition-colors">
+                            Disconnect
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VRBO Integration -->
+            <div class="integration-card bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="h-8 w-8 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="font-semibold text-gray-900">VRBO</h3>
+                            <div class="flex items-center mt-1">
+                                <span class="status-indicator status-disconnected"></span>
+                                <span class="text-sm text-gray-600 ml-2">Not Connected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-600 mb-4">Connect your VRBO account to manage bookings</p>
+
+                <button disabled class="w-full bg-gray-300 text-gray-500 px-4 py-2 rounded-lg font-medium cursor-not-allowed">
+                    Coming Soon
+                </button>
+            </div>
+
+            <!-- Booking.com Integration -->
+            <div class="integration-card bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="h-12 w-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <svg class="h-8 w-8 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="font-semibold text-gray-900">Booking.com</h3>
+                            <div class="flex items-center mt-1">
+                                <span class="status-indicator status-disconnected"></span>
+                                <span class="text-sm text-gray-600 ml-2">Not Connected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-600 mb-4">Sync bookings from Booking.com platform</p>
+
+                <button disabled class="w-full bg-gray-300 text-gray-500 px-4 py-2 rounded-lg font-medium cursor-not-allowed">
+                    Coming Soon
+                </button>
+            </div>
+        </div>
+
+        <!-- Integration Help -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-blue-900 mb-2">How Integrations Work</h3>
+            <ul class="text-sm text-blue-800 space-y-2">
+                <li>• <strong>Two-way Sync:</strong> Automatically pull bookings from connected platforms and push availability updates</li>
+                <li>• <strong>Real-time Updates:</strong> Get notified of new bookings instantly</li>
+                <li>• <strong>Centralized Management:</strong> Manage all your listings from one dashboard</li>
+                <li>• <strong>Automated Pricing:</strong> Push pricing changes across all platforms simultaneously</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Footer Component -->
+    <div id="footer-placeholder"></div>
+
+    <script src="/src/components/component-loader.js"></script>
+    <script>
+        // Prevent PropertyManager from initializing on integrations page
+        window.isDashboardPage = true;
+
+        // Load header and footer
+        loadHeaderFooter('dashboard');
+
+        const API_URL = 'http://localhost:5000/api';
+
+        // Check connection status on load
+        async function loadIntegrations() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/integrations`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const { data } = await response.json();
+
+                    // Update Airbnb status
+                    const airbnbIntegration = data.find(i => i.platform === 'airbnb');
+                    if (airbnbIntegration && airbnbIntegration.isActive) {
+                        updateAirbnbStatus(airbnbIntegration);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading integrations:', error);
+            }
+        }
+
+        function updateAirbnbStatus(integration) {
+            const statusIndicator = document.getElementById('airbnb-status');
+            const statusText = document.getElementById('airbnb-status-text');
+            const controls = document.getElementById('airbnb-controls');
+            const connected = document.getElementById('airbnb-connected');
+
+            statusIndicator.className = `status-indicator status-${integration.syncStatus === 'active' ? 'connected' : 'error'}`;
+            statusText.textContent = integration.syncStatus === 'active' ? 'Connected' : 'Error';
+
+            controls.classList.add('hidden');
+            connected.classList.remove('hidden');
+
+            if (integration.lastSyncedAt) {
+                document.getElementById('airbnb-last-sync').textContent = new Date(integration.lastSyncedAt).toLocaleString();
+            }
+
+            window.airbnbIntegrationId = integration.id;
+        }
+
+        async function connectAirbnb() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/integrations/airbnb/connect`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const { data } = await response.json();
+                    // Redirect to Airbnb OAuth
+                    window.location.href = data.authUrl;
+                } else {
+                    showMessage('Failed to initiate Airbnb connection', 'error');
+                }
+            } catch (error) {
+                console.error('Error connecting Airbnb:', error);
+                showMessage('Error connecting to Airbnb', 'error');
+            }
+        }
+
+        async function disconnectAirbnb() {
+            if (!confirm('Are you sure you want to disconnect Airbnb? This will stop syncing listings and bookings.')) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/integrations/airbnb/disconnect`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    showMessage('Airbnb disconnected successfully', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showMessage('Failed to disconnect Airbnb', 'error');
+                }
+            } catch (error) {
+                console.error('Error disconnecting Airbnb:', error);
+                showMessage('Error disconnecting Airbnb', 'error');
+            }
+        }
+
+        async function syncAirbnb() {
+            if (!window.airbnbIntegrationId) return;
+
+            try {
+                showMessage('Syncing Airbnb data...', 'info');
+
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/integrations/${window.airbnbIntegrationId}/sync`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const { data } = await response.json();
+                    showMessage(`Sync complete! ${data.properties} properties and ${data.bookings} bookings synced.`, 'success');
+                    setTimeout(() => loadIntegrations(), 2000);
+                } else {
+                    showMessage('Failed to sync Airbnb data', 'error');
+                }
+            } catch (error) {
+                console.error('Error syncing Airbnb:', error);
+                showMessage('Error syncing Airbnb data', 'error');
+            }
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('message-container');
+            const bgColor = type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
+                           type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
+                           'bg-blue-50 border-blue-200 text-blue-800';
+
+            container.innerHTML = `
+                <div class="${bgColor} border rounded-lg p-4">
+                    <p class="text-sm font-medium">${message}</p>
+                </div>
+            `;
+            container.classList.remove('hidden');
+
+            if (type !== 'info') {
+                setTimeout(() => container.classList.add('hidden'), 5000);
+            }
+        }
+
+        // Check for OAuth callback status
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('airbnb') === 'connected') {
+            showMessage('Airbnb connected successfully! Syncing your listings...', 'success');
+            setTimeout(() => loadIntegrations(), 1000);
+        } else if (urlParams.get('airbnb') === 'error') {
+            showMessage('Failed to connect Airbnb. Please try again.', 'error');
+        }
+
+        // Load integrations on page load
+        loadIntegrations();
+    </script>
+    <script src="/public/js/main.js"></script>
+</body>
+</html>

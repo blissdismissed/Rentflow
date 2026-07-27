@@ -1,0 +1,3262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AspireTowards</title>
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/resources/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/resources/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/resources/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/resources/apple-touch-icon.png">
+
+    <script src="/js/config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <!-- FullCalendar -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+        .bg-gradient-primary { background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        /* FullCalendar Custom Styles */
+        #calendar {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .fc {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .fc-toolbar-title {
+            font-size: 1.5rem !important;
+            font-weight: 600 !important;
+            color: #111827;
+        }
+
+        .fc-button {
+            background-color: #0F766E !important;
+            border-color: #0F766E !important;
+            text-transform: capitalize !important;
+            font-weight: 500 !important;
+        }
+
+        .fc-button:hover {
+            background-color: #0d635c !important;
+            border-color: #0d635c !important;
+        }
+
+        .fc-button-active {
+            background-color: #14B8A6 !important;
+            border-color: #14B8A6 !important;
+        }
+
+        .fc-event {
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .fc-daygrid-event {
+            white-space: normal;
+        }
+
+        /* Color coding for booking statuses */
+        .fc-event.status-requested {
+            background-color: #FEF3C7;
+            border-color: #F59E0B;
+            color: #92400E;
+        }
+
+        .fc-event.status-approved {
+            background-color: #DBEAFE;
+            border-color: #3B82F6;
+            color: #1E40AF;
+        }
+
+        .fc-event.status-confirmed {
+            background-color: #D1FAE5;
+            border-color: #10B981;
+            color: #065F46;
+        }
+
+        .fc-event.status-declined {
+            background-color: #FEE2E2;
+            border-color: #EF4444;
+            color: #991B1B;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-3">
+                    <a href="/dashboard.html" class="flex items-center space-x-3">
+                        <h1 class="text-2xl sm:text-3xl font-display font-bold text-gray-900 leading-none mt-0.5">AspireTowards</h1>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="user-name" class="text-gray-700 font-medium hidden sm:block"></span>
+                    <button onclick="logout()" class="text-gray-600 hover:text-gray-900 font-medium">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Section -->
+        <div class="mb-8" id="welcome-section">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-display font-bold text-gray-900">
+                        Welcome back, <span id="user-greeting"></span>!
+                    </h2>
+                    <p class="mt-2 text-gray-600">Here's an overview of your properties and activity</p>
+                </div>
+                <button onclick="openEditNameModal()" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                    <span>Edit Name</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="mb-8 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8">
+                <button onclick="switchTab('overview')" id="tab-overview" class="dashboard-tab active whitespace-nowrap py-4 px-1 border-b-2 border-teal-600 font-medium text-sm text-teal-600">
+                    Overview
+                </button>
+                <button onclick="switchTab('calendar')" id="tab-calendar" class="dashboard-tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    Calendar
+                </button>
+                <button onclick="switchTab('bookings')" id="tab-bookings" class="dashboard-tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    Bookings
+                </button>
+                <button onclick="switchTab('finances')" id="tab-finances" class="dashboard-tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    Finances
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="overview-content" class="tab-content">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="stats-grid">
+            <!-- Total Properties -->
+            <div class="stat-card card-hover cursor-pointer" onclick="togglePropertiesSection()">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Properties</p>
+                        <p class="mt-2 text-3xl font-semibold text-gray-900" id="total-properties">0</p>
+                    </div>
+                    <div class="p-3 bg-teal-100 rounded-lg">
+                        <svg class="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Tenants -->
+            <div class="stat-card card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Active Tenants</p>
+                        <p class="mt-2 text-3xl font-semibold text-gray-900" id="active-tenants">0</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Revenue -->
+            <div class="stat-card card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Monthly Revenue</p>
+                        <p class="mt-2 text-3xl font-semibold text-gray-900" id="monthly-revenue">$0</p>
+                    </div>
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Tasks -->
+            <div class="stat-card card-hover cursor-pointer" onclick="viewPendingBookings()">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Pending Booking Requests</p>
+                        <p class="mt-2 text-3xl font-semibold text-gray-900" id="pending-tasks">0</p>
+                    </div>
+                    <div class="p-3 bg-amber-100 rounded-lg">
+                        <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Properties List Section (Expandable) -->
+        <div id="properties-section" class="mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-display font-semibold text-gray-900">My Properties</h3>
+                    <button onclick="togglePropertiesSection()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="properties-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Properties will be loaded here -->
+                    <div class="text-center py-8 text-gray-500 col-span-full">
+                        <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        <p>No properties found</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guests Section (Expandable) -->
+        <div id="guests-section" class="mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-xl font-display font-semibold text-gray-900">Past Guests &amp; Contacts</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">Imported from Evolve CSV, Airbnb, VRBO, and direct website bookings</p>
+                    </div>
+                    <button onclick="toggleGuestsSection()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Filters + actions bar -->
+                <div class="flex flex-wrap gap-3 mb-4 items-center">
+                    <select id="guests-property-filter" onchange="loadGuests()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">All properties</option>
+                    </select>
+                    <input type="text" id="guests-search" placeholder="Search name, email, phone…" oninput="loadGuests()"
+                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm w-56">
+                    <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+                        <input type="checkbox" id="guests-marketing-only" onchange="loadGuests()" class="rounded">
+                        Marketing opt-in only
+                    </label>
+                    <div class="ml-auto flex gap-2">
+                        <span id="guests-selected-count" class="hidden text-sm text-gray-500 self-center"></span>
+                        <button id="guests-email-btn" onclick="openEmailModal()" disabled
+                            class="px-4 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            Send Email
+                        </button>
+                        <button onclick="loadGuests()" class="px-3 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50">Refresh</button>
+                    </div>
+                </div>
+
+                <!-- Guest table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th class="pb-3 pr-3 w-8">
+                                    <input type="checkbox" id="guests-select-all" onchange="toggleSelectAllGuests()" class="rounded">
+                                </th>
+                                <th class="pb-3 px-2">Name</th>
+                                <th class="pb-3 px-2">Email</th>
+                                <th class="pb-3 px-2">Phone</th>
+                                <th class="pb-3 px-2">Properties</th>
+                                <th class="pb-3 px-2 text-center">Stays</th>
+                                <th class="pb-3 px-2">Last Stay</th>
+                                <th class="pb-3 px-2">Tags</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guests-table-body">
+                            <tr><td colspan="8" class="py-8 text-center text-gray-400 text-sm">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-3 text-xs text-gray-400" id="guests-count-label"></p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mb-8">
+            <h3 class="text-xl font-display font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <a href="/create-property.html" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-teal-500 hover:shadow-md transition-all duration-200 text-left">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-teal-100 rounded-lg">
+                            <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Add Property</h4>
+                            <p class="text-sm text-gray-600">List a new rental property</p>
+                        </div>
+                    </div>
+                </a>
+
+                <div onclick="toggleSettingsSection()" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-purple-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-purple-100 rounded-lg">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Property Settings</h4>
+                            <p class="text-sm text-gray-600">Configure automation & emails</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="toggleGuestsSection()" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-emerald-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-emerald-100 rounded-lg">
+                            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Past Guests</h4>
+                            <p class="text-sm text-gray-600">Contacts, repeat bookers, outreach</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="togglePinsSection()" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Manage Lock PINs</h4>
+                            <p class="text-sm text-gray-600">Rotate access codes</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="toggleTemplatesSection()" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-pink-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-pink-100 rounded-lg">
+                            <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Email Templates</h4>
+                            <p class="text-sm text-gray-600">Customize guest emails</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="toggleHistorySection()" class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-indigo-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-indigo-100 rounded-lg">
+                            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">PIN History</h4>
+                            <p class="text-sm text-gray-600">View usage audit trail</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-green-500 hover:shadow-md transition-all duration-200 text-left">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-green-100 rounded-lg">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Generate Invoice</h4>
+                            <p class="text-sm text-gray-600">Create rent invoice</p>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Property Settings Section (Expandable) -->
+        <div id="settings-section" class="mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-display font-semibold text-gray-900">Property Settings</h3>
+                    <button onclick="toggleSettingsSection()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-gray-600 mb-4">Configure automation settings, check-in details, and guest information for your properties.</p>
+
+                <!-- Property Selector -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Property</label>
+                    <select id="settings-property-select" onchange="loadSettingsForProperty(this.value)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                        <option value="">Choose a property...</option>
+                    </select>
+                </div>
+
+                <div id="settings-content" class="text-gray-500">
+                    <p>Select a property to configure settings.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lock PINs Section (Expandable) -->
+        <div id="pins-section" class="mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-display font-semibold text-gray-900">Manage Lock PINs</h3>
+                    <button onclick="togglePinsSection()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-gray-600 mb-4">Add, edit, and reorder rotating lock PINs for guest access.</p>
+
+                <!-- Property Selector -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Property</label>
+                    <select id="pins-property-select" onchange="loadPinsForProperty(this.value)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                        <option value="">Choose a property...</option>
+                    </select>
+                </div>
+
+                <div id="pins-content" class="text-gray-500">
+                    <p>Select a property to manage lock PINs.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Templates Section (Expandable) -->
+        <div id="templates-section" class="mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-display font-semibold text-gray-900">Email Templates</h3>
+                    <button onclick="toggleTemplatesSection()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-gray-600 mb-4">Create and customize automated guest email templates.</p>
+
+                <!-- Property Selector -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Property</label>
+                    <select id="templates-property-select" onchange="loadTemplatesForProperty(this.value)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                        <option value="">Choose a property...</option>
+                    </select>
+                </div>
+
+                <div id="templates-content" class="text-gray-500">
+                    <p>Select a property to manage email templates.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PIN History Section (Expandable) -->
+        <div id="history-section" class="mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-display font-semibold text-gray-900">PIN Usage History</h3>
+                    <button onclick="toggleHistorySection()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-gray-600 mb-4">Complete audit trail of lock PIN assignments and usage.</p>
+
+                <!-- Property Selector -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Property</label>
+                    <select id="history-property-select" onchange="loadHistoryForProperty(this.value)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                        <option value="">Choose a property...</option>
+                    </select>
+                </div>
+
+                <div id="history-content" class="text-gray-500">
+                    <p>Select a property to view PIN history.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-xl font-display font-semibold text-gray-900 mb-4">Recent Activity</h3>
+            <div id="activity-list" class="space-y-4">
+                <div class="text-center py-8 text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <p>No recent activity</p>
+                </div>
+            </div>
+        </div>
+        </div>
+        <!-- End Overview Content -->
+
+        <!-- Calendar Content -->
+        <div id="calendar-content" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900">Booking Calendar</h3>
+                    <div class="flex gap-4 text-sm">
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded" style="background-color: #FEF3C7; border: 1px solid #F59E0B;"></div>
+                            <span class="text-gray-600">Requested</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded" style="background-color: #DBEAFE; border: 1px solid #3B82F6;"></div>
+                            <span class="text-gray-600">Approved</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded" style="background-color: #D1FAE5; border: 1px solid #10B981;"></div>
+                            <span class="text-gray-600">Confirmed</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="calendar"></div>
+            </div>
+        </div>
+
+        <!-- Bookings Content -->
+        <div id="bookings-content" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900">All Bookings</h3>
+                    <div class="flex gap-2">
+                        <select id="booking-filter" class="border border-gray-300 rounded-lg px-4 py-2 text-sm" onchange="filterBookings()">
+                            <option value="all">All Bookings</option>
+                            <option value="requested">Requested</option>
+                            <option value="approved">Approved</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="bookings-list" class="space-y-4">
+                    <p class="text-gray-600">Loading bookings...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Finances Content -->
+        <div id="finances-content" class="tab-content hidden">
+
+            <!-- Property selector + view toggle -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <select id="fin-property-select" onchange="setFinProperty(this.value)"
+                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                        <option value="">Select property...</option>
+                    </select>
+                    <button id="fin-set-default-btn" onclick="setFinDefaultProperty()" class="hidden text-xs text-teal-600 hover:text-teal-800 whitespace-nowrap">
+                        Set as default
+                    </button>
+                    <!-- Visibility toggle -->
+                    <div id="fin-visibility-wrap" class="hidden items-center gap-2">
+                        <span class="text-sm text-gray-500">Public listing:</span>
+                        <button id="fin-visibility-btn" onclick="togglePropertyVisibility()"
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none">
+                            <span id="fin-visibility-knob" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"></span>
+                        </button>
+                        <span id="fin-visibility-label" class="text-sm font-medium"></span>
+                    </div>
+                </div>
+                <div class="flex bg-gray-100 rounded-lg p-1">
+                    <button id="fin-btn-summary" onclick="setFinView('summary')"
+                        class="px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow text-gray-900 transition">
+                        All Years
+                    </button>
+                    <button id="fin-btn-year" onclick="setFinView('year')"
+                        class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition">
+                        Year Detail
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empty state -->
+            <div id="fin-empty" class="bg-white rounded-xl shadow-sm p-12 text-center text-gray-500">
+                Select a property above to view its financial data.
+            </div>
+
+            <!-- Summary View -->
+            <div id="fin-summary-view" class="hidden">
+                <!-- NOI cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm p-4">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">All-Time Net Income</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1" id="fin-total-net">—</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">All-Time Gross Profits</p>
+                        <p class="text-2xl font-bold mt-1" id="fin-total-profit">—</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">NOI (All Time)</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1" id="fin-noi">—</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Purchase Price</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1" id="fin-purchase-price">—</p>
+                    </div>
+                </div>
+                <!-- Summary table -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200">
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 sticky left-0 bg-gray-50">Year</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Gross Income</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Mgmt Fees</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Expenses</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Net Income</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">%</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Nights</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Res.</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Occ.</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">HOA</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Mortgage</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Actual Paid</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Extra Paid</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">T&amp;I</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Gross Profits</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Breakeven</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Notes</th>
+                                    <th class="px-4 py-3"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="fin-summary-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Year Detail View -->
+            <div id="fin-year-view" class="hidden">
+                <!-- Year picker + config button -->
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div class="flex items-center gap-3">
+                        <select id="fin-year-select" onchange="loadFinYear(this.value)"
+                            class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500">
+                        </select>
+                        <button onclick="openAnnualConfigModal()"
+                            class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            Mortgage &amp; T&amp;I
+                        </button>
+                    </div>
+                    <button onclick="openMonthModal(null)"
+                        class="px-4 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 transition flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Add / Edit Month
+                    </button>
+                    <button onclick="openImportModal()"
+                        class="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        Import CSV
+                    </button>
+                </div>
+
+                <!-- Monthly table -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200" id="fin-monthly-header">
+                                </tr>
+                            </thead>
+                            <tbody id="fin-monthly-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Annual summary metrics -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="fin-annual-metrics"></div>
+
+                <!-- Expense items (shown for itemized properties) -->
+                <div id="fin-expense-section" class="hidden">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-semibold text-gray-900">Itemized Expenses</h4>
+                        <button onclick="openExpenseModal(null)"
+                            class="px-3 py-1.5 bg-teal-600 text-white text-xs rounded-lg hover:bg-teal-700 transition">
+                            + Add Expense
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200">
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Month</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Date</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Expense</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Vendor</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">Amount</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Tag</th>
+                                    <th class="px-4 py-3"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="fin-expense-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Monthly Data Modal -->
+        <div id="fin-month-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900" id="fin-month-modal-title">Edit Month</h3>
+                    <button onclick="closeMonthModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                            <input type="number" id="fin-m-year" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="2024">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
+                            <select id="fin-m-month" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                                <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                                <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Gross Income</label>
+                            <input type="number" step="0.01" id="fin-m-gross" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Management Fee</label>
+                            <input type="number" step="0.01" id="fin-m-mgmt" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                    </div>
+                    <!-- Vermont expense fields -->
+                    <div id="fin-m-itemized-fields">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Itemized Expenses</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Cleaning</label>
+                                <input type="number" step="0.01" id="fin-m-cleaning" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Utilities</label>
+                                <input type="number" step="0.01" id="fin-m-utilities" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Maintenance</label>
+                                <input type="number" step="0.01" id="fin-m-maintenance" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Other Expenses</label>
+                                <input type="number" step="0.01" id="fin-m-other" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Myrtle platform charges -->
+                    <div id="fin-m-charges-field" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Platform Charges</label>
+                        <input type="number" step="0.01" id="fin-m-charges" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nights Booked</label>
+                            <input type="number" id="fin-m-nights" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"># Reservations</label>
+                            <input type="number" id="fin-m-reservations" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">HOA Payment</label>
+                            <input type="number" step="0.01" id="fin-m-hoa" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Actual Mortgage Paid</label>
+                            <input type="number" step="0.01" id="fin-m-mortgage" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6 border-t flex justify-end gap-3">
+                    <button onclick="closeMonthModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                    <button onclick="saveMonth()" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Annual Config Modal -->
+        <div id="fin-annual-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900" id="fin-annual-modal-title">Mortgage &amp; T&amp;I</h3>
+                    <button onclick="closeAnnualConfigModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Mortgage Payment ($)</label>
+                        <input type="number" step="0.01" id="fin-a-mortgage" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        <p class="text-xs text-gray-500 mt-1">Scheduled minimum payment</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Annual Taxes &amp; Insurance ($)</label>
+                        <input type="number" step="0.01" id="fin-a-ti" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <input type="text" id="fin-a-notes" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Cash Out Refi $50k">
+                    </div>
+                </div>
+                <div class="p-6 border-t flex justify-end gap-3">
+                    <button onclick="closeAnnualConfigModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                    <button onclick="saveAnnualConfig()" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense Item Modal -->
+        <div id="fin-expense-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900" id="fin-expense-modal-title">Add Expense</h3>
+                    <button onclick="closeExpenseModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
+                            <select id="fin-e-month" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                                <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                                <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input type="date" id="fin-e-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Expense Name</label>
+                        <input type="text" id="fin-e-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Electric Bill">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+                        <input type="text" id="fin-e-vendor" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Green Mountain Power">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
+                            <input type="number" step="0.01" id="fin-e-amount" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tag</label>
+                            <select id="fin-e-tag" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="utilities">Utilities</option>
+                                <option value="housekeeping">Housekeeping</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="hoa">HOA</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6 border-t flex justify-end gap-3">
+                    <button onclick="closeExpenseModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                    <button onclick="saveExpenseItem()" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CSV Import Modal -->
+        <div id="fin-import-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+                <div class="flex justify-between items-center p-6 border-b flex-shrink-0">
+                    <h3 class="text-lg font-semibold text-gray-900">Import Data</h3>
+                    <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6 flex-shrink-0 border-b">
+                    <div class="flex flex-wrap gap-4 items-end">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Import type</label>
+                            <select id="fin-import-type" onchange="resetImport()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="monthly">Monthly Summary (CSV)</option>
+                                <option value="expenses">Expense Items (CSV)</option>
+                                <option value="annual-summary">Annual Totals — all years (CSV)</option>
+                                <option value="caribbean-pdf">Caribbean Statement (PDF)</option>
+                                <option value="evolve-csv">Evolve Booking Report (CSV)</option>
+                            </select>
+                        </div>
+                        <div id="fin-import-year-wrap">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                            <select id="fin-import-year" class="px-3 py-2 border border-gray-300 rounded-lg text-sm"></select>
+                        </div>
+                        <div id="fin-import-csv-template-btns" class="flex gap-2">
+                            <button onclick="downloadTemplate('monthly')" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Monthly template
+                            </button>
+                            <button onclick="downloadTemplate('expenses')" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Expenses template
+                            </button>
+                        </div>
+                        <div id="fin-import-annual-template-btn" class="hidden">
+                            <button onclick="downloadTemplate('annual-summary')" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Annual summary template
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-4" id="fin-import-file-wrap">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" id="fin-import-file-label">Choose file</label>
+                        <input type="file" id="fin-import-file" accept=".csv,.pdf" onchange="handleImportFile()"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                        <p id="fin-import-type-hint" class="mt-1 text-xs text-gray-400"></p>
+                    </div>
+                    <div id="fin-import-error" class="hidden mt-2 text-sm text-red-600"></div>
+                </div>
+
+                <!-- CSV Preview table -->
+                <div id="fin-import-preview" class="hidden flex-1 overflow-auto p-6">
+                    <p class="text-sm font-medium text-gray-700 mb-3" id="fin-import-preview-label"></p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-xs border border-gray-200 rounded-lg overflow-hidden">
+                            <thead id="fin-import-preview-head" class="bg-gray-50"></thead>
+                            <tbody id="fin-import-preview-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Caribbean PDF verification form -->
+                <div id="fin-import-caribbean-verify" class="hidden flex-1 overflow-auto p-6">
+                    <p class="text-sm font-medium text-gray-700 mb-4">Review &amp; edit extracted values before saving:</p>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Month</label>
+                            <select id="fin-verify-month" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                                <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                                <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Year</label>
+                            <input id="fin-verify-year" type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Gross Income (Total Room Revenue)</label>
+                            <input id="fin-verify-grossIncome" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Management Commission</label>
+                            <input id="fin-verify-managementFee" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Platform Charges (all other expenses)</label>
+                            <input id="fin-verify-platformCharges" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Guest Nights Sold</label>
+                            <input id="fin-verify-nightsBooked" type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1"># Reservations</label>
+                            <input id="fin-verify-numReservations" type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Net Due to Owner (reference only)</label>
+                            <input id="fin-verify-netDue" type="number" step="0.01" readonly class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
+                        </div>
+                    </div>
+                    <div id="fin-verify-raw-expenses" class="hidden">
+                        <p class="text-xs font-medium text-gray-500 mb-2">Expense breakdown from statement (for reference):</p>
+                        <div id="fin-verify-expense-lines" class="space-y-0.5 text-xs text-gray-600 bg-gray-50 rounded-lg p-3 font-mono"></div>
+                        <p class="text-xs text-gray-400 mt-2">Platform Charges = sum of all lines except Management Commission. Edit the field above if the total is off.</p>
+                    </div>
+                </div>
+
+                <div class="p-6 border-t flex-shrink-0 flex justify-between items-center">
+                    <p class="text-xs text-gray-400" id="fin-import-footer-note">Existing records for the same month/year will be overwritten.</p>
+                    <div class="flex gap-3">
+                        <button onclick="closeImportModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                        <button id="fin-import-confirm-btn" onclick="confirmImport()" disabled
+                            class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                            Import
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Guest Email Compose Modal -->
+    <div id="guests-email-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg flex flex-col">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Send Email to Guests</h3>
+                <button onclick="closeEmailModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sending to</label>
+                    <p class="text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2" id="email-modal-recipients"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">From name</label>
+                    <input id="email-modal-from" type="text" placeholder="e.g. Caribbean 1225 Myrtle Beach"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                    <input id="email-modal-subject" type="text" placeholder="e.g. Come back soon — special rate for you!"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea id="email-modal-message" rows="6" placeholder="Hi [Name], ..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
+                    <p class="text-xs text-gray-400 mt-1">Only guests with email addresses and marketing opt-in will receive this.</p>
+                </div>
+                <div id="email-modal-result" class="hidden text-sm rounded-lg px-3 py-2"></div>
+            </div>
+            <div class="p-6 border-t flex justify-end gap-3">
+                <button onclick="closeEmailModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                <button id="email-modal-send-btn" onclick="sendGuestEmail()"
+                    class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Name Modal -->
+    <div id="edit-name-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-display font-bold text-gray-900">Edit Display Name</h3>
+                <button onclick="closeEditNameModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="edit-name-form" onsubmit="updateName(event)">
+                <div class="mb-4">
+                    <label for="display-name" class="block text-sm font-medium text-gray-700 mb-2">
+                        Display Name
+                    </label>
+                    <input
+                        type="text"
+                        id="display-name"
+                        name="name"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        placeholder="Enter your name"
+                        required
+                    >
+                    <p class="mt-2 text-sm text-gray-500">This name will be displayed on your dashboard and profile</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button
+                        type="submit"
+                        class="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition"
+                    >
+                        Save Changes
+                    </button>
+                    <button
+                        type="button"
+                        onclick="closeEditNameModal()"
+                        class="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <h3 class="text-xl font-display font-bold text-white">AspireTowards</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Manage your vacation rental properties with ease. Direct booking platform with no hidden fees.
+                    </p>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/index.html" class="hover:text-white transition">View Homepage</a></li>
+                        <li><a href="/properties.html" class="hover:text-white transition">Browse Properties</a></li>
+                        <li><a href="/dashboard.html" class="hover:text-white transition">Dashboard</a></li>
+                    </ul>
+                </div>
+
+                <!-- Account -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Account</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" onclick="openEditNameModal(); return false;" class="hover:text-white transition">Edit Profile</a></li>
+                        <li><a href="#" onclick="logout(); return false;" class="hover:text-white transition">Sign Out</a></li>
+                        <li><a href="/index.html#contact" class="hover:text-white transition">Support</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm text-gray-500">
+                    © 2025 AspireTowards. All rights reserved.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-sm hover:text-white transition">Privacy Policy</a>
+                    <a href="#" class="text-sm hover:text-white transition">Terms of Service</a>
+                    <a href="/index.html#contact" class="text-sm hover:text-white transition">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = `${window.CONFIG.API_BASE_URL}/api`;
+
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/auth/login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            window.location.href = '/auth/login.html';
+        }
+
+        // Load user data
+        function loadUserData() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    const firstName = user.name ? user.name.split(' ')[0] : user.email.split('@')[0];
+                    document.getElementById('user-greeting').textContent = firstName;
+                    document.getElementById('user-name').textContent = user.name || user.email;
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
+            }
+        }
+
+        // Animate stats on load
+        function animateStats() {
+            anime({
+                targets: '.stat-card',
+                translateY: [20, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(100),
+                duration: 600,
+                easing: 'easeOutExpo'
+            });
+        }
+
+        // Store properties globally for toggle function
+        let userProperties = [];
+
+        // Fetch user's properties
+        async function loadProperties() {
+            try {
+                const url = `${API_URL}/properties`;
+                console.log('🔍 Fetching properties from:', url);
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                console.log('📡 Response status:', response.status);
+                const data = await response.json();
+                console.log('📊 Properties data:', data);
+
+                if (data.success && data.data && data.data.properties) {
+                    userProperties = data.data.properties;
+
+                    // Update stats
+                    document.getElementById('total-properties').textContent = userProperties.length;
+
+                    console.log(`✅ Loaded ${userProperties.length} properties:`, userProperties);
+                } else {
+                    console.warn('⚠️ No properties found or request failed:', data);
+                    document.getElementById('total-properties').textContent = '0';
+                    userProperties = [];
+                }
+            } catch (error) {
+                console.error('❌ Error loading properties:', error);
+                document.getElementById('total-properties').textContent = '0';
+                userProperties = [];
+            }
+        }
+
+        // Toggle properties section
+        function togglePropertiesSection() {
+            const section = document.getElementById('properties-section');
+            const isHidden = section.classList.contains('hidden');
+
+            if (isHidden) {
+                // Show section and render properties
+                section.classList.remove('hidden');
+                renderProperties();
+
+                // Smooth scroll to section
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                // Hide section
+                section.classList.add('hidden');
+            }
+        }
+
+        // Populate property dropdown
+        function populatePropertyDropdown(selectId) {
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">Choose a property...</option>';
+
+            userProperties.forEach((property, index) => {
+                const option = document.createElement('option');
+                option.value = property.id;
+                option.textContent = property.name;
+                select.appendChild(option);
+            });
+
+            // Auto-select first property if only one exists
+            if (userProperties.length === 1) {
+                select.value = userProperties[0].id;
+                // Trigger change event to load data
+                select.dispatchEvent(new Event('change'));
+            }
+        }
+
+        // Toggle Settings Section
+        function toggleSettingsSection() {
+            const section = document.getElementById('settings-section');
+            const isHidden = section.classList.contains('hidden');
+
+            // Hide all other sections first
+            document.getElementById('pins-section').classList.add('hidden');
+            document.getElementById('templates-section').classList.add('hidden');
+            document.getElementById('history-section').classList.add('hidden');
+
+            if (isHidden) {
+                section.classList.remove('hidden');
+                populatePropertyDropdown('settings-property-select');
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        // Toggle Lock PINs Section
+        function togglePinsSection() {
+            const section = document.getElementById('pins-section');
+            const isHidden = section.classList.contains('hidden');
+
+            // Hide all other sections first
+            document.getElementById('settings-section').classList.add('hidden');
+            document.getElementById('templates-section').classList.add('hidden');
+            document.getElementById('history-section').classList.add('hidden');
+
+            if (isHidden) {
+                section.classList.remove('hidden');
+                populatePropertyDropdown('pins-property-select');
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        // Toggle Email Templates Section
+        function toggleTemplatesSection() {
+            const section = document.getElementById('templates-section');
+            const isHidden = section.classList.contains('hidden');
+
+            // Hide all other sections first
+            document.getElementById('settings-section').classList.add('hidden');
+            document.getElementById('pins-section').classList.add('hidden');
+            document.getElementById('history-section').classList.add('hidden');
+
+            if (isHidden) {
+                section.classList.remove('hidden');
+                populatePropertyDropdown('templates-property-select');
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        // Toggle PIN History Section
+        function toggleHistorySection() {
+            const section = document.getElementById('history-section');
+            const isHidden = section.classList.contains('hidden');
+
+            // Hide all other sections first
+            document.getElementById('settings-section').classList.add('hidden');
+            document.getElementById('pins-section').classList.add('hidden');
+            document.getElementById('templates-section').classList.add('hidden');
+
+            if (isHidden) {
+                section.classList.remove('hidden');
+                populatePropertyDropdown('history-property-select');
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        // Load settings for selected property
+        function loadSettingsForProperty(propertyId) {
+            if (!propertyId) {
+                document.getElementById('settings-content').innerHTML = '<p class="text-gray-500">Select a property to configure settings.</p>';
+                return;
+            }
+            document.getElementById('settings-content').innerHTML = `
+                <div class="text-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
+                    <p class="text-gray-600 mt-4">Loading settings...</p>
+                </div>
+            `;
+            // TODO: Load actual settings from API
+            setTimeout(() => {
+                document.getElementById('settings-content').innerHTML = `
+                    <p class="text-gray-600">Settings interface for property will be displayed here.</p>
+                    <p class="text-sm text-gray-500 mt-2">Full implementation coming soon...</p>
+                `;
+            }, 500);
+        }
+
+        // Load PINs for selected property
+        function loadPinsForProperty(propertyId) {
+            if (!propertyId) {
+                document.getElementById('pins-content').innerHTML = '<p class="text-gray-500">Select a property to manage lock PINs.</p>';
+                return;
+            }
+            document.getElementById('pins-content').innerHTML = `
+                <div class="text-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
+                    <p class="text-gray-600 mt-4">Loading PINs...</p>
+                </div>
+            `;
+            // TODO: Load actual PINs from API
+            setTimeout(() => {
+                document.getElementById('pins-content').innerHTML = `
+                    <p class="text-gray-600">Lock PINs management interface will be displayed here.</p>
+                    <p class="text-sm text-gray-500 mt-2">Full implementation coming soon...</p>
+                `;
+            }, 500);
+        }
+
+        // Load templates for selected property
+        function loadTemplatesForProperty(propertyId) {
+            if (!propertyId) {
+                document.getElementById('templates-content').innerHTML = '<p class="text-gray-500">Select a property to manage email templates.</p>';
+                return;
+            }
+            document.getElementById('templates-content').innerHTML = `
+                <div class="text-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
+                    <p class="text-gray-600 mt-4">Loading templates...</p>
+                </div>
+            `;
+            // TODO: Load actual templates from API
+            setTimeout(() => {
+                document.getElementById('templates-content').innerHTML = `
+                    <p class="text-gray-600">Email templates interface will be displayed here.</p>
+                    <p class="text-sm text-gray-500 mt-2">Full implementation coming soon...</p>
+                `;
+            }, 500);
+        }
+
+        // Load history for selected property
+        function loadHistoryForProperty(propertyId) {
+            if (!propertyId) {
+                document.getElementById('history-content').innerHTML = '<p class="text-gray-500">Select a property to view PIN history.</p>';
+                return;
+            }
+            document.getElementById('history-content').innerHTML = `
+                <div class="text-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
+                    <p class="text-gray-600 mt-4">Loading history...</p>
+                </div>
+            `;
+            // TODO: Load actual history from API
+            setTimeout(() => {
+                document.getElementById('history-content').innerHTML = `
+                    <p class="text-gray-600">PIN usage history will be displayed here.</p>
+                    <p class="text-sm text-gray-500 mt-2">Full implementation coming soon...</p>
+                `;
+            }, 500);
+        }
+
+        // Render properties in the list
+        function renderProperties() {
+            const container = document.getElementById('properties-list');
+
+            if (userProperties.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500 col-span-full">
+                        <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        <p>No properties found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = userProperties.map(property => `
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 bg-teal-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-semibold text-gray-900 truncate">${property.name}</h4>
+                            <p class="text-sm text-gray-600 mt-1">${property.city}, ${property.state}</p>
+                            <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                                <span>${property.bedrooms} bed</span>
+                                <span>•</span>
+                                <span>${property.bathrooms} bath</span>
+                                <span>•</span>
+                                <span class="font-medium text-teal-600">$${property.basePrice}/night</span>
+                            </div>
+                            <div class="flex space-x-2 mt-3">
+                                <a href="/property.html?slug=${property.slug}&from=dashboard" class="flex-1 text-center px-3 py-1.5 bg-teal-600 text-white text-sm rounded hover:bg-teal-700 transition">
+                                    View
+                                </a>
+                                <a href="/edit-property.html?id=${property.id}" class="flex-1 text-center px-3 py-1.5 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition">
+                                    Edit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load pending booking requests
+        async function loadPendingTasks() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load bookings');
+
+                const data = await response.json();
+                const bookings = data.bookings || [];
+
+                // Count pending booking requests (status = 'requested')
+                const pendingBookings = bookings.filter(b => b.bookingStatus === 'requested');
+                const pendingCount = pendingBookings.length;
+
+                // Update pending tasks display
+                document.getElementById('pending-tasks').textContent = pendingCount;
+
+                console.log(`✅ Found ${pendingCount} pending booking requests`);
+            } catch (error) {
+                console.error('❌ Error loading pending tasks:', error);
+                document.getElementById('pending-tasks').textContent = '0';
+            }
+        }
+
+        // View pending bookings - switch to Bookings tab and filter to requested
+        function viewPendingBookings() {
+            switchTab('bookings');
+            // Set filter to requested after a brief delay to ensure tab has loaded
+            setTimeout(() => {
+                const filterSelect = document.getElementById('booking-filter');
+                if (filterSelect) {
+                    filterSelect.value = 'requested';
+                    filterBookings();
+                }
+            }, 100);
+        }
+
+        // Initialize dashboard
+        async function initDashboard() {
+            if (!checkAuth()) return;
+
+            loadUserData();
+            animateStats();
+            await loadProperties();
+            await loadPendingTasks();
+        }
+
+        // Modal functions
+        function openEditNameModal() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    document.getElementById('display-name').value = user.name || '';
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
+            }
+            document.getElementById('edit-name-modal').classList.remove('hidden');
+        }
+
+        function closeEditNameModal() {
+            document.getElementById('edit-name-modal').classList.add('hidden');
+            document.getElementById('edit-name-form').reset();
+        }
+
+        // Update user name
+        async function updateName(event) {
+            event.preventDefault();
+
+            const newName = document.getElementById('display-name').value.trim();
+
+            if (!newName) {
+                alert('Please enter a valid name');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/auth/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ name: newName })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Update localStorage with new user data
+                    const userStr = localStorage.getItem('user');
+                    if (userStr) {
+                        const user = JSON.parse(userStr);
+                        user.name = newName;
+                        localStorage.setItem('user', JSON.stringify(user));
+                    }
+
+                    // Update UI
+                    loadUserData();
+                    closeEditNameModal();
+
+                    // Show success message
+                    alert('Name updated successfully!');
+                } else {
+                    alert(data.message || 'Failed to update name');
+                }
+            } catch (error) {
+                console.error('Error updating name:', error);
+                alert('Failed to update name. Please try again.');
+            }
+        }
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Remove active state from all tabs
+            document.querySelectorAll('.dashboard-tab').forEach(tab => {
+                tab.classList.remove('active', 'border-teal-600', 'text-teal-600');
+                tab.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            // Show selected tab content
+            document.getElementById(`${tabName}-content`).classList.remove('hidden');
+
+            // Add active state to clicked tab
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            activeTab.classList.add('active', 'border-teal-600', 'text-teal-600');
+            activeTab.classList.remove('border-transparent', 'text-gray-500');
+
+            // Load data for specific tabs
+            if (tabName === 'calendar') {
+                loadCalendarView();
+            } else if (tabName === 'bookings') {
+                loadBookings();
+            } else if (tabName === 'finances') {
+                loadFinances();
+            }
+        }
+
+        // Load calendar view with bookings
+        let calendar = null;
+
+        async function loadCalendarView() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load bookings');
+
+                const data = await response.json();
+                const allBookings = data.bookings || [];
+
+                // Filter out declined/rejected bookings
+                const bookings = allBookings.filter(booking =>
+                    booking.bookingStatus !== 'declined' &&
+                    booking.bookingStatus !== 'rejected' &&
+                    booking.bookingStatus !== 'cancelled'
+                );
+
+                console.log('📅 Loading calendar with', bookings.length, 'bookings (filtered from', allBookings.length, 'total)');
+
+                // Convert bookings to FullCalendar events
+                const events = bookings.map(booking => {
+                    const propertyName = booking.property?.name || 'Property';
+                    return {
+                        id: booking.id,
+                        title: `${booking.guestName} - ${propertyName}`,
+                        start: booking.checkIn,
+                        end: booking.checkOut,
+                        backgroundColor: getEventColor(booking.bookingStatus),
+                        borderColor: getEventBorderColor(booking.bookingStatus),
+                        textColor: getEventTextColor(booking.bookingStatus),
+                        classNames: [`status-${booking.bookingStatus}`],
+                        extendedProps: {
+                            guestName: booking.guestName,
+                            guestEmail: booking.guestEmail,
+                            confirmationCode: booking.confirmationCode,
+                            status: booking.bookingStatus,
+                            totalAmount: booking.totalAmount,
+                            nights: booking.nights,
+                            property: propertyName
+                        }
+                    };
+                });
+
+                // Initialize or update calendar
+                const calendarEl = document.getElementById('calendar');
+
+                if (calendar) {
+                    // Update existing calendar
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(events);
+                } else {
+                    // Create new calendar
+                    calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek,listWeek'
+                        },
+                        events: events,
+                        height: 'auto',
+                        eventClick: function(info) {
+                            showBookingDetails(info.event);
+                        },
+                        eventDidMount: function(info) {
+                            // Add tooltip on hover
+                            info.el.title = `${info.event.extendedProps.guestName}\n${info.event.extendedProps.confirmationCode}\nStatus: ${info.event.extendedProps.status}`;
+                        }
+                    });
+                    calendar.render();
+                }
+
+                console.log('✅ Calendar loaded successfully');
+            } catch (error) {
+                console.error('❌ Error loading calendar:', error);
+                document.getElementById('calendar').innerHTML = '<p class="text-red-600 text-center py-8">Error loading calendar. Please try again.</p>';
+            }
+        }
+
+        function getEventColor(status) {
+            const colors = {
+                'requested': '#FEF3C7',
+                'approved': '#DBEAFE',
+                'confirmed': '#D1FAE5',
+                'declined': '#FEE2E2'
+            };
+            return colors[status] || '#F3F4F6';
+        }
+
+        function getEventBorderColor(status) {
+            const colors = {
+                'requested': '#F59E0B',
+                'approved': '#3B82F6',
+                'confirmed': '#10B981',
+                'declined': '#EF4444'
+            };
+            return colors[status] || '#9CA3AF';
+        }
+
+        function getEventTextColor(status) {
+            const colors = {
+                'requested': '#92400E',
+                'approved': '#1E40AF',
+                'confirmed': '#065F46',
+                'declined': '#991B1B'
+            };
+            return colors[status] || '#1F2937';
+        }
+
+        function showBookingDetails(event) {
+            const props = event.extendedProps;
+            const startDate = new Date(event.start).toLocaleDateString('en-US', {
+                weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+            });
+            const endDate = new Date(event.end).toLocaleDateString('en-US', {
+                weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+            });
+
+            alert(`📅 Booking Details
+
+Guest: ${props.guestName}
+Email: ${props.guestEmail}
+Property: ${props.property}
+Confirmation: ${props.confirmationCode}
+
+Check-in: ${startDate}
+Check-out: ${endDate}
+Nights: ${props.nights}
+
+Status: ${props.status}
+Total: $${props.totalAmount}`);
+        }
+
+        // Load bookings list
+        async function loadBookings() {
+            const bookingsList = document.getElementById('bookings-list');
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load bookings');
+
+                const data = await response.json();
+                window.allBookings = data.bookings || [];
+                filterBookings(); // Apply filter
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                bookingsList.innerHTML = '<p class="text-red-600 text-center py-8">Error loading bookings</p>';
+            }
+        }
+
+        // Filter bookings by status
+        function filterBookings() {
+            const filter = document.getElementById('booking-filter').value;
+            const bookingsList = document.getElementById('bookings-list');
+            const bookings = window.allBookings || [];
+
+            const filtered = filter === 'all' ?
+                bookings :
+                bookings.filter(b => b.bookingStatus === filter || b.status === filter);
+
+            bookingsList.innerHTML = filtered.length === 0 ?
+                '<p class="text-gray-600 text-center py-8">No bookings found</p>' :
+                filtered.map(booking => `
+                    <div class="border border-gray-200 rounded-lg p-6 hover:border-teal-500 transition">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-semibold text-lg text-gray-900">${booking.confirmationCode || 'N/A'}</h4>
+                                <p class="text-sm text-gray-600 mt-1">${booking.guestName || 'Guest'} • ${booking.guestEmail || ''}</p>
+                                ${booking.property?.name ? `<p class="text-sm text-gray-500 mt-1">📍 ${booking.property.name}</p>` : ''}
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                                booking.bookingStatus === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                booking.bookingStatus === 'requested' ? 'bg-yellow-100 text-yellow-800' :
+                                booking.bookingStatus === 'approved' ? 'bg-blue-100 text-blue-800' :
+                                booking.bookingStatus === 'declined' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                            }">
+                                ${booking.bookingStatus || booking.status}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
+                            <div>
+                                <p class="text-gray-500">Check-in</p>
+                                <p class="font-medium">${new Date(booking.checkIn).toLocaleDateString()}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Check-out</p>
+                                <p class="font-medium">${new Date(booking.checkOut).toLocaleDateString()}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Nights</p>
+                                <p class="font-medium">${booking.nights}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Total Amount</p>
+                                <p class="font-medium">$${booking.totalAmount}</p>
+                            </div>
+                        </div>
+                        ${booking.guestMessage ? `
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                <p class="text-sm text-gray-700"><strong>Guest Message:</strong> ${booking.guestMessage}</p>
+                            </div>
+                        ` : ''}
+                        ${booking.bookingStatus === 'requested' ? `
+                            <div class="flex gap-3 mt-4 pt-4 border-t border-gray-200">
+                                <button onclick="approveBooking('${booking.id}')" class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Approve & Charge Deposit
+                                </button>
+                                <button onclick="declineBooking('${booking.id}')" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Decline
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+        }
+
+        // Approve booking
+        async function approveBooking(bookingId) {
+            if (!confirm('Approve this booking? The guest\'s deposit will be charged.')) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings/${bookingId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Booking approved! Deposit charged successfully. Guest has been notified via email.');
+                    loadBookings(); // Reload bookings
+                    loadPendingTasks(); // Update pending tasks count
+                } else {
+                    alert('❌ Error: ' + (data.message || 'Failed to approve booking'));
+                }
+            } catch (error) {
+                console.error('Error approving booking:', error);
+                alert('❌ Failed to approve booking. Please try again.');
+            }
+        }
+
+        // Decline booking
+        async function declineBooking(bookingId) {
+            const reason = prompt('Enter a reason for declining (optional - will be sent to guest):');
+            if (reason === null) return; // User cancelled
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings/${bookingId}/decline`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Booking declined. Guest has been notified via email.');
+                    loadBookings(); // Reload bookings
+                    loadPendingTasks(); // Update pending tasks count
+                } else {
+                    alert('❌ Error: ' + (data.message || 'Failed to decline booking'));
+                }
+            } catch (error) {
+                console.error('Error declining booking:', error);
+                alert('❌ Failed to decline booking. Please try again.');
+            }
+        }
+
+        // ─── Finances ────────────────────────────────────────────────────────────
+
+        const finState = {
+            propertyId: null,
+            view: 'summary',
+            year: new Date().getFullYear(),
+            summaryData: null,
+            yearData: null,
+            properties: [],
+            editingExpenseId: null
+        };
+
+        const MONTH_NAMES = ['January','February','March','April','May','June',
+            'July','August','September','October','November','December'];
+
+        function finFmt(val) {
+            if (val === null || val === undefined) return '—';
+            const n = parseFloat(val);
+            if (isNaN(n)) return '—';
+            return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        function finFmtSigned(val) {
+            if (val === null || val === undefined) return '—';
+            const n = parseFloat(val);
+            if (isNaN(n)) return '—';
+            const str = '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return n < 0 ? '-' + str : str;
+        }
+        function finColorClass(val) {
+            const n = parseFloat(val);
+            if (isNaN(n)) return 'text-gray-900';
+            return n >= 0 ? 'text-green-700' : 'text-red-600';
+        }
+        function finPct(val) {
+            if (val === null || val === undefined) return '—';
+            return (parseFloat(val) * 100).toFixed(2) + '%';
+        }
+        function authHeaders() {
+            return { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' };
+        }
+
+        async function loadFinances() {
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/properties`, { headers: authHeaders() });
+                const data = await res.json();
+                finState.properties = data.properties || [];
+
+                const sel = document.getElementById('fin-property-select');
+                sel.innerHTML = '<option value="">Select property...</option>';
+                finState.properties.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = `${p.name} (${p.city}, ${p.state})`;
+                    sel.appendChild(opt);
+                });
+
+                // Determine which property to select
+                let toSelect = finState.propertyId;
+                if (!toSelect) {
+                    if (finState.properties.length === 1) {
+                        // Only one property — auto-select it
+                        toSelect = finState.properties[0].id;
+                    } else if (finState.properties.length > 1) {
+                        // Check for a saved default
+                        const saved = localStorage.getItem('fin_default_property_id');
+                        if (saved && finState.properties.find(p => p.id === saved)) {
+                            toSelect = saved;
+                        }
+                    }
+                }
+
+                if (toSelect) {
+                    sel.value = toSelect;
+                    await setFinProperty(toSelect);
+                }
+
+                // Show "Set as default" button only when multiple properties exist
+                document.getElementById('fin-set-default-btn').classList.toggle('hidden', finState.properties.length <= 1);
+            } catch(e) {
+                console.error('loadFinances error:', e);
+            }
+        }
+
+        function setFinDefaultProperty() {
+            if (!finState.propertyId) return;
+            localStorage.setItem('fin_default_property_id', finState.propertyId);
+            const btn = document.getElementById('fin-set-default-btn');
+            btn.textContent = '✓ Default set';
+            setTimeout(() => { btn.textContent = 'Set as default'; }, 2000);
+        }
+
+        async function setFinProperty(propertyId) {
+            finState.propertyId = propertyId;
+            const wrap = document.getElementById('fin-visibility-wrap');
+            if (!propertyId) {
+                document.getElementById('fin-empty').classList.remove('hidden');
+                document.getElementById('fin-summary-view').classList.add('hidden');
+                document.getElementById('fin-year-view').classList.add('hidden');
+                wrap.classList.remove('flex');
+                wrap.classList.add('hidden');
+                return;
+            }
+            wrap.classList.remove('hidden');
+            wrap.classList.add('flex');
+            updateVisibilityToggle();
+            document.getElementById('fin-empty').classList.add('hidden');
+            await setFinView(finState.view);
+        }
+
+        function updateVisibilityToggle() {
+            const prop = finState.properties.find(p => p.id === finState.propertyId);
+            if (!prop) return;
+            const btn = document.getElementById('fin-visibility-btn');
+            const knob = document.getElementById('fin-visibility-knob');
+            const label = document.getElementById('fin-visibility-label');
+            if (prop.publiclyVisible) {
+                btn.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-teal-600 transition-colors focus:outline-none';
+                knob.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6';
+                label.textContent = 'On';
+                label.className = 'text-sm font-medium text-teal-700';
+            } else {
+                btn.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 transition-colors focus:outline-none';
+                knob.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1';
+                label.textContent = 'Off';
+                label.className = 'text-sm font-medium text-gray-500';
+            }
+        }
+
+        async function togglePropertyVisibility() {
+            const prop = finState.properties.find(p => p.id === finState.propertyId);
+            if (!prop) return;
+            const newVal = !prop.publiclyVisible;
+            try {
+                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/visibility`, {
+                    method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ publiclyVisible: newVal })
+                });
+                prop.publiclyVisible = newVal;
+                updateVisibilityToggle();
+            } catch(e) { console.error('toggleVisibility error:', e); }
+        }
+
+        async function setFinView(view) {
+            finState.view = view;
+            document.getElementById('fin-btn-summary').className = view === 'summary'
+                ? 'px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow text-gray-900 transition'
+                : 'px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition';
+            document.getElementById('fin-btn-year').className = view === 'year'
+                ? 'px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow text-gray-900 transition'
+                : 'px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition';
+
+            document.getElementById('fin-summary-view').classList.toggle('hidden', view !== 'summary');
+            document.getElementById('fin-year-view').classList.toggle('hidden', view !== 'year');
+
+            if (view === 'summary') await loadFinSummary();
+            else await initFinYear();
+        }
+
+        async function loadFinSummary() {
+            if (!finState.propertyId) return;
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/summary`, { headers: authHeaders() });
+                const data = await res.json();
+                finState.summaryData = data;
+                renderSummary(data);
+            } catch(e) { console.error('loadFinSummary error:', e); }
+        }
+
+        function renderSummary(data) {
+            const { years = [], allTimeTotals, purchasePrice } = data;
+
+            document.getElementById('fin-total-net').textContent = allTimeTotals ? finFmtSigned(allTimeTotals.netIncome) : '—';
+            const profitEl = document.getElementById('fin-total-profit');
+            if (allTimeTotals) {
+                profitEl.textContent = finFmtSigned(allTimeTotals.grossProfits);
+                profitEl.className = 'text-2xl font-bold mt-1 ' + finColorClass(allTimeTotals.grossProfits);
+            }
+            document.getElementById('fin-noi').textContent = allTimeTotals?.noi != null ? finPct(allTimeTotals.noi) : '—';
+            document.getElementById('fin-purchase-price').textContent = purchasePrice ? finFmt(purchasePrice) : '—';
+
+            const tbody = document.getElementById('fin-summary-body');
+            const rows = [...years];
+
+            let html = rows.map(y => {
+                return `<tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="drillToYear(${y.year})">
+                    <td class="px-4 py-3 font-medium text-teal-600 sticky left-0 bg-white hover:bg-gray-50">
+                        ${y.year}${!y.hasMonthlyDetail ? ' <span class="text-xs text-gray-400 font-normal" title="Annual total only — no monthly breakdown">est.</span>' : ''}
+                    </td>
+                    <td class="px-4 py-3 text-right">${finFmt(y.grossIncome)}</td>
+                    <td class="px-4 py-3 text-right text-gray-600">${finFmt(y.managementFee)}</td>
+                    <td class="px-4 py-3 text-right text-gray-600">${finFmt(y.grossExpenses)}</td>
+                    <td class="px-4 py-3 text-right font-medium">${finFmtSigned(y.netIncome)}</td>
+                    <td class="px-4 py-3 text-right">${finPct(y.percentageOfIncome)}</td>
+                    <td class="px-4 py-3 text-right">${y.nightsBooked || 0}</td>
+                    <td class="px-4 py-3 text-right">${y.numReservations || 0}</td>
+                    <td class="px-4 py-3 text-right">${y.occupancyRatio != null ? (y.occupancyRatio * 100).toFixed(0) + '%' : '—'}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(y.hoaPayment)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(y.scheduledMortgage ? y.scheduledMortgage * 12 : null)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(y.actualMortgagePaid)}</td>
+                    <td class="px-4 py-3 text-right ${finColorClass(y.extraPaid)}">${finFmtSigned(y.extraPaid)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(y.taxesInsurance)}</td>
+                    <td class="px-4 py-3 text-right font-medium ${finColorClass(y.grossProfits)}">${finFmtSigned(y.grossProfits)}</td>
+                    <td class="px-4 py-3 text-right ${finColorClass(y.breakEvenIdeal)}">${finFmtSigned(y.breakEvenIdeal)}</td>
+                    <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">${y.notes || ''}</td>
+                    <td class="px-4 py-3 text-teal-600 text-xs">Detail →</td>
+                </tr>`;
+            }).join('');
+
+            if (allTimeTotals) {
+                html += `<tr class="border-t-2 border-gray-300 bg-gray-50 font-semibold">
+                    <td class="px-4 py-3 sticky left-0 bg-gray-50">All-Time Total</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.grossIncome)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.managementFee)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.grossExpenses)}</td>
+                    <td class="px-4 py-3 text-right">${finFmtSigned(allTimeTotals.netIncome)}</td>
+                    <td class="px-4 py-3 text-right">${finPct(allTimeTotals.percentageOfIncome)}</td>
+                    <td class="px-4 py-3 text-right">${allTimeTotals.nightsBooked}</td>
+                    <td class="px-4 py-3 text-right">${allTimeTotals.numReservations}</td>
+                    <td class="px-4 py-3 text-right">—</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.hoaPayment)}</td>
+                    <td class="px-4 py-3 text-right">—</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.actualMortgagePaid)}</td>
+                    <td class="px-4 py-3 text-right">${finFmtSigned(allTimeTotals.extraPaid)}</td>
+                    <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.taxesInsurance)}</td>
+                    <td class="px-4 py-3 text-right ${finColorClass(allTimeTotals.grossProfits)}">${finFmtSigned(allTimeTotals.grossProfits)}</td>
+                    <td class="px-4 py-3 text-right">—</td>
+                    <td class="px-4 py-3" colspan="2"></td>
+                </tr>`;
+            }
+
+            tbody.innerHTML = html;
+        }
+
+        function drillToYear(year) {
+            finState.year = year;
+            setFinView('year');
+        }
+
+        async function initFinYear() {
+            if (!finState.propertyId) return;
+            // Populate year selector from summary data (or derive from current year)
+            const years = finState.summaryData?.years?.map(y => y.year) || [];
+            const currentYear = new Date().getFullYear();
+            if (!years.includes(currentYear)) years.push(currentYear);
+            years.sort((a, b) => b - a);
+
+            const sel = document.getElementById('fin-year-select');
+            sel.innerHTML = years.map(y => `<option value="${y}" ${y === finState.year ? 'selected' : ''}>${y}</option>`).join('');
+
+            await loadFinYear(finState.year);
+        }
+
+        async function loadFinYear(year) {
+            finState.year = parseInt(year);
+            document.getElementById('fin-annual-modal-title').textContent = `Mortgage & T&I — ${year}`;
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/year/${year}`, { headers: authHeaders() });
+                const data = await res.json();
+                finState.yearData = data;
+                renderMonthlyTable(data);
+                renderAnnualMetrics(data);
+                renderExpenseItems(data);
+            } catch(e) { console.error('loadFinYear error:', e); }
+        }
+
+        function isItemized(data) {
+            // Vermont uses itemized fields; detected by dataSource or by presence of cleaning data
+            return data?.dataSource !== 'caribbean';
+        }
+
+        function renderMonthlyTable(data) {
+            const { months = [], annualConfig, dataSource } = data;
+            const itemized = isItemized(data);
+            const scheduledMortgage = parseFloat(annualConfig?.scheduledMortgage || 0);
+
+            const header = document.getElementById('fin-monthly-header');
+            const baseCols = ['Month', 'Gross Income', 'Mgmt Fee'];
+            const expCols = itemized
+                ? ['Cleaning', 'Utilities', 'Maint.', 'Other']
+                : ['Platform Charges'];
+            const restCols = ['Net Income', '%', 'Nights', 'Res.', 'Avg Stay', 'Occ.', 'HOA', 'Actual Paid', ''];
+            const allCols = [...baseCols, ...expCols, ...restCols];
+            header.innerHTML = allCols.map(c => `<th class="px-3 py-3 text-${c ? (c === 'Month' ? 'left' : 'right') : 'right'} font-semibold text-gray-700 whitespace-nowrap text-sm">${c}</th>`).join('');
+
+            const tbody = document.getElementById('fin-monthly-body');
+            const totalsRow = data.annualTotals;
+
+            let html = months.map(m => {
+                const expCells = itemized
+                    ? [finFmt(m.cleaningFee), finFmt(m.utilities), finFmt(m.maintenance), finFmt(m.otherExpenses)]
+                    : [finFmt(m.platformCharges)];
+                const net = finFmtSigned(m.netIncome);
+                return `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                    <td class="px-3 py-2 font-medium text-gray-900">${m.monthName}</td>
+                    <td class="px-3 py-2 text-right">${finFmt(m.grossIncome)}</td>
+                    <td class="px-3 py-2 text-right text-gray-500">${finFmt(m.managementFee)}</td>
+                    ${expCells.map(c => `<td class="px-3 py-2 text-right text-gray-500">${c}</td>`).join('')}
+                    <td class="px-3 py-2 text-right font-medium ${finColorClass(m.netIncome)}">${net}</td>
+                    <td class="px-3 py-2 text-right">${finPct(m.percentageOfIncome)}</td>
+                    <td class="px-3 py-2 text-right">${m.nightsBooked || 0}</td>
+                    <td class="px-3 py-2 text-right">${m.numReservations || 0}</td>
+                    <td class="px-3 py-2 text-right">${m.avgLengthOfStay ? m.avgLengthOfStay.toFixed(2) : '—'}</td>
+                    <td class="px-3 py-2 text-right">${(m.occupancyRatio * 100).toFixed(0)}%</td>
+                    <td class="px-3 py-2 text-right">${finFmt(m.hoaPayment)}</td>
+                    <td class="px-3 py-2 text-right">${finFmt(m.actualMortgagePaid)}</td>
+                    <td class="px-3 py-2 text-center">
+                        <button onclick="openMonthModal(${m.month})" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            if (totalsRow) {
+                const expTotals = itemized
+                    ? [finFmt(totalsRow.cleaningFee), finFmt(totalsRow.utilities), finFmt(totalsRow.maintenance), finFmt(totalsRow.otherExpenses)]
+                    : [finFmt(totalsRow.platformCharges)];
+                html += `<tr class="border-t-2 border-gray-300 bg-gray-50 font-semibold text-sm">
+                    <td class="px-3 py-2">Totals</td>
+                    <td class="px-3 py-2 text-right">${finFmt(totalsRow.grossIncome)}</td>
+                    <td class="px-3 py-2 text-right">${finFmt(totalsRow.managementFee)}</td>
+                    ${expTotals.map(c => `<td class="px-3 py-2 text-right">${c}</td>`).join('')}
+                    <td class="px-3 py-2 text-right ${finColorClass(totalsRow.netIncome)}">${finFmtSigned(totalsRow.netIncome)}</td>
+                    <td class="px-3 py-2 text-right">${finPct(totalsRow.percentageOfIncome)}</td>
+                    <td class="px-3 py-2 text-right">${totalsRow.nightsBooked}</td>
+                    <td class="px-3 py-2 text-right">${totalsRow.numReservations}</td>
+                    <td class="px-3 py-2 text-right">—</td>
+                    <td class="px-3 py-2 text-right">${(totalsRow.occupancyRatio * 100).toFixed(0)}%</td>
+                    <td class="px-3 py-2 text-right">${finFmt(totalsRow.hoaPayment)}</td>
+                    <td class="px-3 py-2 text-right">${finFmt(totalsRow.actualMortgagePaid)}</td>
+                    <td></td>
+                </tr>`;
+            }
+
+            tbody.innerHTML = html;
+        }
+
+        function renderAnnualMetrics(data) {
+            const t = data.annualTotals;
+            const config = data.annualConfig;
+            const pp = data.purchasePrice;
+            const scheduledMortgage = parseFloat(config?.scheduledMortgage || 0);
+            const ti = parseFloat(config?.taxesInsurance || 0);
+
+            const metrics = [
+                { label: 'Gross Rental Income', value: finFmt(t?.grossIncome), color: 'text-gray-900' },
+                { label: 'Gross Profits', value: finFmtSigned(t?.grossProfits), color: finColorClass(t?.grossProfits) },
+                { label: 'NOI', value: t?.noi != null ? finPct(t.noi) : '—', color: finColorClass(t?.noi), sub: `(${pp ? finFmt(pp) : 'no purchase price'})` },
+                { label: 'Kev NOI', value: t?.kevNoi != null ? finPct(t.kevNoi) : '—', color: finColorClass(t?.kevNoi) },
+                { label: 'Breakeven (Ideal)', value: finFmtSigned(t?.breakEvenIdeal), color: finColorClass(t?.breakEvenIdeal) },
+                { label: 'Annual T&I', value: finFmt(ti || null), color: 'text-gray-900' },
+                { label: 'Scheduled Mortgage / mo', value: finFmt(scheduledMortgage || null), color: 'text-gray-900' },
+                { label: 'Extra Paid', value: finFmtSigned(t?.extraPaid), color: finColorClass(t?.extraPaid) },
+            ];
+
+            document.getElementById('fin-annual-metrics').innerHTML = metrics.map(m =>
+                `<div class="bg-white rounded-xl shadow-sm p-4">
+                    <p class="text-xs text-gray-500 font-medium">${m.label}</p>
+                    <p class="text-xl font-bold mt-1 ${m.color}">${m.value}</p>
+                    ${m.sub ? `<p class="text-xs text-gray-400">${m.sub}</p>` : ''}
+                </div>`
+            ).join('');
+        }
+
+        function renderExpenseItems(data) {
+            const section = document.getElementById('fin-expense-section');
+            const itemized = isItemized(data);
+            section.classList.toggle('hidden', !itemized);
+            if (!itemized) return;
+
+            const items = data.expenseItems || [];
+            const tagColors = {
+                utilities: 'bg-blue-100 text-blue-700',
+                housekeeping: 'bg-green-100 text-green-700',
+                maintenance: 'bg-orange-100 text-orange-700',
+                hoa: 'bg-purple-100 text-purple-700',
+                other: 'bg-gray-100 text-gray-600'
+            };
+
+            document.getElementById('fin-expense-body').innerHTML = items.length === 0
+                ? `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No expense items yet. Click + Add Expense to start.</td></tr>`
+                : items.map(item => `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2">${MONTH_NAMES[(item.month || 1) - 1]}</td>
+                    <td class="px-4 py-2 text-gray-500">${item.expenseDate || '—'}</td>
+                    <td class="px-4 py-2">${item.expenseName || '—'}</td>
+                    <td class="px-4 py-2 text-gray-500">${item.vendor || '—'}</td>
+                    <td class="px-4 py-2 text-right font-medium">${item.amount != null ? finFmt(item.amount) : '—'}</td>
+                    <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tagColors[item.tag] || tagColors.other}">${item.tag}</span></td>
+                    <td class="px-4 py-2 flex gap-2">
+                        <button onclick="openExpenseModal('${item.id}')" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
+                        <button onclick="deleteExpense('${item.id}')" class="text-red-500 hover:text-red-700 text-xs">Del</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        // Month modal
+        function openMonthModal(month) {
+            const modal = document.getElementById('fin-month-modal');
+            const data = finState.yearData;
+            const itemized = isItemized(data);
+
+            document.getElementById('fin-m-itemized-fields').classList.toggle('hidden', !itemized);
+            document.getElementById('fin-m-charges-field').classList.toggle('hidden', itemized);
+
+            document.getElementById('fin-m-year').value = finState.year;
+
+            if (month) {
+                const m = data?.months?.find(x => x.month === month);
+                document.getElementById('fin-month-modal-title').textContent = `Edit ${MONTH_NAMES[month - 1]} ${finState.year}`;
+                document.getElementById('fin-m-month').value = month;
+                if (m) {
+                    document.getElementById('fin-m-gross').value = m.grossIncome || '';
+                    document.getElementById('fin-m-mgmt').value = m.managementFee || '';
+                    document.getElementById('fin-m-cleaning').value = m.cleaningFee || '';
+                    document.getElementById('fin-m-utilities').value = m.utilities || '';
+                    document.getElementById('fin-m-maintenance').value = m.maintenance || '';
+                    document.getElementById('fin-m-other').value = m.otherExpenses || '';
+                    document.getElementById('fin-m-charges').value = m.platformCharges || '';
+                    document.getElementById('fin-m-nights').value = m.nightsBooked || '';
+                    document.getElementById('fin-m-reservations').value = m.numReservations || '';
+                    document.getElementById('fin-m-hoa').value = m.hoaPayment || '';
+                    document.getElementById('fin-m-mortgage').value = m.actualMortgagePaid || '';
+                }
+            } else {
+                document.getElementById('fin-month-modal-title').textContent = `Add Month — ${finState.year}`;
+                ['fin-m-gross','fin-m-mgmt','fin-m-cleaning','fin-m-utilities','fin-m-maintenance',
+                 'fin-m-other','fin-m-charges','fin-m-nights','fin-m-reservations','fin-m-hoa','fin-m-mortgage']
+                    .forEach(id => { document.getElementById(id).value = ''; });
+            }
+
+            modal.classList.remove('hidden');
+        }
+        function closeMonthModal() { document.getElementById('fin-month-modal').classList.add('hidden'); }
+
+        async function saveMonth() {
+            const body = {
+                year: parseInt(document.getElementById('fin-m-year').value),
+                month: parseInt(document.getElementById('fin-m-month').value),
+                grossIncome: parseFloat(document.getElementById('fin-m-gross').value) || 0,
+                managementFee: parseFloat(document.getElementById('fin-m-mgmt').value) || 0,
+                cleaningFee: parseFloat(document.getElementById('fin-m-cleaning').value) || 0,
+                utilities: parseFloat(document.getElementById('fin-m-utilities').value) || 0,
+                maintenance: parseFloat(document.getElementById('fin-m-maintenance').value) || 0,
+                otherExpenses: parseFloat(document.getElementById('fin-m-other').value) || 0,
+                platformCharges: parseFloat(document.getElementById('fin-m-charges').value) || 0,
+                nightsBooked: parseInt(document.getElementById('fin-m-nights').value) || 0,
+                numReservations: parseInt(document.getElementById('fin-m-reservations').value) || 0,
+                hoaPayment: parseFloat(document.getElementById('fin-m-hoa').value) || 0,
+                actualMortgagePaid: parseFloat(document.getElementById('fin-m-mortgage').value) || 0,
+            };
+            try {
+                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                    method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
+                });
+                closeMonthModal();
+                await loadFinYear(finState.year);
+            } catch(e) { console.error('saveMonth error:', e); }
+        }
+
+        // Annual config modal
+        function openAnnualConfigModal() {
+            const config = finState.yearData?.annualConfig;
+            document.getElementById('fin-a-mortgage').value = config?.scheduledMortgage || '';
+            document.getElementById('fin-a-ti').value = config?.taxesInsurance || '';
+            document.getElementById('fin-a-notes').value = config?.notes || '';
+            document.getElementById('fin-annual-modal').classList.remove('hidden');
+        }
+        function closeAnnualConfigModal() { document.getElementById('fin-annual-modal').classList.add('hidden'); }
+
+        async function saveAnnualConfig() {
+            const body = {
+                year: finState.year,
+                scheduledMortgage: parseFloat(document.getElementById('fin-a-mortgage').value) || null,
+                taxesInsurance: parseFloat(document.getElementById('fin-a-ti').value) || null,
+                notes: document.getElementById('fin-a-notes').value
+            };
+            try {
+                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/annual-config`, {
+                    method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
+                });
+                closeAnnualConfigModal();
+                await loadFinYear(finState.year);
+            } catch(e) { console.error('saveAnnualConfig error:', e); }
+        }
+
+        // Expense item modal
+        function openExpenseModal(idOrNull) {
+            finState.editingExpenseId = idOrNull;
+            const isEdit = idOrNull && idOrNull !== 'null';
+            document.getElementById('fin-expense-modal-title').textContent = isEdit ? 'Edit Expense' : 'Add Expense';
+
+            if (isEdit) {
+                const item = finState.yearData?.expenseItems?.find(x => x.id === idOrNull);
+                if (item) {
+                    document.getElementById('fin-e-month').value = item.month;
+                    document.getElementById('fin-e-date').value = item.expenseDate || '';
+                    document.getElementById('fin-e-name').value = item.expenseName || '';
+                    document.getElementById('fin-e-vendor').value = item.vendor || '';
+                    document.getElementById('fin-e-amount').value = item.amount || '';
+                    document.getElementById('fin-e-tag').value = item.tag || 'other';
+                }
+            } else {
+                ['fin-e-date','fin-e-name','fin-e-vendor','fin-e-amount'].forEach(id => { document.getElementById(id).value = ''; });
+                document.getElementById('fin-e-month').value = '1';
+                document.getElementById('fin-e-tag').value = 'other';
+            }
+            document.getElementById('fin-expense-modal').classList.remove('hidden');
+        }
+        function closeExpenseModal() { document.getElementById('fin-expense-modal').classList.add('hidden'); }
+
+        async function saveExpenseItem() {
+            const body = {
+                year: finState.year,
+                month: parseInt(document.getElementById('fin-e-month').value),
+                expenseDate: document.getElementById('fin-e-date').value || null,
+                expenseName: document.getElementById('fin-e-name').value,
+                vendor: document.getElementById('fin-e-vendor').value,
+                amount: parseFloat(document.getElementById('fin-e-amount').value) || null,
+                tag: document.getElementById('fin-e-tag').value
+            };
+            try {
+                const isEdit = finState.editingExpenseId && finState.editingExpenseId !== 'null';
+                if (isEdit) {
+                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/expenses/${finState.editingExpenseId}`, {
+                        method: 'PUT', headers: authHeaders(), body: JSON.stringify(body)
+                    });
+                } else {
+                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/expenses`, {
+                        method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
+                    });
+                }
+                closeExpenseModal();
+                await loadFinYear(finState.year);
+            } catch(e) { console.error('saveExpenseItem error:', e); }
+        }
+
+        async function deleteExpense(id) {
+            if (!confirm('Delete this expense?')) return;
+            try {
+                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/expenses/${id}`, {
+                    method: 'DELETE', headers: authHeaders()
+                });
+                await loadFinYear(finState.year);
+            } catch(e) { console.error('deleteExpense error:', e); }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('edit-name-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditNameModal();
+            }
+        });
+
+        // Run on page load
+        initDashboard();
+
+        // ─── CSV Import ───────────────────────────────────────────────────────────
+
+        const importState = { rows: [], type: 'monthly' };
+
+        const MONTH_MAP = {
+            january:1, february:2, march:3, april:4, may:5, june:6,
+            july:7, august:8, september:9, october:10, november:11, december:12,
+            jan:1, feb:2, mar:3, apr:4, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12
+        };
+
+        function parseMonthValue(val) {
+            if (!val) return null;
+            const s = String(val).trim().toLowerCase();
+            if (MONTH_MAP[s]) return MONTH_MAP[s];
+            const n = parseInt(s);
+            if (n >= 1 && n <= 12) return n;
+            return null;
+        }
+
+        function parseMoney(val) {
+            if (val === null || val === undefined) return 0;
+            return parseFloat(String(val).replace(/[$,\s]/g, '')) || 0;
+        }
+
+        function parseCSV(text) {
+            const lines = text.split(/\r?\n/).filter(l => l.trim());
+            const rows = [];
+            for (const line of lines) {
+                const cells = [];
+                let cur = '', inQuote = false;
+                for (let i = 0; i < line.length; i++) {
+                    const ch = line[i];
+                    if (ch === '"') { inQuote = !inQuote; }
+                    else if (ch === ',' && !inQuote) { cells.push(cur.trim()); cur = ''; }
+                    else { cur += ch; }
+                }
+                cells.push(cur.trim());
+                rows.push(cells);
+            }
+            return rows;
+        }
+
+        // Normalise a header string for matching
+        function normHeader(s) {
+            return String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        // Map raw CSV rows → monthly upsert payloads
+        function mapMonthlyRows(rawRows) {
+            // Find header row (first row that contains a month-like value OR has 'month' header)
+            let headerIdx = 0;
+            for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+                const normed = rawRows[i].map(normHeader);
+                if (normed.includes('month') || normed.includes('grossincome') || normed.includes('gross')) {
+                    headerIdx = i; break;
+                }
+            }
+            const headers = rawRows[headerIdx].map(normHeader);
+            const dataRows = rawRows.slice(headerIdx + 1);
+
+            const col = (aliases) => {
+                for (const a of aliases) {
+                    const idx = headers.indexOf(a);
+                    if (idx !== -1) return idx;
+                }
+                return -1;
+            };
+
+            const cols = {
+                month:          col(['month']),
+                grossIncome:    col(['grossincome','gross']),
+                managementFee:  col(['managementfee','managmentfee','mgmtfee','managementfees']),
+                platformCharges:col(['platformcharges','charges','grosscharges']),
+                cleaningFee:    col(['cleaningfee','cleaning']),
+                utilities:      col(['utilities']),
+                maintenance:    col(['maintenance','mantenance']),
+                otherExpenses:  col(['otherexpenses','other']),
+                nightsBooked:   col(['nightsbooked','nights']),
+                numReservations:col(['numreservations','reservations','ofreservations','noofreservations']),
+                hoaPayment:     col(['hoapayment','hoa']),
+                actualMortgagePaid: col(['actualmortgagepaid','actualpayments','actualpaid','actualmortgagepaymentsmade']),
+            };
+
+            const results = [];
+            for (const row of dataRows) {
+                if (!row.some(c => c)) continue; // skip blank rows
+                const month = parseMonthValue(cols.month !== -1 ? row[cols.month] : null);
+                if (!month) continue; // skip totals/summary rows
+
+                const get = (key) => cols[key] !== -1 ? parseMoney(row[cols[key]]) : 0;
+                results.push({
+                    month,
+                    grossIncome:     get('grossIncome'),
+                    managementFee:   get('managementFee'),
+                    platformCharges: get('platformCharges'),
+                    cleaningFee:     get('cleaningFee'),
+                    utilities:       get('utilities'),
+                    maintenance:     get('maintenance'),
+                    otherExpenses:   get('otherExpenses'),
+                    nightsBooked:    parseInt(cols.nightsBooked !== -1 ? row[cols.nightsBooked] : 0) || 0,
+                    numReservations: parseInt(cols.numReservations !== -1 ? row[cols.numReservations] : 0) || 0,
+                    hoaPayment:      get('hoaPayment'),
+                    actualMortgagePaid: get('actualMortgagePaid'),
+                });
+            }
+            return results;
+        }
+
+        // Map raw CSV rows → expense item payloads
+        function mapExpenseRows(rawRows) {
+            let headerIdx = 0;
+            for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+                const normed = rawRows[i].map(normHeader);
+                if (normed.includes('month') || normed.includes('expense') || normed.includes('amount')) {
+                    headerIdx = i; break;
+                }
+            }
+            const headers = rawRows[headerIdx].map(normHeader);
+            const dataRows = rawRows.slice(headerIdx + 1);
+            const col = (aliases) => { for (const a of aliases) { const i = headers.indexOf(a); if (i !== -1) return i; } return -1; };
+
+            const cols = {
+                month:       col(['month']),
+                date:        col(['date','expensedate']),
+                expenseName: col(['expense','expensename','description']),
+                vendor:      col(['vendor']),
+                amount:      col(['amount']),
+                tag:         col(['tag','category']),
+            };
+
+            const VALID_TAGS = ['utilities','housekeeping','maintenance','hoa','other'];
+            return rawRows.slice(headerIdx + 1).filter(r => r.some(c => c)).map(row => {
+                const month = parseMonthValue(cols.month !== -1 ? row[cols.month] : null);
+                if (!month) return null;
+                const rawTag = cols.tag !== -1 ? row[cols.tag].toLowerCase() : 'other';
+                const tag = VALID_TAGS.includes(rawTag) ? rawTag : 'other';
+                return {
+                    month,
+                    expenseDate:  cols.date !== -1 ? row[cols.date] || null : null,
+                    expenseName:  cols.expenseName !== -1 ? row[cols.expenseName] : '',
+                    vendor:       cols.vendor !== -1 ? row[cols.vendor] : '',
+                    amount:       cols.amount !== -1 ? parseMoney(row[cols.amount]) : null,
+                    tag,
+                };
+            }).filter(Boolean);
+        }
+
+        function openImportModal() {
+            const yearSel = document.getElementById('fin-import-year');
+            const years = finState.summaryData?.years?.map(y => y.year) || [];
+            const cur = new Date().getFullYear();
+            if (!years.includes(cur)) years.push(cur);
+            years.sort((a, b) => b - a);
+            yearSel.innerHTML = years.map(y => `<option value="${y}" ${y === finState.year ? 'selected' : ''}>${y}</option>`).join('');
+            resetImport();
+            document.getElementById('fin-import-modal').classList.remove('hidden');
+        }
+
+        function closeImportModal() {
+            document.getElementById('fin-import-modal').classList.add('hidden');
+            document.getElementById('fin-import-file').value = '';
+        }
+
+        function resetImport() {
+            importState.rows = [];
+            const type = document.getElementById('fin-import-type').value;
+            const isPdf = type === 'caribbean-pdf';
+            const isAnnual = type === 'annual-summary';
+
+            document.getElementById('fin-import-preview').classList.add('hidden');
+            document.getElementById('fin-import-caribbean-verify').classList.add('hidden');
+            document.getElementById('fin-import-error').classList.add('hidden');
+            document.getElementById('fin-import-confirm-btn').disabled = true;
+            document.getElementById('fin-import-confirm-btn').textContent = 'Import';
+            document.getElementById('fin-import-file').value = '';
+
+            // Year selector: hide for expenses, annual-summary, and caribbean-pdf (year comes from PDF)
+            document.getElementById('fin-import-year-wrap').classList.toggle('hidden', type !== 'monthly');
+
+            // Template buttons
+            document.getElementById('fin-import-csv-template-btns').classList.toggle('hidden', isPdf || isAnnual);
+            document.getElementById('fin-import-annual-template-btn').classList.toggle('hidden', !isAnnual);
+
+            // File input accepts
+            const fileInput = document.getElementById('fin-import-file');
+            fileInput.accept = isPdf ? '.pdf' : '.csv';
+            document.getElementById('fin-import-file-label').textContent = isPdf ? 'Choose Caribbean statement PDF' : 'Choose CSV file';
+
+            // Hint text
+            const hints = {
+                'monthly': 'One row per month. Download the template to see expected columns.',
+                'expenses': 'One row per expense item. Columns: Month, Date, Expense, Vendor, Amount, Tag.',
+                'annual-summary': 'One row per year. Used for historical years without monthly detail. Download template below.',
+                'caribbean-pdf': 'Upload the PDF statement you download from the Caribbean Resorts owner portal.',
+                'evolve-csv': 'Upload the "Bookings Report" CSV from your Evolve owner portal. Imports financials AND adds guests to your contacts.',
+            };
+            document.getElementById('fin-import-type-hint').textContent = hints[type] || '';
+
+            // Footer note
+            document.getElementById('fin-import-footer-note').textContent = isPdf
+                ? 'HOA and mortgage fields are not in the statement — enter those separately in the month editor.'
+                : 'Existing records for the same month/year will be overwritten.';
+        }
+
+        async function handleImportFile() {
+            const file = document.getElementById('fin-import-file').files[0];
+            if (!file) return;
+            const type = document.getElementById('fin-import-type').value;
+
+            if (type === 'caribbean-pdf') {
+                await handleCaribbeaPdfFile(file);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const rawRows = parseCSV(e.target.result);
+                    let rows;
+                    if (type === 'annual-summary') rows = mapAnnualSummaryRows(rawRows);
+                    else if (type === 'evolve-csv') rows = mapEvolveBookingRows(rawRows);
+                    else if (type === 'monthly') rows = mapMonthlyRows(rawRows);
+                    else rows = mapExpenseRows(rawRows);
+
+                    // Evolve returns { monthlyAggregates, guestContacts } object
+                    const isEmpty = type === 'evolve-csv'
+                        ? (rows.monthlyAggregates.length === 0 && rows.guestContacts.length === 0)
+                        : rows.length === 0;
+                    if (isEmpty) {
+                        showImportError('No valid data rows found. Make sure the file has a header row and a Year or Month column.');
+                        return;
+                    }
+
+                    importState.rows = rows;
+                    showImportPreview(rows, type);
+                    document.getElementById('fin-import-error').classList.add('hidden');
+                    document.getElementById('fin-import-confirm-btn').disabled = false;
+                    const rowCount = type === 'evolve-csv'
+                        ? `${rows.monthlyAggregates.length} month(s) + ${rows.guestContacts.length} guest(s)`
+                        : `${rows.length} row${rows.length !== 1 ? 's' : ''}`;
+                    document.getElementById('fin-import-confirm-btn').textContent = `Import ${rowCount}`;
+                } catch (err) {
+                    showImportError('Failed to parse file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function handleCaribbeaPdfFile(file) {
+            document.getElementById('fin-import-confirm-btn').disabled = true;
+            document.getElementById('fin-import-confirm-btn').textContent = 'Parsing PDF...';
+            document.getElementById('fin-import-error').classList.add('hidden');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const token = localStorage.getItem('accessToken');
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/parse-caribbean-statement`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Parse failed');
+
+                // Populate verification form
+                const p = data.parsed;
+                document.getElementById('fin-verify-month').value = p.month;
+                document.getElementById('fin-verify-year').value = p.year;
+                document.getElementById('fin-verify-grossIncome').value = p.grossIncome;
+                document.getElementById('fin-verify-managementFee').value = p.managementFee;
+                document.getElementById('fin-verify-platformCharges').value = p.platformCharges;
+                document.getElementById('fin-verify-nightsBooked').value = p.nightsBooked;
+                document.getElementById('fin-verify-numReservations').value = p.numReservations;
+                document.getElementById('fin-verify-netDue').value = p.netDue || '';
+
+                if (p.rawExpenses && p.rawExpenses.length > 0) {
+                    const lines = p.rawExpenses.map(e => {
+                        const amt = e.amount < 0
+                            ? `(${finFmt(Math.abs(e.amount))})`
+                            : finFmt(e.amount);
+                        return `<div class="flex justify-between"><span>${e.name}</span><span class="${e.amount < 0 ? 'text-green-600' : ''}">${amt}</span></div>`;
+                    }).join('');
+                    document.getElementById('fin-verify-expense-lines').innerHTML = lines;
+                    document.getElementById('fin-verify-raw-expenses').classList.remove('hidden');
+                }
+
+                document.getElementById('fin-import-caribbean-verify').classList.remove('hidden');
+                document.getElementById('fin-import-confirm-btn').disabled = false;
+                document.getElementById('fin-import-confirm-btn').textContent = 'Save to Dashboard';
+            } catch (err) {
+                showImportError('PDF parse failed: ' + err.message);
+                document.getElementById('fin-import-confirm-btn').textContent = 'Import';
+            }
+        }
+
+        // Map Evolve Booking Report CSV — returns { monthlyAggregates, guestContacts }
+        function mapEvolveBookingRows(rawRows) {
+            let headerIdx = 0;
+            for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+                const normed = rawRows[i].map(normHeader);
+                if (normed.includes('guestname') || normed.includes('status') || normed.includes('bookingid')) { headerIdx = i; break; }
+            }
+            const headers = rawRows[headerIdx].map(normHeader);
+            const col = (aliases) => { for (const a of aliases) { const i = headers.indexOf(a); if (i !== -1) return i; } return -1; };
+            const cols = {
+                guestName:    col(['guestname','name']),
+                status:       col(['status']),
+                bookingId:    col(['bookingid']),
+                checkIn:      col(['checkin','checkindate']),
+                checkOut:     col(['checkout','checkoutdate']),
+                nights:       col(['nights']),
+                nightsStayed: col(['nightsstayed']),
+                totalPayout:  col(['totalpayout','payout','total']),
+                adults:       col(['adults']),
+                children:     col(['children']),
+                listing:      col(['listing']),
+                guestEmail:   col(['guestemail','email']),
+                guestPhone:   col(['guestphone','phone']),
+                bookingSite:  col(['bookingsite','site','channel']),
+            };
+
+            const monthlyMap = {};
+            const guests = [];
+
+            for (const row of rawRows.slice(headerIdx + 1)) {
+                if (!row.some(c => c)) continue;
+                const get = (k) => cols[k] !== -1 ? row[cols[k]] : '';
+                const status = get('status').trim();
+                const checkInStr = get('checkIn').trim();
+                const payout = parseMoney(get('totalPayout'));
+                const nightsStayed = parseInt(get('nightsStayed')) || 0;
+                const nights = parseInt(get('nights')) || nightsStayed;
+
+                // Financial aggregation: Checked out bookings only, by check-IN month
+                if (status === 'Checked out' && checkInStr) {
+                    const d = new Date(checkInStr);
+                    if (!isNaN(d)) {
+                        const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+                        if (!monthlyMap[key]) monthlyMap[key] = { year: d.getFullYear(), month: d.getMonth() + 1, grossIncome: 0, nightsBooked: 0, numReservations: 0 };
+                        monthlyMap[key].grossIncome += payout;
+                        monthlyMap[key].nightsBooked += nightsStayed || nights;
+                        monthlyMap[key].numReservations++;
+                    }
+                }
+
+                // Guest contacts: all non-canceled
+                if (status !== 'Canceled') {
+                    guests.push({
+                        guestName: get('guestName').trim(),
+                        status,
+                        externalBookingId: get('bookingId').trim(),
+                        checkIn: checkInStr,
+                        checkOut: get('checkOut').trim(),
+                        nights,
+                        nightsStayed,
+                        totalPayout: payout,
+                        adults: parseInt(get('adults')) || 1,
+                        children: parseInt(get('children')) || 0,
+                        email: get('guestEmail').trim() || null,
+                        phone: get('guestPhone').trim() || null,
+                        listing: get('listing').trim(),
+                        bookingSource: (get('bookingSite') || 'evolve').toLowerCase().replace(/[. ]/g, '').replace('bookingcom','booking.com'),
+                    });
+                }
+            }
+
+            const monthlyAggregates = Object.values(monthlyMap).sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
+            return { monthlyAggregates, guestContacts: guests };
+        }
+
+        // Map CSV rows for annual-summary import (one row per year)
+        function mapAnnualSummaryRows(rawRows) {
+            let headerIdx = 0;
+            for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+                const normed = rawRows[i].map(normHeader);
+                if (normed.includes('year') || normed.includes('grossincome')) { headerIdx = i; break; }
+            }
+            const headers = rawRows[headerIdx].map(normHeader);
+            const col = (aliases) => { for (const a of aliases) { const i = headers.indexOf(a); if (i !== -1) return i; } return -1; };
+            const cols = {
+                year:               col(['year']),
+                grossIncome:        col(['grossincome','gross']),
+                managementFee:      col(['managementfee','managmentfee','mgmtfee']),
+                platformCharges:    col(['platformcharges','charges']),
+                cleaningFee:        col(['cleaningfee','cleaning']),
+                utilities:          col(['utilities']),
+                maintenance:        col(['maintenance']),
+                otherExpenses:      col(['otherexpenses','other']),
+                nightsBooked:       col(['nightsbooked','nights']),
+                numReservations:    col(['numreservations','reservations']),
+                hoaAnnual:          col(['hoaannual','hoa']),
+                actualMortgageAnnual: col(['actualmortgageannual','actualmortgage','actualpaid']),
+                scheduledMortgage:  col(['scheduledmortgage','mortgage']),
+                taxesInsurance:     col(['taxesinsurance','ti','taxinsurance']),
+                notes:              col(['notes','note']),
+            };
+            return rawRows.slice(headerIdx + 1).filter(r => r.some(c => c)).map(row => {
+                const year = parseInt(cols.year !== -1 ? row[cols.year] : null);
+                if (!year || isNaN(year)) return null;
+                const get = (k) => cols[k] !== -1 ? parseMoney(row[cols[k]]) : null;
+                const getInt = (k) => cols[k] !== -1 ? (parseInt(row[cols[k]]) || null) : null;
+                return {
+                    year,
+                    grossIncomeAnnual:     get('grossIncome'),
+                    managementFeeAnnual:   get('managementFee'),
+                    platformChargesAnnual: get('platformCharges'),
+                    cleaningFeeAnnual:     get('cleaningFee'),
+                    utilitiesAnnual:       get('utilities'),
+                    maintenanceAnnual:     get('maintenance'),
+                    otherExpensesAnnual:   get('otherExpenses'),
+                    nightsBookedAnnual:    getInt('nightsBooked'),
+                    numReservationsAnnual: getInt('numReservations'),
+                    hoaAnnual:             get('hoaAnnual'),
+                    actualMortgageAnnual:  get('actualMortgageAnnual'),
+                    scheduledMortgage:     get('scheduledMortgage'),
+                    taxesInsurance:        get('taxesInsurance'),
+                    notes:                 cols.notes !== -1 ? row[cols.notes] : null,
+                };
+            }).filter(Boolean);
+        }
+
+        function showImportError(msg) {
+            const el = document.getElementById('fin-import-error');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            document.getElementById('fin-import-preview').classList.add('hidden');
+            document.getElementById('fin-import-confirm-btn').disabled = true;
+        }
+
+        function showImportPreview(rows, type) {
+            document.getElementById('fin-import-preview-label').textContent = `${rows.length} row${rows.length !== 1 ? 's' : ''} detected — review before importing:`;
+
+            let headers, getRow;
+            if (type === 'monthly') {
+                headers = ['Month','Gross Income','Mgmt Fee','Charges/Expenses','Nights','Res.','HOA','Actual Paid'];
+                getRow = r => [MONTH_NAMES[r.month - 1], finFmt(r.grossIncome), finFmt(r.managementFee),
+                    finFmt(r.platformCharges + r.cleaningFee + r.utilities + r.maintenance + r.otherExpenses),
+                    r.nightsBooked, r.numReservations, finFmt(r.hoaPayment), finFmt(r.actualMortgagePaid)];
+            } else if (type === 'annual-summary') {
+                headers = ['Year','Gross Income','Mgmt Fee','Charges','Nights','HOA','Notes'];
+                getRow = r => [r.year, finFmt(r.grossIncomeAnnual), finFmt(r.managementFeeAnnual),
+                    finFmt(r.platformChargesAnnual), r.nightsBookedAnnual ?? '—', finFmt(r.hoaAnnual), r.notes || ''];
+            } else if (type === 'evolve-csv') {
+                const { monthlyAggregates, guestContacts } = rows;
+                document.getElementById('fin-import-preview-label').textContent =
+                    `${monthlyAggregates.length} month(s) of financial data + ${guestContacts.length} guest contact(s) detected:`;
+                headers = ['Month/Year','Gross Income (Payout)','Nights','Reservations'];
+                document.getElementById('fin-import-preview-head').innerHTML =
+                    `<tr>${headers.map(h => `<th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 bg-gray-50">${h}</th>`).join('')}</tr>`;
+                document.getElementById('fin-import-preview-body').innerHTML = monthlyAggregates.map(r =>
+                    `<tr class="border-t border-gray-100"><td class="px-3 py-1.5 text-xs text-gray-700">${MONTH_NAMES[r.month-1]} ${r.year}</td><td class="px-3 py-1.5 text-xs text-gray-700">${finFmt(r.grossIncome)} <span class="text-gray-400 text-xs">(owner payout)</span></td><td class="px-3 py-1.5 text-xs text-gray-700">${r.nightsBooked}</td><td class="px-3 py-1.5 text-xs text-gray-700">${r.numReservations}</td></tr>`
+                ).join('') + `<tr class="bg-blue-50 border-t border-gray-200"><td colspan="4" class="px-3 py-2 text-xs text-blue-700">+ ${guestContacts.length} guest contact(s) will be added to your Guests list</td></tr>`;
+                document.getElementById('fin-import-preview').classList.remove('hidden');
+                return;
+            } else {
+                headers = ['Month','Date','Expense','Vendor','Amount','Tag'];
+                getRow = r => [MONTH_NAMES[r.month - 1], r.expenseDate || '—', r.expenseName, r.vendor, finFmt(r.amount), r.tag];
+            }
+
+            document.getElementById('fin-import-preview-head').innerHTML =
+                `<tr>${headers.map(h => `<th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 bg-gray-50">${h}</th>`).join('')}</tr>`;
+            document.getElementById('fin-import-preview-body').innerHTML = rows.map(r =>
+                `<tr class="border-t border-gray-100">${getRow(r).map(v => `<td class="px-3 py-1.5 text-xs text-gray-700">${v}</td>`).join('')}</tr>`
+            ).join('');
+            document.getElementById('fin-import-preview').classList.remove('hidden');
+        }
+
+        async function confirmImport() {
+            const btn = document.getElementById('fin-import-confirm-btn');
+            const type = document.getElementById('fin-import-type').value;
+            const year = parseInt(document.getElementById('fin-import-year').value);
+
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                if (type === 'caribbean-pdf') {
+                    // Read from verification form
+                    const payload = {
+                        year:            parseInt(document.getElementById('fin-verify-year').value),
+                        month:           parseInt(document.getElementById('fin-verify-month').value),
+                        grossIncome:     parseFloat(document.getElementById('fin-verify-grossIncome').value) || 0,
+                        managementFee:   parseFloat(document.getElementById('fin-verify-managementFee').value) || 0,
+                        platformCharges: parseFloat(document.getElementById('fin-verify-platformCharges').value) || 0,
+                        nightsBooked:    parseInt(document.getElementById('fin-verify-nightsBooked').value) || 0,
+                        numReservations: parseInt(document.getElementById('fin-verify-numReservations').value) || 0,
+                    };
+                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                        method: 'POST', headers: authHeaders(),
+                        body: JSON.stringify(payload)
+                    });
+                } else if (type === 'evolve-csv') {
+                    const { monthlyAggregates, guestContacts } = importState.rows;
+                    const year = parseInt(document.getElementById('fin-import-year').value);
+                    // Import financials
+                    for (const row of monthlyAggregates) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify({ ...row, managementFee: 0, cleaningFee: 0, platformCharges: 0 })
+                        });
+                    }
+                    // Import guest contacts
+                    if (guestContacts.length > 0) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/guests/bulk-import`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify({ propertyId: finState.propertyId, bookings: guestContacts })
+                        });
+                    }
+                } else if (type === 'annual-summary') {
+                    for (const row of importState.rows) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/year-summary`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify(row)
+                        });
+                    }
+                } else if (type === 'monthly') {
+                    for (const row of importState.rows) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify({ year, ...row })
+                        });
+                    }
+                } else {
+                    for (const row of importState.rows) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/expenses`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify({ year, ...row })
+                        });
+                    }
+                }
+                closeImportModal();
+                finState.summaryData = null;
+                await loadFinYear(finState.year);
+            } catch (err) {
+                showImportError('Import failed: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = type === 'caribbean-pdf' ? 'Save to Dashboard' : `Import ${importState.rows.length} rows`;
+            }
+        }
+
+        function downloadTemplate(type) {
+            let csv, filename;
+            if (type === 'monthly') {
+                csv = 'Month,Gross Income,Management Fee,Platform Charges,Cleaning Fee,Utilities,Maintenance,Other Expenses,Nights Booked,# Reservations,HOA Payment,Actual Mortgage Paid\n';
+                csv += MONTH_NAMES.map(m => `${m},0,0,0,0,0,0,0,0,0,0,0`).join('\n');
+                filename = 'monthly-template.csv';
+            } else if (type === 'annual-summary') {
+                csv = 'Year,Gross Income,Management Fee,Platform Charges,Cleaning Fee,Utilities,Maintenance,Other Expenses,Nights Booked,# Reservations,HOA Annual,Actual Mortgage Annual,Scheduled Mortgage (monthly),Taxes & Insurance (annual),Notes\n';
+                csv += '2018,0,0,0,0,0,0,0,0,0,0,0,901,2300,First year\n';
+                csv += '2019,0,0,0,0,0,0,0,0,0,0,0,901,2300,\n';
+                filename = 'annual-summary-template.csv';
+            } else {
+                csv = 'Month,Date,Expense,Vendor,Amount,Tag\n';
+                csv += 'January,2024-01-15,Electric Bill,Power Company,125.00,utilities\n';
+                csv += 'January,2024-01-20,Cleaning,Cleaner Name,80.00,housekeeping\n';
+                filename = 'expenses-template.csv';
+            }
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+        }
+
+        // ─── Guests / Contacts ────────────────────────────────────────────────────
+
+        const guestState = { selected: new Set(), all: [] };
+
+        function toggleGuestsSection() {
+            const sec = document.getElementById('guests-section');
+            if (sec.classList.toggle('hidden')) return;
+            loadGuests();
+        }
+
+        async function loadGuests() {
+            const propFilter = document.getElementById('guests-property-filter').value;
+            const search = document.getElementById('guests-search').value;
+            const marketingOnly = document.getElementById('guests-marketing-only').checked;
+
+            let url = `${window.CONFIG.API_BASE_URL}/api/guests?sortBy=lastStayDate&order=DESC`;
+            if (propFilter) url += `&propertyId=${propFilter}`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (marketingOnly) url += `&marketingOptIn=true`;
+
+            const token = localStorage.getItem('accessToken');
+            try {
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                guestState.all = data.guests || [];
+                guestState.selected.clear();
+                renderGuestsTable(guestState.all);
+                populateGuestsPropertyFilter(guestState.all);
+                updateGuestEmailBtn();
+            } catch (err) {
+                document.getElementById('guests-table-body').innerHTML =
+                    `<tr><td colspan="8" class="py-8 text-center text-red-500 text-sm">Failed to load guests: ${err.message}</td></tr>`;
+            }
+        }
+
+        function populateGuestsPropertyFilter(guests) {
+            const sel = document.getElementById('guests-property-filter');
+            const cur = sel.value;
+            const propMap = {};
+            for (const g of guests) {
+                for (const stay of (g.stays || [])) {
+                    if (stay.property) propMap[stay.property.id] = stay.property.name;
+                }
+            }
+            const extraOpts = Object.entries(propMap).map(([id, name]) =>
+                `<option value="${id}" ${id === cur ? 'selected' : ''}>${name}</option>`).join('');
+            sel.innerHTML = `<option value="">All properties</option>` + extraOpts;
+        }
+
+        function renderGuestsTable(guests) {
+            const tbody = document.getElementById('guests-table-body');
+            if (!guests.length) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-10 text-center text-gray-400 text-sm">No guests found. Import an Evolve booking CSV to populate this list.</td></tr>`;
+                document.getElementById('guests-count-label').textContent = '';
+                return;
+            }
+            document.getElementById('guests-count-label').textContent = `${guests.length} guest${guests.length !== 1 ? 's' : ''}`;
+
+            tbody.innerHTML = guests.map(g => {
+                const stays = g.stays || [];
+                const propNames = [...new Set(stays.map(s => s.property?.name).filter(Boolean))].join(', ') || '—';
+                const lastStay = g.lastStayDate ? new Date(g.lastStayDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—';
+                const isRepeat = (g.totalStays || 0) > 1;
+                const tags = [];
+                if (isRepeat) tags.push(`<span class="bg-amber-100 text-amber-700 text-xs px-1.5 py-0.5 rounded-full font-medium">${g.totalStays}x Repeat</span>`);
+                if (g.isBlacklisted) tags.push(`<span class="bg-red-100 text-red-700 text-xs px-1.5 py-0.5 rounded-full font-medium">Blocked</span>`);
+                if (!g.marketingOptIn) tags.push(`<span class="bg-gray-100 text-gray-500 text-xs px-1.5 py-0.5 rounded-full">Opt-out</span>`);
+                if (!g.email) tags.push(`<span class="bg-gray-100 text-gray-400 text-xs px-1.5 py-0.5 rounded-full">No email</span>`);
+                const isChecked = guestState.selected.has(g.id);
+                return `<tr class="border-b border-gray-100 hover:bg-gray-50 ${g.isBlacklisted ? 'opacity-50' : ''}">
+                    <td class="py-3 pr-3">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleGuestSelect('${g.id}', this.checked)" class="rounded">
+                    </td>
+                    <td class="py-3 px-2 text-sm font-medium text-gray-900 whitespace-nowrap">${g.name}</td>
+                    <td class="py-3 px-2 text-sm text-gray-600 max-w-[180px] truncate">${g.email || '<span class="text-gray-300">—</span>'}</td>
+                    <td class="py-3 px-2 text-sm text-gray-600 whitespace-nowrap">${g.phoneNumber || '<span class="text-gray-300">—</span>'}</td>
+                    <td class="py-3 px-2 text-sm text-gray-600 max-w-[140px] truncate">${propNames}</td>
+                    <td class="py-3 px-2 text-sm text-center font-medium ${isRepeat ? 'text-amber-600' : 'text-gray-700'}">${g.totalStays || 0}</td>
+                    <td class="py-3 px-2 text-sm text-gray-500 whitespace-nowrap">${lastStay}</td>
+                    <td class="py-3 px-2">${tags.join(' ') || ''}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function toggleGuestSelect(guestId, checked) {
+            if (checked) guestState.selected.add(guestId);
+            else guestState.selected.delete(guestId);
+            updateGuestEmailBtn();
+        }
+
+        function toggleSelectAllGuests() {
+            const allChecked = document.getElementById('guests-select-all').checked;
+            guestState.selected.clear();
+            if (allChecked) guestState.all.forEach(g => guestState.selected.add(g.id));
+            renderGuestsTable(guestState.all);
+            updateGuestEmailBtn();
+        }
+
+        function updateGuestEmailBtn() {
+            const btn = document.getElementById('guests-email-btn');
+            const countEl = document.getElementById('guests-selected-count');
+            const n = guestState.selected.size;
+            btn.disabled = n === 0;
+            if (n > 0) {
+                countEl.textContent = `${n} selected`;
+                countEl.classList.remove('hidden');
+            } else {
+                countEl.classList.add('hidden');
+            }
+        }
+
+        function openEmailModal() {
+            const n = guestState.selected.size;
+            const eligible = guestState.all.filter(g => guestState.selected.has(g.id) && g.email && g.marketingOptIn);
+            document.getElementById('email-modal-recipients').textContent =
+                `${n} selected guest${n !== 1 ? 's' : ''} (${eligible.length} have email + opt-in and will receive this)`;
+            document.getElementById('email-modal-result').classList.add('hidden');
+            document.getElementById('email-modal-send-btn').disabled = false;
+            document.getElementById('email-modal-send-btn').textContent = 'Send';
+            document.getElementById('guests-email-modal').classList.remove('hidden');
+        }
+
+        function closeEmailModal() {
+            document.getElementById('guests-email-modal').classList.add('hidden');
+        }
+
+        async function sendGuestEmail() {
+            const subject = document.getElementById('email-modal-subject').value.trim();
+            const message = document.getElementById('email-modal-message').value.trim();
+            const fromName = document.getElementById('email-modal-from').value.trim();
+            if (!subject || !message) {
+                showEmailResult('Subject and message are required.', false);
+                return;
+            }
+            const btn = document.getElementById('email-modal-send-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/guests/send-email`, {
+                    method: 'POST', headers: authHeaders(),
+                    body: JSON.stringify({ guestIds: [...guestState.selected], subject, message, fromName })
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                showEmailResult(`Sent to ${data.sent} guest${data.sent !== 1 ? 's' : ''} successfully.`, true);
+            } catch (err) {
+                showEmailResult('Send failed: ' + err.message, false);
+                btn.disabled = false;
+                btn.textContent = 'Send';
+            }
+        }
+
+        function showEmailResult(msg, success) {
+            const el = document.getElementById('email-modal-result');
+            el.textContent = msg;
+            el.className = `text-sm rounded-lg px-3 py-2 ${success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`;
+            el.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

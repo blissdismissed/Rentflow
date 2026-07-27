@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Booking - AspireTowards</title>
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/resources/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/resources/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/resources/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/resources/apple-touch-icon.png">
+
+    <script src="/js/config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+        .StripeElement {
+            padding: 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            background-color: white;
+        }
+        .StripeElement--focus {
+            border-color: #0F766E;
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+        .StripeElement--invalid {
+            border-color: #EF4444;
+        }
+
+        /* Mobile menu styles */
+        .mobile-menu { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        .mobile-menu.active { transform: translateX(0); }
+
+        /* Seasonal Theme Styles */
+        /* Winter Theme */
+        .theme-winter .booking-summary {
+            background: linear-gradient(135deg, rgba(219, 234, 254, 0.3) 0%, rgba(255, 255, 255, 0.8) 100%);
+            border: 2px solid rgba(147, 197, 253, 0.5);
+        }
+
+        .theme-winter .primary-btn {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%) !important;
+        }
+
+        .theme-winter .primary-btn:hover {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
+        }
+
+        .theme-winter .price-highlight {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        /* Autumn Theme */
+        .theme-autumn .booking-summary {
+            background: linear-gradient(135deg, rgba(254, 243, 199, 0.3) 0%, rgba(255, 255, 255, 0.8) 100%);
+            border: 2px solid rgba(251, 191, 36, 0.5);
+        }
+
+        .theme-autumn .primary-btn {
+            background: linear-gradient(135deg, #92400e 0%, #d97706 100%) !important;
+        }
+
+        .theme-autumn .primary-btn:hover {
+            background: linear-gradient(135deg, #78350f 0%, #b45309 100%) !important;
+        }
+
+        .theme-autumn .price-highlight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        /* Summer Theme */
+        .theme-summer .booking-summary {
+            background: linear-gradient(135deg, rgba(220, 252, 231, 0.3) 0%, rgba(255, 255, 255, 0.8) 100%);
+            border: 2px solid rgba(134, 239, 172, 0.5);
+        }
+
+        .theme-summer .primary-btn {
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%) !important;
+        }
+
+        .theme-summer .primary-btn:hover {
+            background: linear-gradient(135deg, #166534 0%, #16a34a 100%) !important;
+        }
+
+        .theme-summer .price-highlight {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #15803d;
+        }
+
+        /* Smooth transitions */
+        .booking-summary, .primary-btn, .price-highlight {
+            transition: all 0.8s ease-in-out;
+        }
+
+        .seasonal-banner {
+            padding: 1rem;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+
+        .seasonal-banner.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="index.html" class="flex items-center space-x-3">
+                    <span class="text-2xl sm:text-3xl font-display font-bold text-gray-900 leading-none mt-0.5">AspireTowards</span>
+                </a>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
+                    <a href="properties.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Properties</a>
+                    <a href="index.html#why-direct" class="text-gray-600 hover:text-teal-600 font-medium transition">Why Book Direct</a>
+                    <a href="index.html#contact" class="text-gray-600 hover:text-teal-600 font-medium transition">Contact</a>
+                </div>
+                <div class="hidden md:block">
+                    <a href="/auth/login.html" class="text-gray-600 hover:text-teal-600 font-medium transition">
+                        Host Login
+                    </a>
+                </div>
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu fixed inset-y-0 right-0 w-64 bg-white shadow-2xl z-50 md:hidden">
+        <div class="flex flex-col h-full">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 class="text-lg font-display font-bold text-gray-900">Menu</h2>
+                <button id="mobile-menu-close" class="p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <nav class="flex-1 overflow-y-auto p-4">
+                <a href="index.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Home</a>
+                <a href="properties.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Properties</a>
+                <a href="index.html#why-direct" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Why Book Direct</a>
+                <a href="index.html#contact" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Contact</a>
+                <a href="/auth/login.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Host Login</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Back Button -->
+        <a id="back-link" href="#" class="text-teal-600 hover:text-teal-700 flex items-center mb-6">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Property
+        </a>
+
+        <h1 class="text-3xl font-display font-bold text-gray-900 mb-8">Request to Book</h1>
+
+        <!-- Seasonal Banner -->
+        <div id="seasonal-banner" class="seasonal-banner"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Booking Form -->
+            <div class="lg:col-span-2">
+                <form id="booking-form" class="space-y-6">
+                    <!-- Property Summary -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">Your Trip</h2>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Dates</span>
+                                <span class="font-medium" id="trip-dates"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Guests</span>
+                                <span class="font-medium" id="trip-guests"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guest Information -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">Guest Information</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                                <input type="text" id="guest-name" required minlength="2"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                       placeholder="John Doe"
+                                       onblur="validateName()">
+                                <p id="name-error" class="text-red-600 text-sm mt-1 hidden">Please enter your full name (first and last)</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                                <input type="email" id="guest-email" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                       placeholder="john@example.com"
+                                       onblur="validateEmail()">
+                                <p id="email-error" class="text-red-600 text-sm mt-1 hidden">Please enter a valid email address</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Confirm Email *</label>
+                                <input type="email" id="guest-email-confirm" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                       placeholder="john@example.com"
+                                       onblur="validateEmailMatch()">
+                                <p id="email-match-error" class="text-red-600 text-sm mt-1 hidden">Emails do not match</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                                <input type="tel" id="guest-phone"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                       placeholder="+1 (555) 123-4567"
+                                       oninput="formatPhoneNumber(this)"
+                                       onblur="validatePhone()">
+                                <p id="phone-error" class="text-red-600 text-sm mt-1 hidden">Please enter a valid phone number</p>
+                                <p class="text-gray-500 text-xs mt-1">Optional - Format: (555) 123-4567 or 555-123-4567</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Message to Host (Optional)</label>
+                                <textarea id="guest-message" rows="3"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                          placeholder="Tell the host about your trip..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Information -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">Payment Information</h2>
+                        <div class="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-4">
+                            <p class="text-sm text-teal-800">
+                                <strong>Secure Payment:</strong> Your card will be authorized for the deposit amount but <strong>not charged</strong> until the host approves your booking request.
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Card Information</label>
+                            <div id="card-element" class="mb-4"></div>
+                            <div id="card-errors" class="text-red-500 text-sm"></div>
+                        </div>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <label class="flex items-start">
+                            <input type="checkbox" id="agree-terms" required class="mt-1 mr-3 h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded">
+                            <span class="text-sm text-gray-600">
+                                I agree to the house rules, cancellation policy, and booking terms. I understand that my card will be authorized but not charged until the host approves my request.
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submit-button"
+                            class="primary-btn w-full bg-teal-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-teal-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed">
+                        Submit Booking Request
+                    </button>
+
+                    <div id="error-message" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"></div>
+                </form>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="lg:col-span-1">
+                <div class="booking-summary bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:sticky lg:top-24">
+                    <div id="property-summary" class="mb-6">
+                        <div class="relative w-full rounded-lg mb-4 overflow-hidden bg-gray-200" style="padding-bottom: 66.67%;">
+                            <img id="property-image" src="" alt="Property" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.display='none';">
+                        </div>
+                        <h3 id="property-name" class="font-bold text-lg text-gray-900 mb-2"></h3>
+                        <p id="property-location" class="text-gray-600 text-sm"></p>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-4 space-y-3">
+                        <h3 class="font-bold text-gray-900 mb-3">Price Details</h3>
+                        <div class="flex justify-between text-gray-700">
+                            <span>$<span id="price-per-night">0</span> × <span id="num-nights">0</span> nights</span>
+                            <span>$<span id="base-amount">0</span></span>
+                        </div>
+                        <div id="cleaning-fee-row" class="flex justify-between text-gray-700 hidden">
+                            <span>Cleaning fee</span>
+                            <span>$<span id="cleaning-fee">0</span></span>
+                        </div>
+                        <div class="flex justify-between font-bold text-lg text-gray-900 border-t border-gray-200 pt-3">
+                            <span>Total</span>
+                            <span>$<span id="total-amount">0</span></span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 mt-4 pt-4">
+                        <div class="price-highlight bg-teal-50 rounded-lg p-4 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700 font-medium">Due Today (10%):</span>
+                                <span class="text-2xl font-bold text-teal-700">$<span id="deposit-amount">0</span></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Balance at check-in:</span>
+                                <span class="font-semibold text-gray-700">$<span id="balance-amount">0</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-xs text-gray-500">
+                        <p>✓ Card authorized, not charged until approval</p>
+                        <p>✓ Host will respond within 24 hours</p>
+                        <p>✓ Full refund if declined</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Ensure config is loaded
+        if (!window.CONFIG || !window.CONFIG.STRIPE_PUBLISHABLE_KEY) {
+            console.error('Configuration not loaded! Make sure config.js is loaded first.')
+            alert('Configuration error. Please refresh the page.')
+        }
+
+        const API_URL = `${window.CONFIG.API_BASE_URL}/api/public`
+
+        // Initialize Stripe with error handling
+        let stripe, elements, cardElement
+        try {
+            console.log('Initializing Stripe with key:', window.CONFIG.STRIPE_PUBLISHABLE_KEY)
+            stripe = Stripe(window.CONFIG.STRIPE_PUBLISHABLE_KEY)
+            elements = stripe.elements()
+            cardElement = elements.create('card')
+
+            // Mount card element after DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    cardElement.mount('#card-element')
+                })
+            } else {
+                cardElement.mount('#card-element')
+            }
+        } catch (error) {
+            console.error('Stripe initialization error:', error)
+            alert('Payment system initialization failed. Please refresh the page.')
+        }
+
+        let currentProperty = null
+        let bookingDetails = {}
+
+        // Seasonal theme configuration
+        const seasonalThemes = {
+            winter: {
+                name: 'Winter Wonderland',
+                message: '❄️ Perfect for skiing at Bromley Mountain!',
+                bannerClass: 'theme-winter'
+            },
+            autumn: {
+                name: 'Fall Foliage',
+                message: '🍂 Experience Vermont\'s stunning fall colors!',
+                bannerClass: 'theme-autumn'
+            },
+            summer: {
+                name: 'Summer Adventure',
+                message: '🥾 Explore the Appalachian Trail & hiking!',
+                bannerClass: 'theme-summer'
+            }
+        }
+
+        // Determine season based on check-in date
+        function getSeason(dateString) {
+            if (!dateString) return null
+
+            const date = new Date(dateString)
+            const month = date.getMonth() + 1 // 1-12
+
+            // Winter: December to April (12, 1, 2, 3, 4)
+            if (month === 12 || month >= 1 && month <= 4) {
+                return 'winter'
+            }
+            // Autumn: September to November (9, 10, 11)
+            else if (month >= 9 && month <= 11) {
+                return 'autumn'
+            }
+            // Summer: May to August (5, 6, 7, 8)
+            else {
+                return 'summer'
+            }
+        }
+
+        // Apply seasonal theme
+        function applySeasonalTheme(season) {
+            // Remove all theme classes
+            document.body.classList.remove('theme-winter', 'theme-autumn', 'theme-summer')
+
+            const banner = document.getElementById('seasonal-banner')
+            banner.classList.remove('active', 'price-highlight')
+
+            if (!season) return
+
+            // Apply new theme
+            document.body.classList.add(`theme-${season}`)
+
+            // Update banner
+            const theme = seasonalThemes[season]
+            if (theme && banner) {
+                banner.textContent = theme.message
+                banner.classList.add('active', 'price-highlight')
+            }
+
+            console.log(`Applied ${season} theme to booking page`)
+        }
+
+        // Name validation
+        function validateName() {
+            const nameInput = document.getElementById('guest-name')
+            const errorElement = document.getElementById('name-error')
+            const name = nameInput.value.trim()
+
+            // Check for at least first and last name (two words)
+            const nameParts = name.split(/\s+/)
+            const isValid = nameParts.length >= 2 && nameParts.every(part => part.length >= 1)
+
+            if (name && !isValid) {
+                errorElement.classList.remove('hidden')
+                nameInput.classList.add('border-red-500')
+                return false
+            } else {
+                errorElement.classList.add('hidden')
+                nameInput.classList.remove('border-red-500')
+                return true
+            }
+        }
+
+        // Email validation functions
+        function validateEmail() {
+            const emailInput = document.getElementById('guest-email')
+            const errorElement = document.getElementById('email-error')
+            const email = emailInput.value.trim()
+
+            // Enhanced email regex - more strict validation
+            const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+
+            if (email && !emailRegex.test(email)) {
+                errorElement.classList.remove('hidden')
+                emailInput.classList.add('border-red-500')
+                return false
+            } else {
+                errorElement.classList.add('hidden')
+                emailInput.classList.remove('border-red-500')
+                return true
+            }
+        }
+
+        function validateEmailMatch() {
+            const email = document.getElementById('guest-email').value.trim()
+            const emailConfirm = document.getElementById('guest-email-confirm').value.trim()
+            const errorElement = document.getElementById('email-match-error')
+            const confirmInput = document.getElementById('guest-email-confirm')
+
+            if (emailConfirm && email !== emailConfirm) {
+                errorElement.classList.remove('hidden')
+                confirmInput.classList.add('border-red-500')
+                return false
+            } else {
+                errorElement.classList.add('hidden')
+                confirmInput.classList.remove('border-red-500')
+                return true
+            }
+        }
+
+        // Phone number formatting (auto-format as user types)
+        function formatPhoneNumber(input) {
+            // Remove all non-digit characters
+            let value = input.value.replace(/\D/g, '')
+
+            // Limit to 10 digits for US numbers
+            value = value.substring(0, 10)
+
+            // Format based on length
+            let formatted = ''
+            if (value.length > 0) {
+                if (value.length <= 3) {
+                    formatted = '(' + value
+                } else if (value.length <= 6) {
+                    formatted = '(' + value.substring(0, 3) + ') ' + value.substring(3)
+                } else {
+                    formatted = '(' + value.substring(0, 3) + ') ' + value.substring(3, 6) + '-' + value.substring(6)
+                }
+            }
+
+            input.value = formatted
+        }
+
+        // Phone number validation
+        function validatePhone() {
+            const phoneInput = document.getElementById('guest-phone')
+            const errorElement = document.getElementById('phone-error')
+            const phone = phoneInput.value.trim()
+
+            // Phone is optional, so if empty it's valid
+            if (!phone) {
+                errorElement.classList.add('hidden')
+                phoneInput.classList.remove('border-red-500')
+                return true
+            }
+
+            // Remove formatting for validation
+            const digitsOnly = phone.replace(/\D/g, '')
+
+            // Valid if 10 digits (US format)
+            const isValid = digitsOnly.length === 10
+
+            if (!isValid) {
+                errorElement.classList.remove('hidden')
+                phoneInput.classList.add('border-red-500')
+                return false
+            } else {
+                errorElement.classList.add('hidden')
+                phoneInput.classList.remove('border-red-500')
+                return true
+            }
+        }
+
+        // Handle card errors
+        cardElement.on('change', function(event) {
+            const displayError = document.getElementById('card-errors')
+            if (event.error) {
+                displayError.textContent = event.error.message
+            } else {
+                displayError.textContent = ''
+            }
+        })
+
+        // Get booking details from URL
+        const urlParams = new URLSearchParams(window.location.search)
+        const slug = urlParams.get('slug')
+        const checkIn = urlParams.get('checkIn')
+        const checkOut = urlParams.get('checkOut')
+        const guests = urlParams.get('guests')
+
+        if (!slug || !checkIn || !checkOut) {
+            window.location.href = 'properties.html'
+        }
+
+        // Set back link
+        document.getElementById('back-link').href = `property.html?slug=${slug}`
+
+        // Load property and pricing
+        async function loadBookingDetails() {
+            try {
+                // Get property details
+                const propResponse = await fetch(`${API_URL}/properties/${slug}`)
+                const propData = await propResponse.json()
+
+                if (!propData.success) throw new Error('Property not found')
+
+                currentProperty = propData.property
+
+                // Get pricing
+                const priceResponse = await fetch(`${API_URL}/properties/${slug}/availability?checkIn=${checkIn}&checkOut=${checkOut}`)
+                const priceData = await priceResponse.json()
+
+                if (!priceData.success || !priceData.available) {
+                    alert('Property is not available for selected dates')
+                    window.location.href = `property.html?slug=${slug}`
+                    return
+                }
+
+                bookingDetails = {
+                    property: currentProperty,
+                    pricing: priceData.pricing,
+                    checkIn,
+                    checkOut,
+                    guests
+                }
+
+                displayBookingDetails()
+            } catch (error) {
+                console.error('Error loading booking details:', error)
+                alert('Error loading booking details')
+                window.location.href = 'properties.html'
+            }
+        }
+
+        // Display booking details
+        function displayBookingDetails() {
+            const { property, pricing, guests } = bookingDetails
+
+            // Apply seasonal theme based on check-in date
+            const season = getSeason(checkIn)
+            applySeasonalTheme(season)
+
+            // Trip details
+            document.getElementById('trip-dates').textContent = `${checkIn} → ${checkOut}`
+            document.getElementById('trip-guests').textContent = `${guests} guest${guests !== '1' ? 's' : ''}`
+
+            // Property summary
+            const propImage = document.getElementById('property-image')
+            const imageUrl = property.featuredImage || property.images?.[0] || 'https://via.placeholder.com/400x300'
+            propImage.src = imageUrl
+            propImage.style.display = 'block'
+
+            document.getElementById('property-name').textContent = property.name
+            document.getElementById('property-location').textContent = `${property.city}, ${property.state}`
+
+            // Pricing
+            document.getElementById('price-per-night').textContent = pricing.pricePerNight
+            document.getElementById('num-nights').textContent = pricing.nights
+            document.getElementById('base-amount').textContent = pricing.baseAmount
+            document.getElementById('total-amount').textContent = pricing.subtotal
+            document.getElementById('deposit-amount').textContent = pricing.depositAmount
+            document.getElementById('balance-amount').textContent = pricing.balanceAmount
+
+            if (pricing.cleaningFee > 0) {
+                document.getElementById('cleaning-fee-row').classList.remove('hidden')
+                document.getElementById('cleaning-fee').textContent = pricing.cleaningFee
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('booking-form').addEventListener('submit', async function(e) {
+            e.preventDefault()
+
+            const submitButton = document.getElementById('submit-button')
+            const errorMessage = document.getElementById('error-message')
+
+            // Validate all fields before submitting
+            const nameValid = validateName()
+            const emailValid = validateEmail()
+            const emailsMatch = validateEmailMatch()
+            const phoneValid = validatePhone()
+
+            // Collect validation errors
+            const errors = []
+            if (!nameValid) errors.push('full name (first and last)')
+            if (!emailValid) errors.push('email address')
+            if (!emailsMatch) errors.push('email confirmation')
+            if (!phoneValid) errors.push('phone number')
+
+            if (errors.length > 0) {
+                errorMessage.textContent = 'Please correct the following: ' + errors.join(', ')
+                errorMessage.classList.remove('hidden')
+                // Scroll to first error
+                window.scrollTo({ top: 200, behavior: 'smooth' })
+                return
+            }
+
+            submitButton.disabled = true
+            submitButton.textContent = 'Processing...'
+            errorMessage.classList.add('hidden')
+
+            try {
+                // Create booking request
+                const bookingResponse = await fetch(`${API_URL}/bookings/request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        propertyId: currentProperty.id,
+                        checkIn: bookingDetails.checkIn,
+                        checkOut: bookingDetails.checkOut,
+                        guestName: document.getElementById('guest-name').value,
+                        guestEmail: document.getElementById('guest-email').value,
+                        guestPhone: document.getElementById('guest-phone').value || null,
+                        numberOfGuests: parseInt(bookingDetails.guests),
+                        guestMessage: document.getElementById('guest-message').value || null
+                    })
+                })
+
+                console.log('📊 Booking response status:', bookingResponse.status)
+
+                if (!bookingResponse.ok) {
+                    const errorText = await bookingResponse.text()
+                    console.error('❌ Booking error response:', errorText)
+                    throw new Error(`Server error (${bookingResponse.status}): ${errorText}`)
+                }
+
+                const bookingData = await bookingResponse.json()
+                console.log('📊 Booking data:', bookingData)
+
+                if (!bookingData.success) {
+                    throw new Error(bookingData.message || 'Failed to create booking')
+                }
+
+                // If payment is required, confirm card payment
+                if (bookingData.payment && bookingData.payment.clientSecret) {
+                    const { error: stripeError } = await stripe.confirmCardPayment(
+                        bookingData.payment.clientSecret,
+                        {
+                            payment_method: {
+                                card: cardElement,
+                                billing_details: {
+                                    name: document.getElementById('guest-name').value,
+                                    email: document.getElementById('guest-email').value
+                                }
+                            }
+                        }
+                    )
+
+                    if (stripeError) {
+                        throw new Error(stripeError.message)
+                    }
+                }
+
+                // Success - redirect to confirmation
+                window.location.href = `confirmation.html?code=${bookingData.booking.confirmationCode}`
+
+            } catch (error) {
+                console.error('Booking error:', error)
+                errorMessage.textContent = error.message
+                errorMessage.classList.remove('hidden')
+                submitButton.disabled = false
+                submitButton.textContent = 'Submit Booking Request'
+            }
+        })
+
+        // Load on page load
+        document.addEventListener('DOMContentLoaded', loadBookingDetails)
+
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button')
+        const mobileMenu = document.getElementById('mobile-menu')
+        const mobileMenuClose = document.getElementById('mobile-menu-close')
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay')
+
+        function openMobileMenu() {
+            mobileMenu.classList.add('active')
+            mobileMenuOverlay.classList.remove('hidden')
+            document.body.style.overflow = 'hidden'
+        }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active')
+            mobileMenuOverlay.classList.add('hidden')
+            document.body.style.overflow = ''
+        }
+
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', openMobileMenu)
+            mobileMenuClose.addEventListener('click', closeMobileMenu)
+            mobileMenuOverlay.addEventListener('click', closeMobileMenu)
+        }
+    </script>
+</body>
+</html>

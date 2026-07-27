@@ -1,310 +1,355 @@
-# RentFlow Property Management Platform
+# Rentflow
 
-A comprehensive property management platform designed for vacation rental property managers.
+Property management and vacation rental platform for managing short-term rental properties.
 
-## 🏠 Features
-
-### Dashboard
-- Real-time property metrics and analytics
-- Animated metric counters with Typed.js
-- Interactive revenue charts using ECharts.js
-- Recent activity feed
-- Quick action buttons
-- Top performing properties overview
-
-### Property Management
-- Comprehensive property portfolio management
-- Property search and filtering
-- Performance analytics per property
-- Property status management (Active, Pending, etc.)
-- Photo and description management
-- Maintenance task management
-
-### Multi-Channel Calendar
-- Unified calendar view for all booking channels
-- Support for Airbnb, VRBO, Booking.com, and Direct bookings
-- Drag-and-drop booking management
-- Real-time channel synchronization
-- Booking creation and modification
-- Channel connection status dashboard
-
-### Financial Management
-- Comprehensive revenue and expense tracking
-- Interactive financial charts and analytics
-- Expense categorization and receipt upload
-- Tax reporting and deductible expense tracking
-- Monthly and annual financial reports
-- Profit margin analysis
-
-## 🛠 Technology Stack
-
-### Frontend
-- **HTML5** - Semantic markup
-- **Tailwind CSS** - Utility-first CSS framework
-- **JavaScript (ES6+)** - Modern JavaScript features
-
-### Libraries & Dependencies
-- **Anime.js** - Smooth animations and transitions
-- **ECharts.js** - Interactive data visualization
-- **Typed.js** - Dynamic text animations
-- **Splide.js** - Property image carousels
-- **p5.js** - Particle background effects
-
-### Testing Framework
-- **Jest** - Unit testing framework
-- **Cypress** - End-to-end testing
-- **Testing Library** - Component testing utilities
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn package manager
-- Modern web browser
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/rentflow-property-management.git
-cd rentflow-property-management
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the development server:
-```bash
-npm run dev
-```
-
-4. Open your browser and navigate to:
-```
-http://localhost:8000
-```
-
-## 🧪 Testing
-
-### Run Unit Tests
-```bash
-npm test
-```
-
-### Run Tests in Watch Mode
-```bash
-npm run test:watch
-```
-
-### Run Integration Tests
-```bash
-npm run test:integration
-```
-
-### Run E2E Tests
-```bash
-npm run test:e2e
-```
-
-### Run E2E Tests in Interactive Mode
-```bash
-npm run test:e2e:open
-```
-
-### Generate Test Coverage Report
-```bash
-npm run test:coverage
-```
-
-## 📁 Project Structure
+## Architecture
 
 ```
-rentflow-property-management/
-├── index.html              # Main dashboard page
-├── properties.html         # Property management interface
-├── calendar.html          # Multi-channel calendar view
-├── finances.html          # Financial dashboard and reporting
-├── main.js               # Core JavaScript functionality
-├── package.json          # Project dependencies and scripts
-├── cypress/              # E2E testing configuration
-│   ├── e2e/             # E2E test files
-│   ├── fixtures/        # Test data files
-│   └── support/         # Test support files
-├── tests/                # Unit and integration tests
-│   ├── unit/            # Unit tests
-│   └── integration/     # Integration tests
-├── resources/           # Images and assets
-└── README.md           # Project documentation
+┌─────────────────────────────────────────────────────┐
+│  Browser                                            │
+│    public/ (HTML/JS/CSS) ──► AWS S3 (static host)  │
+│    frontend/ (React/Vite) ──► in progress           │
+└────────────────────┬────────────────────────────────┘
+                     │ HTTPS
+┌────────────────────▼────────────────────────────────┐
+│  AWS EC2                                            │
+│    Nginx (port 80/443)  ──► reverse proxy           │
+│    Node.js/Express (port 5000, pm2)                 │
+│    PostgreSQL                                       │
+└─────────────────────────────────────────────────────┘
 ```
 
-## 🎯 Key Features Implementation
-
-### Multi-Channel Integration
-- **Airbnb**: Red channel indicator with API integration
-- **VRBO**: Blue channel indicator with calendar sync
-- **Booking.com**: Green channel indicator with booking management
-- **Direct Bookings**: Purple channel indicator for direct reservations
-
-### Financial Analytics
-- Revenue vs Expenses charts with monthly breakdown
-- Expense categorization (Maintenance, Cleaning, Utilities, etc.)
-- Tax deductible expense tracking
-- Profit margin calculations
-- Monthly and annual reporting
-
-### Property Management
-- Property status tracking (Active, Pending, Inactive)
-- Performance metrics (Revenue, Occupancy, Rating)
-- Property search and filtering
-- Portfolio performance overview
-
-### Calendar Management
-- Multi-month calendar view
-- Booking creation and modification
-- Channel synchronization status
-- Booking validation and conflict detection
-
-## 🎨 Design System
-
-### Color Palette
-- **Primary**: Deep Teal (#0F766E) - Professional, trustworthy
-- **Secondary**: Warm Gray (#6B7280) - Neutral, sophisticated
-- **Accent**: Amber (#F59E0B) - Success, alerts
-- **Background**: Soft Gray (#F9FAFB) - Clean, modern
-
-### Typography
-- **Display Font**: Playfair Display - Bold, authoritative headings
-- **Body Font**: Inter - Clean, readable interface text
-- **Monospace**: JetBrains Mono - Financial data and codes
-
-### Animation Library
-- **Anime.js**: Smooth micro-interactions and state transitions
-- **Typed.js**: Dynamic text effects for key metrics
-- **ECharts**: Interactive chart animations
-- **p5.js**: Subtle background particle effects
-
-## Testing Strategy
-
-### Unit Tests
-- PropertyManager class functionality
-- CalendarManager booking operations
-- FinancialManager calculations
-- Data validation and error handling
-
-### Integration Tests
-- Dashboard loading and metric calculations
-- Cross-manager data consistency
-- User workflow integration
-- Performance benchmarking
-
-### E2E Tests
-- Complete user journeys
-- Form validation and submission
-- Calendar booking management
-- Financial report generation
-- Responsive design testing
-- Accessibility compliance
-
-## 🚀 Deployment Recommendations
-
-### Static Hosting (Recommended)
-- **Netlify**: Automatic deployments from Git
-- **Vercel**: Optimized for static sites
-- **GitHub Pages**: Free hosting for public repositories
-- **AWS S3 + CloudFront**: Scalable static hosting
-
-### Server-Side Deployment
-- **Heroku**: Easy deployment with build packs
-- **DigitalOcean**: Scalable cloud hosting
-- **AWS EC2**: Full control over server environment
-
-### CI/CD Pipeline
-- **GitHub Actions**: Automated testing and deployment
-- **GitLab CI**: Integrated CI/CD platform
-- **CircleCI**: Fast and reliable CI/CD
-
-## 🔧 Customization Guide
-
-### Adding New Properties
-1. Update the `properties` array in `main.js`
-2. Add property images to the `resources` folder
-3. Update property management functions
-
-### Integrating with External APIs
-1. Add API configuration to `main.js`
-2. Implement API calls in manager classes
-3. Add error handling and loading states
-
-### Customizing Charts
-1. Modify chart configurations in manager classes
-2. Update color schemes to match brand
-3. Add new chart types as needed
-
-### Adding New Features
-1. Create new HTML pages following the existing structure
-2. Implement JavaScript functionality in `main.js`
-3. Add corresponding tests
-4. Update navigation and routing
-
-## 📱 Responsive Design
-
-The platform is fully responsive and optimized for:
-- **Desktop**: Full feature set with side-by-side layouts
-- **Tablet**: Adapted layouts with touch-friendly interactions
-- **Mobile**: Stacked layouts with optimized touch targets
-
-## ♿ Accessibility
-
-- **WCAG 2.1 AA Compliant**: Meets accessibility standards
-- **Keyboard Navigation**: Full keyboard support
-- **Screen Reader Support**: Proper ARIA labels and roles
-- **Color Contrast**: 4.5:1 minimum contrast ratio
-- **Focus Management**: Clear focus indicators
-
-## 🔒 Security Considerations
-
-- **Input Validation**: All user inputs are validated
-- **XSS Protection**: Proper data sanitization
-- **HTTPS**: Secure connections recommended
-- **Authentication**: Ready for authentication integration
-
-## 📊 Performance Optimization
-
-- **Lazy Loading**: Images and non-critical content
-- **Code Splitting**: Modular JavaScript architecture
-- **Caching**: Optimized asset caching strategies
-- **Compression**: Gzip/Brotli compression ready
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the GitHub repository
-- Check the documentation in the `/docs` folder
-- Review existing test files for implementation examples
-
-## 🔄 Changelog
-
-### v1.0.0
-- Initial release
-- Complete property management platform
-- Comprehensive testing suite
-- Responsive design implementation
-- Financial management features
-- Multi-channel calendar integration
+- **Frontend (live):** Static HTML/JS/CSS in `public/`, hosted on AWS S3
+- **Frontend (in progress):** React/Vite app in `frontend/` — not yet deployed
+- **Backend API:** Node.js + Express in `backend/`, running on EC2 via pm2 behind Nginx
+- **Database:** PostgreSQL (on EC2)
+- **API domain:** `https://api.aspiretowards.com`
 
 ---
 
-Built with ❤️ for property managers who want to streamline their operations and grow their business.
+## Local Development
+
+### Prerequisites
+
+- Node.js >= 18
+- PostgreSQL running locally
+- A local DB user and database created
+
+### 1. Clone and install
+
+```bash
+git clone <repo-url>
+cd Rentflow
+```
+
+### 2. Backend setup
+
+```bash
+cd backend
+cp .env.example .env
+# Edit .env with your local values (see Environment Variables section)
+npm install
+```
+
+Create the local database (one time):
+
+```bash
+psql -U postgres -c "CREATE USER rentflow_user WITH PASSWORD 'yourpassword';"
+psql -U postgres -c "CREATE DATABASE rentflow_db OWNER rentflow_user;"
+```
+
+Run migrations:
+
+```bash
+npm run migrate
+```
+
+Start the backend (with hot reload):
+
+```bash
+npm run dev
+# Server runs at http://localhost:5000
+```
+
+### 3. Frontend (static HTML) setup
+
+The `public/` directory is the live frontend. To serve it locally:
+
+```bash
+# From the project root — any static server works, e.g.:
+npx serve public -p 8000
+# or
+python3 -m http.server 8000 --directory public
+```
+
+Make sure `public/js/config.js` is using the **development config** (uncomment the dev block, comment out the production block):
+
+```js
+// Development config — use this locally
+const CONFIG = {
+  API_BASE_URL: 'http://localhost:5000',
+  ENV: 'development',
+  ENABLE_DEBUG: true,
+}
+```
+
+Open `http://localhost:8000` in your browser.
+
+### 4. Frontend (React/Vite — in progress)
+
+```bash
+cd frontend
+npm install
+npm run dev
+# Runs at http://localhost:5173
+```
+
+---
+
+## Environment Variables
+
+All variables live in `backend/.env`. Copy from `backend/.env.example` to start.
+
+### Required
+
+| Variable | Description |
+|---|---|
+| `NODE_ENV` | `development` or `production` |
+| `PORT` | API port (default `5000`) |
+| `FRONTEND_URL` | URL of the frontend (`http://localhost:8000` locally, S3 URL in prod) |
+| `S3_BUCKET_URL` | Full S3 bucket URL (used for CORS allowlist) |
+| `DB_HOST` | Postgres host |
+| `DB_PORT` | Postgres port (default `5432`) |
+| `DB_NAME` | Database name |
+| `DB_USER` | Database user |
+| `DB_PASSWORD` | Database password |
+| `DB_DIALECT` | `postgres` |
+| `JWT_SECRET` | Secret key for signing JWTs — use a long random string |
+| `JWT_EXPIRES_IN` | JWT expiry (e.g. `7d`) |
+| `JWT_REFRESH_SECRET` | Secret for refresh tokens |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiry (e.g. `30d`) |
+| `SENDGRID_API_KEY` | SendGrid API key for transactional email |
+| `FROM_EMAIL` | Sender email address |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+| `GOOGLE_CALLBACK_URL` | OAuth redirect (e.g. `https://api.aspiretowards.com/api/auth/google/callback`) |
+| `STRIPE_SECRET_KEY` | Stripe secret key (`sk_live_...` or `sk_test_...`) |
+| `STRIPE_PUBLISHABLE_KEY` | Stripe publishable key (`pk_live_...` or `pk_test_...`) |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `PIN_ENCRYPTION_KEY` | 32-byte key for encrypting lock PINs — generate with `openssl rand -base64 32` |
+
+### Optional / Feature-specific
+
+| Variable | Description |
+|---|---|
+| `AWS_REGION` | AWS region (e.g. `us-east-1`) |
+| `AWS_ACCESS_KEY_ID` | AWS access key (for S3 image uploads) |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key |
+| `AWS_S3_BUCKET` | S3 bucket name for uploads |
+| `LOG_LEVEL` | Winston log level (`info`, `debug`, `error`) |
+| `RATE_LIMIT_WINDOW_MS` | Rate limit window in ms (default `900000` = 15 min) |
+| `RATE_LIMIT_MAX_REQUESTS` | Max requests per window (default `100`) |
+
+---
+
+## npm Scripts (run from `backend/`)
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Start backend with nodemon (hot reload) |
+| `npm start` | Start backend without hot reload (production) |
+| `npm run migrate` | Run all pending DB migrations |
+| `npm run migrate:undo` | Roll back the last migration |
+| `npm test` | Run Jest test suite with coverage |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run lint` | Lint backend source files |
+| `npm run lint:fix` | Auto-fix lint issues |
+
+---
+
+## Database Migrations
+
+Migrations live in `backend/src/migrations/`. Always use migrations — never `sequelize.sync({ force: true })` in production.
+
+```bash
+# Run all pending migrations
+cd backend && npm run migrate
+
+# Roll back the most recent migration
+cd backend && npm run migrate:undo
+
+# Check which migrations have run
+cd backend && npx sequelize-cli db:migrate:status
+```
+
+### Seeding local data
+
+```bash
+# Add your local user first by registering on the local site, then:
+node backend/scripts/seed-bromley.js    # Vermont property
+node backend/scripts/seed-caribbean.js  # Myrtle Beach property (Caribbean-1225)
+```
+
+---
+
+## Production — AWS EC2
+
+The backend runs on an EC2 instance behind Nginx with SSL via Let's Encrypt.
+
+### SSH in
+
+```bash
+ssh -i your-key.pem ec2-user@<ec2-public-ip>
+```
+
+### Deploying backend changes
+
+```bash
+# On EC2 — pull latest code
+cd /var/www/aspiretowards/Rentflow
+git pull origin master
+
+# Install any new dependencies
+npm install --production
+
+# Run new migrations
+npm run migrate
+
+# Restart the app
+pm2 restart rentflow
+
+# Check it's running
+pm2 status
+pm2 logs rentflow --lines 50
+```
+
+### Deploying frontend (static HTML) changes
+
+The `public/` directory is hosted on S3. After making changes locally:
+
+1. **Swap config.js to production** — make sure `public/js/config.js` has the production `CONFIG` block active (not the dev localhost one)
+2. **Upload to S3** via the AWS console or CLI:
+   ```bash
+   aws s3 sync public/ s3://your-bucket-name/ --delete
+   ```
+3. **If using CloudFront**, invalidate the cache:
+   ```bash
+   aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/*"
+   ```
+4. **Switch config.js back to development** locally after deploying
+
+### Nginx
+
+Config lives at `/etc/nginx/conf.d/rentflow.conf` on the EC2 instance. Local reference copy: `backend/nginx/rentflow.conf`.
+
+```bash
+# Test nginx config
+sudo nginx -t
+
+# Reload nginx (no downtime)
+sudo systemctl reload nginx
+
+# Restart nginx
+sudo systemctl restart nginx
+
+# View nginx logs
+sudo tail -f /var/log/nginx/rentflow-error.log
+sudo tail -f /var/log/nginx/rentflow-access.log
+```
+
+### SSL Certificate (Let's Encrypt / Certbot)
+
+Certs expire every 90 days. Auto-renewal is handled by a systemd timer.
+
+```bash
+# Check cert status
+sudo certbot certificates
+
+# Check auto-renewal timer
+sudo systemctl status certbot-renew.timer
+
+# Force manual renewal (e.g. if cert has expired)
+sudo certbot renew --force-renewal
+sudo systemctl reload nginx
+```
+
+### pm2 — Process Management
+
+pm2 keeps the Node.js server alive and restarts it on crashes or reboots.
+
+```bash
+pm2 status                        # Show all processes
+pm2 restart rentflow              # Restart the app
+pm2 stop rentflow                 # Stop the app
+pm2 logs rentflow --lines 100     # View recent logs
+pm2 logs rentflow --follow        # Stream live logs
+pm2 monit                         # Live dashboard
+pm2 startup                       # Generate startup script (run once after first deploy)
+pm2 save                          # Save current process list for startup
+```
+
+---
+
+## Debugging
+
+### Backend not responding
+
+```bash
+# 1. Check pm2
+pm2 status
+pm2 logs rentflow --lines 50
+
+# 2. Check if port 5000 is listening
+ss -tlnp | grep 5000
+
+# 3. Test directly (bypass nginx)
+curl http://localhost:5000/health
+
+# 4. Check nginx
+sudo systemctl status nginx
+sudo nginx -t
+```
+
+### SSL errors / cert expired
+
+```bash
+sudo certbot renew --force-renewal
+sudo systemctl reload nginx
+```
+
+### Database connection errors
+
+```bash
+# On EC2, check postgres is running
+sudo systemctl status postgresql
+
+# Test connection manually
+psql -U rentflow_user -d rentflow_db -h localhost
+```
+
+### CORS errors in browser
+
+The backend CORS allowlist is configured in `backend/src/server.js`. Make sure `FRONTEND_URL` and `S3_BUCKET_URL` env vars are set correctly on the EC2 instance. After changing env vars, restart pm2.
+
+### Frontend hitting wrong API
+
+Check `public/js/config.js` — the active `CONFIG` block must have the correct `API_BASE_URL`. Locally it should be `http://localhost:5000`; in production it should be `https://api.aspiretowards.com`.
+
+---
+
+## Key File Locations
+
+| Path | What it is |
+|---|---|
+| `backend/src/server.js` | Express app entry point, middleware, route registration |
+| `backend/src/models/` | Sequelize models |
+| `backend/src/controllers/` | Route handlers |
+| `backend/src/routes/` | Express routers |
+| `backend/src/migrations/` | Database migration files |
+| `backend/src/config/database.js` | Sequelize connection config |
+| `backend/src/config/passport.js` | Google OAuth config |
+| `backend/scripts/` | One-off seed and utility scripts |
+| `backend/nginx/rentflow.conf` | Reference copy of the nginx config |
+| `public/` | Live static frontend (HTML/JS/CSS) |
+| `public/js/config.js` | Frontend environment config — swap dev/prod here |
+| `frontend/` | New React/Vite frontend (in progress, not yet deployed) |
