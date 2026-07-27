@@ -130,7 +130,12 @@
                         <h1 class="text-2xl sm:text-3xl font-display font-bold text-gray-900 leading-none mt-0.5">AspireTowards</h1>
                     </a>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3">
+                    <button onclick="openSearch()" title="Search (⌘K)"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 rounded-lg text-sm transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span class="hidden sm:inline text-xs text-gray-400">⌘K</span>
+                    </button>
                     <span id="user-name" class="text-gray-700 font-medium hidden sm:block"></span>
                     <button onclick="logout()" class="text-gray-600 hover:text-gray-900 font-medium">
                         Sign Out
@@ -730,6 +735,9 @@
                 <!-- Annual summary metrics -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="fin-annual-metrics"></div>
 
+                <!-- Analytics section -->
+                <div id="fin-analytics" class="hidden mb-6"></div>
+
                 <!-- Expense items (shown for itemized properties) -->
                 <div id="fin-expense-section" class="hidden">
                     <div class="flex items-center justify-between mb-3">
@@ -1184,6 +1192,29 @@
             </div>
         </div>
     </footer>
+
+    <!-- Search overlay (⌘K command palette) -->
+    <div id="search-overlay" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-start justify-center pt-16 px-4" onclick="if(event.target===this)closeSearch()">
+        <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+                <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input id="search-input" type="text" placeholder="Search features, actions, or type a question…"
+                    class="flex-1 outline-none text-gray-900 text-sm placeholder-gray-400 bg-transparent"
+                    oninput="runSearch(this.value)" onkeydown="searchKeydown(event)">
+                <kbd class="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded font-mono">esc</kbd>
+            </div>
+            <div id="search-results" class="max-h-80 overflow-y-auto py-1"></div>
+            <div id="search-empty" class="hidden py-10 text-center">
+                <p class="text-gray-400 text-sm">No results found.</p>
+                <a href="/dashboard/support.html?type=feature" class="inline-block mt-2 text-teal-600 hover:underline text-sm font-medium">Request a feature →</a>
+            </div>
+            <div id="search-hint" class="px-4 py-2 border-t border-gray-100 flex items-center gap-4 text-xs text-gray-400">
+                <span><kbd class="bg-gray-100 px-1 rounded">↑↓</kbd> navigate</span>
+                <span><kbd class="bg-gray-100 px-1 rounded">↵</kbd> select</span>
+                <span><kbd class="bg-gray-100 px-1 rounded">esc</kbd> close</span>
+            </div>
+        </div>
+    </div>
 
     <!-- Undo import toast -->
     <div id="undo-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-gray-900 text-white px-5 py-3 rounded-xl shadow-xl text-sm">
@@ -2370,6 +2401,7 @@ Total: $${props.totalAmount}`);
                 finState.yearData = data;
                 renderMonthlyTable(data);
                 renderAnnualMetrics(data);
+                renderAnalytics(data);
                 renderExpenseItems(data);
             } catch(e) { console.error('loadFinYear error:', e); }
         }
@@ -2484,6 +2516,127 @@ Total: $${props.totalAmount}`);
                     ${m.sub ? `<p class="text-xs text-gray-400">${m.sub}</p>` : ''}
                 </div>`
             ).join('');
+        }
+
+        function renderAnalytics(data) {
+            const el = document.getElementById('fin-analytics');
+            const t = data.annualTotals;
+            const months = data.months || [];
+            const year = data.year;
+
+            // Need at least some income or expense data to show analytics
+            if (!t || (t.grossIncome === 0 && t.grossExpenses === 0)) {
+                el.classList.add('hidden');
+                return;
+            }
+            el.classList.remove('hidden');
+
+            // ── Derived metrics ─────────────────────────────────────────────
+            const activeMonths = months.filter(m => m.grossIncome > 0 || m.numReservations > 0);
+            const avgNightlyRate = t.nightsBooked > 0 ? t.grossIncome / t.nightsBooked : null;
+            const avgBookingValue = t.numReservations > 0 ? t.grossIncome / t.numReservations : null;
+            const avgCleanCost = t.numReservations > 0 && t.cleaningFee > 0 ? t.cleaningFee / t.numReservations : null;
+            const avgNetPerNight = t.nightsBooked > 0 ? t.netIncome / t.nightsBooked : null;
+            const occupancy = t.nightsBooked / 365;
+            const avgStay = t.numReservations > 0 ? t.nightsBooked / t.numReservations : null;
+
+            const bestRevenueMonth = activeMonths.length ? activeMonths.reduce((a, b) => b.grossIncome > a.grossIncome ? b : a) : null;
+            const bestOccMonth = activeMonths.length ? activeMonths.reduce((a, b) => b.nightsBooked > a.nightsBooked ? b : a) : null;
+
+            // ── Expense breakdown ───────────────────────────────────────────
+            const expBreakdown = [
+                { label: 'Cleaning',    value: t.cleaningFee,   color: '#14b8a6' },
+                { label: 'Utilities',   value: t.utilities,     color: '#3b82f6' },
+                { label: 'Maintenance', value: t.maintenance,   color: '#f97316' },
+                { label: 'HOA',         value: t.hoaPayment,    color: '#a855f7' },
+                { label: 'Platform',    value: t.platformCharges, color: '#ec4899' },
+                { label: 'Other',       value: t.otherExpenses, color: '#6b7280' },
+            ].filter(e => e.value > 0);
+
+            const totalTrackedExp = expBreakdown.reduce((s, e) => s + e.value, 0) + (t.managementFee || 0);
+            const allSegments = [
+                { label: 'Mgmt Fee', value: t.managementFee || 0, color: '#64748b' },
+                ...expBreakdown
+            ].filter(e => e.value > 0);
+
+            const barTotal = allSegments.reduce((s, e) => s + e.value, 0);
+
+            // ── Insight cards ────────────────────────────────────────────────
+            function statCard(label, value, sub = '', accent = 'teal') {
+                const colors = { teal: 'border-teal-400 text-teal-700', blue: 'border-blue-400 text-blue-700', orange: 'border-orange-400 text-orange-700', purple: 'border-purple-400 text-purple-700', gray: 'border-gray-300 text-gray-600' };
+                const c = colors[accent] || colors.teal;
+                return `<div class="bg-white rounded-xl shadow-sm p-4 border-l-4 ${c.split(' ')[0]}">
+                    <p class="text-xs font-medium text-gray-500 mb-1">${label}</p>
+                    <p class="text-xl font-bold ${c.split(' ')[1]}">${value}</p>
+                    ${sub ? `<p class="text-xs text-gray-400 mt-0.5">${sub}</p>` : ''}
+                </div>`;
+            }
+
+            // ── Stacked expense bar ──────────────────────────────────────────
+            const barSegments = allSegments.map(e => {
+                const pct = barTotal > 0 ? (e.value / barTotal * 100).toFixed(1) : 0;
+                return `<div title="${e.label}: ${finFmt(e.value)} (${pct}%)" style="width:${pct}%;background:${e.color};min-width:${pct > 0 ? '2px' : '0'}" class="h-full transition-all"></div>`;
+            }).join('');
+
+            const legendItems = allSegments.map(e => {
+                const pct = barTotal > 0 ? (e.value / barTotal * 100).toFixed(0) : 0;
+                return `<div class="flex items-center gap-1.5 text-xs text-gray-600 whitespace-nowrap">
+                    <span class="w-2.5 h-2.5 rounded-sm shrink-0" style="background:${e.color}"></span>
+                    <span>${e.label}</span>
+                    <span class="font-medium text-gray-800">${pct}%</span>
+                </div>`;
+            }).join('');
+
+            // ── Monthly revenue mini bars ────────────────────────────────────
+            const maxRev = Math.max(...months.map(m => m.grossIncome), 1);
+            const miniBarLabels = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+            const miniBars = months.map((m, i) => {
+                const h = Math.round((m.grossIncome / maxRev) * 48);
+                const isActive = m.grossIncome > 0;
+                return `<div class="flex flex-col items-center gap-0.5 flex-1" title="${m.monthName}: ${finFmt(m.grossIncome)}">
+                    <div class="w-full flex items-end justify-center" style="height:48px">
+                        <div style="height:${h}px;width:100%;min-height:${isActive?'2px':'0'}" class="${isActive ? 'bg-teal-400' : 'bg-gray-100'} rounded-t transition-all hover:bg-teal-600"></div>
+                    </div>
+                    <span class="text-gray-400" style="font-size:9px">${miniBarLabels[i]}</span>
+                </div>`;
+            }).join('');
+
+            el.innerHTML = `
+            <div class="mb-3 flex items-center justify-between">
+                <h4 class="font-semibold text-gray-900">${year} Analytics</h4>
+                <span class="text-xs text-gray-400">${activeMonths.length} active month${activeMonths.length !== 1 ? 's' : ''} · ${t.numReservations || 0} reservations · ${t.nightsBooked || 0} nights</span>
+            </div>
+
+            <!-- Insight cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                ${avgNightlyRate ? statCard('Avg Nightly Rate', finFmt(avgNightlyRate), 'gross income ÷ nights booked', 'teal') : ''}
+                ${avgBookingValue ? statCard('Avg Booking Value', finFmt(avgBookingValue), 'gross income ÷ reservations', 'blue') : ''}
+                ${avgCleanCost ? statCard('Avg Cleaning Cost', finFmt(avgCleanCost), 'cleaning expenses ÷ reservations', 'orange') : ''}
+                ${avgNetPerNight != null ? statCard('Net Per Night', finFmtSigned(avgNetPerNight), 'net income ÷ nights booked', avgNetPerNight >= 0 ? 'teal' : 'orange') : ''}
+                ${avgStay ? statCard('Avg Stay Length', avgStay.toFixed(1) + ' nights', 'nights ÷ reservations', 'blue') : ''}
+                ${statCard('Occupancy Rate', (occupancy * 100).toFixed(1) + '%', `${t.nightsBooked} of 365 nights`, occupancy >= 0.5 ? 'teal' : 'gray')}
+                ${bestRevenueMonth ? statCard('Best Revenue Month', bestRevenueMonth.monthName, finFmt(bestRevenueMonth.grossIncome) + ' gross', 'purple') : ''}
+                ${bestOccMonth && bestOccMonth.monthName !== bestRevenueMonth?.monthName ? statCard('Busiest Month', bestOccMonth.monthName, bestOccMonth.nightsBooked + ' nights booked', 'purple') : ''}
+            </div>
+
+            <!-- Revenue by month + Expense breakdown -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <p class="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Monthly Gross Revenue</p>
+                    <div class="flex items-end gap-1 w-full">${miniBars}</div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Expense Breakdown</p>
+                        <span class="text-xs text-gray-400">${finFmt(barTotal)} total</span>
+                    </div>
+                    ${barTotal > 0 ? `
+                    <div class="h-5 rounded-lg overflow-hidden flex w-full mb-3">${barSegments}</div>
+                    <div class="flex flex-wrap gap-x-4 gap-y-1.5">${legendItems}</div>
+                    ` : '<p class="text-sm text-gray-400">No expense data yet</p>'}
+                </div>
+            </div>`;
         }
 
         function renderExpenseItems(data) {
@@ -3787,6 +3940,308 @@ Total: $${props.totalAmount}`);
             el.className = `text-sm rounded-lg px-3 py-2 ${success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`;
             el.classList.remove('hidden');
         }
+    </script>
+
+    <!-- ⌘K Command Palette / Intelligent Search -->
+    <script>
+    // ── Feature index ─────────────────────────────────────────────────────────
+    // Each entry: title, description, keywords (for matching), action (fn or url string)
+    const SEARCH_FEATURES = [
+      {
+        icon: '📥', title: 'Import Bromley Invoice or Statement',
+        desc: 'Upload a Bromley Mountain PDF — invoices with line items or statements of account',
+        tags: ['bromley','invoice','statement','import','expenses','cleaning','housekeeping','maintenance','pdf','upload','bills'],
+        action: () => { switchTab('financials'); setTimeout(() => { document.getElementById('fin-import-type').value = 'bromley-pdf'; resetImport(); document.getElementById('fin-import-modal').classList.remove('hidden'); }, 100); }
+      },
+      {
+        icon: '🌴', title: 'Import Caribbean Statement',
+        desc: 'Upload a Caribbean Property Management monthly PDF to record income and expenses',
+        tags: ['caribbean','statement','monthly','income','pdf','import','management','vrbo'],
+        action: () => { switchTab('financials'); setTimeout(() => { document.getElementById('fin-import-type').value = 'caribbean-pdf'; resetImport(); document.getElementById('fin-import-modal').classList.remove('hidden'); }, 100); }
+      },
+      {
+        icon: '📊', title: 'Import Evolve CSV',
+        desc: 'Import booking transactions from an Evolve CSV export',
+        tags: ['evolve','csv','booking','transactions','import','income','airbnb'],
+        action: () => { switchTab('financials'); setTimeout(() => { document.getElementById('fin-import-type').value = 'evolve-csv'; resetImport(); document.getElementById('fin-import-modal').classList.remove('hidden'); }, 100); }
+      },
+      {
+        icon: '📋', title: 'Import Monthly CSV',
+        desc: 'Upload a monthly summary CSV with income, expenses, and occupancy data',
+        tags: ['monthly','csv','import','income','expenses','upload','manual'],
+        action: () => { switchTab('financials'); setTimeout(() => { document.getElementById('fin-import-type').value = 'monthly'; resetImport(); document.getElementById('fin-import-modal').classList.remove('hidden'); }, 100); }
+      },
+      {
+        icon: '✉️', title: 'Email-to-Import',
+        desc: 'Forward any Bromley invoice email to import@aspiretowards.com — it auto-imports the PDF',
+        tags: ['email','forward','import','bromley','automatic','gmail','auto'],
+        action: () => { alert('Forward any Bromley invoice email (with PDF attached) to:\n\nimport@aspiretowards.com\n\nThe system will detect the property and import it automatically, then reply with a summary.'); }
+      },
+      {
+        icon: '📈', title: 'Year Analytics',
+        desc: 'See average cleaning cost, nightly rate, occupancy, best months, and expense breakdown',
+        tags: ['analytics','stats','average','cleaning','cost','nightly','rate','occupancy','insights','breakdown','chart','expenses','revenue'],
+        action: () => { switchTab('financials'); setTimeout(() => document.getElementById('fin-analytics')?.scrollIntoView({ behavior:'smooth' }), 300); }
+      },
+      {
+        icon: '💰', title: 'View Financial Dashboard',
+        desc: 'See income, expenses, occupancy, and net income across all years',
+        tags: ['financials','income','expenses','dashboard','revenue','profit','year','summary'],
+        action: () => switchTab('financials')
+      },
+      {
+        icon: '📅', title: 'Year Detail',
+        desc: 'See month-by-month breakdown of income and expenses for a specific year',
+        tags: ['year','monthly','detail','breakdown','income','expenses','2024','2025','2026'],
+        action: () => { switchTab('financials'); setTimeout(() => document.getElementById('fin-analytics')?.scrollIntoView({ behavior:'smooth' }), 300); }
+      },
+      {
+        icon: '🧾', title: 'Expense Details',
+        desc: 'View, add, or edit individual expense line items (utilities, maintenance, housekeeping, etc.)',
+        tags: ['expenses','line items','utilities','maintenance','housekeeping','hoa','details','itemized','breakdown'],
+        action: () => { switchTab('financials'); setTimeout(() => { const el = document.getElementById('fin-expense-section'); if (el) el.scrollIntoView({ behavior:'smooth' }); }, 300); }
+      },
+      {
+        icon: '🏷️', title: 'Edit Purchase Price',
+        desc: 'Set or update the purchase price of your property (used for NOI and ROI calculations)',
+        tags: ['purchase price','price','noi','roi','value','investment','cost','buy'],
+        action: () => { switchTab('financials'); setTimeout(() => editPurchasePrice?.(), 200); }
+      },
+      {
+        icon: '🏠', title: 'My Properties',
+        desc: 'View and manage all your listed properties',
+        tags: ['properties','listings','manage','property','add','edit','view'],
+        action: '/properties.html'
+      },
+      {
+        icon: '➕', title: 'Add a New Property',
+        desc: 'List a new rental property on the platform',
+        tags: ['add','new','property','create','listing','rental'],
+        action: '/create-property.html'
+      },
+      {
+        icon: '👥', title: 'View Guests',
+        desc: 'See all guests, search by name or email, and manage bookings',
+        tags: ['guests','bookings','reservations','search','name','email','stays'],
+        action: () => switchTab('guests')
+      },
+      {
+        icon: '⚙️', title: 'Account Settings',
+        desc: 'Update your name or change your password',
+        tags: ['account','settings','name','password','profile','change','update','email'],
+        action: '/dashboard/account-settings.html'
+      },
+      {
+        icon: '🔑', title: 'Change Password',
+        desc: 'Update your account password',
+        tags: ['password','change','update','security','login','credentials'],
+        action: '/dashboard/account-settings.html'
+      },
+      {
+        icon: '🐛', title: 'Report a Bug',
+        desc: 'Something not working right? Let us know',
+        tags: ['bug','report','broken','issue','error','problem','not working','crash'],
+        action: '/dashboard/support.html?type=bug'
+      },
+      {
+        icon: '💡', title: 'Request a Feature',
+        desc: 'Have an idea? Submit a feature request',
+        tags: ['feature','request','idea','suggest','new','wish','want','add'],
+        action: '/dashboard/support.html?type=feature'
+      },
+      {
+        icon: '💳', title: 'Billing Support',
+        desc: 'Questions about your subscription or payments',
+        tags: ['billing','payment','subscription','charge','invoice','plan','pricing'],
+        action: '/dashboard/support.html?type=billing'
+      },
+      {
+        icon: '💬', title: 'Contact Support',
+        desc: 'Get help with anything — general questions or anything else',
+        tags: ['support','contact','help','question','general','message'],
+        action: '/dashboard/support.html'
+      },
+      {
+        icon: '↩️', title: 'Undo Last Import',
+        desc: 'Reverse the most recent CSV or PDF import',
+        tags: ['undo','reverse','import','mistake','delete','remove','last'],
+        action: () => { if (typeof undoState !== 'undefined' && undoState) undoImport(); else alert('No recent import to undo. The undo window appears for 30 seconds after each import.'); }
+      },
+      {
+        icon: '📤', title: 'Sign Out',
+        desc: 'Log out of your account',
+        tags: ['sign out','logout','exit','leave','log off'],
+        action: () => logout()
+      },
+    ];
+
+    // ── Search algorithm ──────────────────────────────────────────────────────
+    let searchSelectedIdx = -1;
+
+    function normalizeQuery(q) {
+      return q.toLowerCase()
+        .replace(/^(how (do i|can i|to)|where (is|can i find)|i want to|show me|find|take me to)\s+/i, '')
+        .trim();
+    }
+
+    function scoreFeature(feature, q) {
+      if (!q) return 0;
+      const tokens = q.split(/\s+/).filter(Boolean);
+      const titleL = feature.title.toLowerCase();
+      const descL = feature.desc.toLowerCase();
+      let score = 0;
+
+      for (const tok of tokens) {
+        if (titleL.startsWith(tok))          score += 10;
+        else if (titleL.includes(tok))       score += 6;
+        else if (feature.tags.some(t => t.startsWith(tok))) score += 8;
+        else if (feature.tags.some(t => t.includes(tok)))   score += 5;
+        else if (descL.includes(tok))        score += 3;
+        else {
+          // Fuzzy: allow 1 character off for tokens ≥4 chars
+          if (tok.length >= 4) {
+            const fuzzy = feature.tags.some(t => levenshtein(tok, t) <= 1) || levenshtein(tok, titleL.split(' ')[0]) <= 1;
+            if (fuzzy) score += 2;
+          }
+        }
+      }
+      return score;
+    }
+
+    function levenshtein(a, b) {
+      if (Math.abs(a.length - b.length) > 3) return 99;
+      const dp = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+      for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+      for (let i = 1; i <= a.length; i++)
+        for (let j = 1; j <= b.length; j++)
+          dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+      return dp[a.length][b.length];
+    }
+
+    function runSearch(raw) {
+      const q = normalizeQuery(raw);
+      const resultsEl = document.getElementById('search-results');
+      const emptyEl = document.getElementById('search-empty');
+      const hintEl = document.getElementById('search-hint');
+      searchSelectedIdx = -1;
+
+      if (!q) {
+        resultsEl.innerHTML = renderDefaultResults();
+        emptyEl.classList.add('hidden');
+        hintEl.classList.remove('hidden');
+        return;
+      }
+
+      const scored = SEARCH_FEATURES
+        .map(f => ({ f, score: scoreFeature(f, q) }))
+        .filter(x => x.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 7);
+
+      if (scored.length === 0) {
+        resultsEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        hintEl.classList.add('hidden');
+      } else {
+        resultsEl.innerHTML = scored.map((x, i) => renderResult(x.f, i)).join('');
+        emptyEl.classList.add('hidden');
+        hintEl.classList.remove('hidden');
+      }
+    }
+
+    function renderDefaultResults() {
+      const defaults = ['Import Bromley Invoice or Statement','Import Caribbean Statement','View Financial Dashboard','Account Settings','Contact Support'];
+      const items = SEARCH_FEATURES.filter(f => defaults.includes(f.title));
+      return `<div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">Quick Actions</div>` +
+        items.map((f, i) => renderResult(f, i)).join('');
+    }
+
+    function renderResult(f, idx) {
+      return `<div class="search-result flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors" data-idx="${idx}" onmouseenter="searchHighlight(${idx})" onclick="executeSearchResult(${idx})">
+        <span class="text-xl shrink-0 w-7 text-center">${f.icon}</span>
+        <div class="min-w-0">
+          <div class="text-sm font-medium text-gray-900 truncate">${f.title}</div>
+          <div class="text-xs text-gray-500 truncate">${f.desc}</div>
+        </div>
+      </div>`;
+    }
+
+    function searchHighlight(idx) {
+      searchSelectedIdx = idx;
+      document.querySelectorAll('.search-result').forEach((el, i) => {
+        el.classList.toggle('bg-gray-50', i === idx);
+      });
+    }
+
+    function searchKeydown(e) {
+      const items = document.querySelectorAll('.search-result');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        searchSelectedIdx = Math.min(searchSelectedIdx + 1, items.length - 1);
+        items.forEach((el, i) => el.classList.toggle('bg-gray-50', i === searchSelectedIdx));
+        items[searchSelectedIdx]?.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        searchSelectedIdx = Math.max(searchSelectedIdx - 1, 0);
+        items.forEach((el, i) => el.classList.toggle('bg-gray-50', i === searchSelectedIdx));
+        items[searchSelectedIdx]?.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter') {
+        if (searchSelectedIdx >= 0) executeSearchResult(searchSelectedIdx);
+        else if (items.length === 1) executeSearchResult(0);
+      } else if (e.key === 'Escape') {
+        closeSearch();
+      }
+    }
+
+    function getVisibleResults() {
+      const q = normalizeQuery(document.getElementById('search-input').value);
+      if (!q) {
+        const defaults = ['Import Bromley Invoice or Statement','Import Caribbean Statement','View Financial Dashboard','Account Settings','Contact Support'];
+        return SEARCH_FEATURES.filter(f => defaults.includes(f.title));
+      }
+      return SEARCH_FEATURES
+        .map(f => ({ f, score: scoreFeature(f, q) }))
+        .filter(x => x.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 7)
+        .map(x => x.f);
+    }
+
+    function executeSearchResult(idx) {
+      const results = getVisibleResults();
+      const feature = results[idx];
+      if (!feature) return;
+      closeSearch();
+      if (typeof feature.action === 'string') {
+        window.location.href = feature.action;
+      } else {
+        setTimeout(() => feature.action(), 50);
+      }
+    }
+
+    function openSearch() {
+      const overlay = document.getElementById('search-overlay');
+      const input = document.getElementById('search-input');
+      overlay.classList.remove('hidden');
+      input.value = '';
+      runSearch('');
+      setTimeout(() => input.focus(), 50);
+    }
+
+    function closeSearch() {
+      document.getElementById('search-overlay').classList.add('hidden');
+    }
+
+    // ⌘K / Ctrl+K shortcut
+    document.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('search-overlay').classList.contains('hidden') ? openSearch() : closeSearch();
+      }
+      if (e.key === 'Escape' && !document.getElementById('search-overlay').classList.contains('hidden')) {
+        closeSearch();
+      }
+    });
     </script>
 </body>
 </html>

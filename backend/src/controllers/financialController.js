@@ -142,19 +142,41 @@ const getPropertySummary = async (req, res) => {
     const settings = await PropertyFinancialSettings.findOne({ where: { propertyId: property.id } })
     const purchasePrice = parseFloat(settings?.purchasePrice || 0)
 
-    const allMonthly = await FinancialMonthly.findAll({
-      where: { propertyId: property.id },
-      order: [['year', 'ASC'], ['month', 'ASC']]
-    })
+    const dataSource = settings?.dataSource || 'manual'
 
-    const allConfigs = await FinancialAnnualConfig.findAll({ where: { propertyId: property.id } })
+    const [allMonthly, allExpenseItems, allConfigs] = await Promise.all([
+      FinancialMonthly.findAll({ where: { propertyId: property.id }, order: [['year', 'ASC'], ['month', 'ASC']] }),
+      FinancialExpenseItem.findAll({ where: { propertyId: property.id } }),
+      FinancialAnnualConfig.findAll({ where: { propertyId: property.id } })
+    ])
+
     const configByYear = Object.fromEntries(allConfigs.map(c => [c.year, c]))
 
-    // Group monthly records by year
+    // For non-Caribbean properties, build expense totals map keyed by year+month
+    const expenseTotalsMap = {}
+    if (dataSource !== 'caribbean') {
+      for (const item of allExpenseItems) {
+        const key = `${item.year}-${item.month}`
+        if (!expenseTotalsMap[key]) expenseTotalsMap[key] = {}
+        const field = EXPENSE_TAG_TO_FIELD[item.tag] || 'otherExpenses'
+        expenseTotalsMap[key][field] = (expenseTotalsMap[key][field] || 0) + parseFloat(item.amount || 0)
+      }
+    }
+
+    // Group monthly records by year, augmenting with expense item totals
     const yearMap = {}
     for (const row of allMonthly) {
       if (!yearMap[row.year]) yearMap[row.year] = []
-      yearMap[row.year].push({ ...row.toJSON(), year: row.year, month: row.month })
+      const extras = expenseTotalsMap[`${row.year}-${row.month}`] || {}
+      const base = row.toJSON()
+      yearMap[row.year].push({
+        ...base,
+        utilities:     parseFloat(base.utilities     || 0) + (extras.utilities     || 0),
+        maintenance:   parseFloat(base.maintenance   || 0) + (extras.maintenance   || 0),
+        cleaningFee:   parseFloat(base.cleaningFee   || 0) + (extras.cleaningFee   || 0),
+        hoaPayment:    parseFloat(base.hoaPayment    || 0) + (extras.hoaPayment    || 0),
+        otherExpenses: parseFloat(base.otherExpenses || 0) + (extras.otherExpenses || 0),
+      })
     }
 
     // Years with full monthly detail
@@ -188,7 +210,7 @@ const getPropertySummary = async (req, res) => {
       success: true,
       property: { id: property.id, name: property.name, city: property.city, state: property.state },
       purchasePrice,
-      dataSource: settings?.dataSource || 'manual',
+      dataSource,
       years,
       allTimeTotals,
       allTimeAvg
@@ -200,6 +222,14 @@ const getPropertySummary = async (req, res) => {
 }
 
 // GET /api/financials/:propertyId/year/:year — monthly detail
+const EXPENSE_TAG_TO_FIELD = {
+  utilities: 'utilities',
+  maintenance: 'maintenance',
+  housekeeping: 'cleaningFee',
+  hoa: 'hoaPayment',
+  other: 'otherExpenses'
+}
+
 const getYearDetail = async (req, res) => {
   try {
     const { propertyId, year } = req.params
@@ -209,20 +239,42 @@ const getYearDetail = async (req, res) => {
 
     const settings = await PropertyFinancialSettings.findOne({ where: { propertyId } })
     const purchasePrice = parseFloat(settings?.purchasePrice || 0)
+    const dataSource = settings?.dataSource || 'manual'
 
     const annualConfig = await FinancialAnnualConfig.findOne({ where: { propertyId, year } })
 
-    const monthlyRows = await FinancialMonthly.findAll({
-      where: { propertyId, year },
-      order: [['month', 'ASC']]
-    })
+    const [monthlyRows, expenseItems] = await Promise.all([
+      FinancialMonthly.findAll({ where: { propertyId, year }, order: [['month', 'ASC']] }),
+      FinancialExpenseItem.findAll({ where: { propertyId, year }, order: [['month', 'ASC'], ['expenseDate', 'ASC']] })
+    ])
 
     const monthlyMap = Object.fromEntries(monthlyRows.map(r => [r.month, r]))
 
-    // Build all 12 months (fill zeros for missing)
+    // For non-Caribbean properties, roll expense items into monthly totals by tag.
+    // Caribbean monthly rows already include the correct expense totals from PDF parsing.
+    const expenseTotals = {}
+    if (dataSource !== 'caribbean') {
+      for (const item of expenseItems) {
+        const m = item.month
+        if (!expenseTotals[m]) expenseTotals[m] = {}
+        const field = EXPENSE_TAG_TO_FIELD[item.tag] || 'otherExpenses'
+        expenseTotals[m][field] = (expenseTotals[m][field] || 0) + parseFloat(item.amount || 0)
+      }
+    }
+
+    // Build all 12 months (fill zeros for missing), augmenting with expense item totals
     const months = Array.from({ length: 12 }, (_, i) => {
       const month = i + 1
-      const row = monthlyMap[month] || { year: parseInt(year), month, grossIncome: 0, managementFee: 0, cleaningFee: 0, utilities: 0, maintenance: 0, otherExpenses: 0, platformCharges: 0, nightsBooked: 0, numReservations: 0, hoaPayment: 0, actualMortgagePaid: 0 }
+      const base = monthlyMap[month] || { year: parseInt(year), month, grossIncome: 0, managementFee: 0, cleaningFee: 0, utilities: 0, maintenance: 0, otherExpenses: 0, platformCharges: 0, nightsBooked: 0, numReservations: 0, hoaPayment: 0, actualMortgagePaid: 0 }
+      const extras = expenseTotals[month] || {}
+      const row = {
+        ...base,
+        utilities:     parseFloat(base.utilities     || 0) + (extras.utilities     || 0),
+        maintenance:   parseFloat(base.maintenance   || 0) + (extras.maintenance   || 0),
+        cleaningFee:   parseFloat(base.cleaningFee   || 0) + (extras.cleaningFee   || 0),
+        hoaPayment:    parseFloat(base.hoaPayment    || 0) + (extras.hoaPayment    || 0),
+        otherExpenses: parseFloat(base.otherExpenses || 0) + (extras.otherExpenses || 0),
+      }
       const metrics = computeMonthMetrics(row, annualConfig?.scheduledMortgage)
       return {
         month,
@@ -233,23 +285,12 @@ const getYearDetail = async (req, res) => {
       }
     })
 
-    const annualTotals = computeAnnualMetrics(
-      months.map(m => ({ ...m, year: parseInt(year) })),
-      annualConfig,
-      purchasePrice
-    )
-
-    const expenseItems = await FinancialExpenseItem.findAll({
-      where: { propertyId, year },
-      order: [['month', 'ASC'], ['expenseDate', 'ASC']]
-    })
-
     res.json({
       success: true,
       property: { id: property.id, name: property.name },
       year: parseInt(year),
       purchasePrice,
-      dataSource: settings?.dataSource || 'manual',
+      dataSource,
       annualConfig: annualConfig || null,
       months,
       annualTotals,
@@ -613,7 +654,8 @@ const parseCaribbeaStatement = async (req, res) => {
   }
 }
 
-// POST /api/financials/parse-bromley-pdf — parse a Bromley Mountain invoice or statement PDF
+// ── Bromley PDF parsing ───────────────────────────────────────────────────────
+
 const MONTH_ABBR = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 }
 
 function tagBromleyItem(code, desc) {
@@ -632,129 +674,83 @@ function tagBromleyStatement(reference) {
   return 'maintenance'
 }
 
+// Core text parser — shared by the HTTP handler and the email import webhook
+function parseBromleyText(text) {
+  const isStatement = /^\s*STATEMENT/m.test(text)
+
+  if (isStatement) {
+    const dateMatch = text.match(/DATE:\s*(\d{1,2}\/\d{1,2}\/(\d{4}))/)
+    const date = dateMatch ? dateMatch[1] : null
+    const year = dateMatch ? parseInt(dateMatch[2]) : null
+    const totalMatch = text.match(/Total:\s+([\d,]+\.\d{2})/)
+    const total = totalMatch ? parseFloat(totalMatch[1].replace(/,/g, '')) : null
+    const lines = []
+    const rowRe = /(\S+)\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+IN\s+(.+?)\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+([\d,]+\.\d{2})/g
+    let m
+    while ((m = rowRe.exec(text)) !== null) {
+      const reference = m[3].trim()
+      lines.push({ documentNumber: m[1], date: m[2], reference, dueDate: m[4], amount: parseFloat(m[5].replace(/,/g, '')), tag: tagBromleyStatement(reference) })
+    }
+    return { docType: 'statement', date, year, total, lines }
+  }
+
+  // Invoice
+  const dateMatch = text.match(/Date:\s*(\d{1,2}\/\d{1,2}\/(\d{4}))/)
+  const date = dateMatch ? dateMatch[1] : null
+  const invoiceNumbers = [...text.matchAll(/^Invoice:\s*([\w\/-]+)/gm)].map(n => n[1])
+  const invoiceNumber = invoiceNumbers[0] || null
+
+  let startMonth = null, endMonth = null, year = null
+  const periodMatch = text.match(/[Ss]ervice period\s+([A-Za-z]{3})-([A-Za-z]{3,9})(\d{2,4})/)
+  if (periodMatch) {
+    startMonth = MONTH_ABBR[periodMatch[1].toLowerCase()] || null
+    endMonth   = MONTH_ABBR[periodMatch[2].slice(0,3).toLowerCase()] || null
+    year = parseInt(periodMatch[3])
+    if (year < 100) year += 2000
+  }
+  if (!year && dateMatch) year = parseInt(dateMatch[2])
+  if (!startMonth && date) startMonth = endMonth = parseInt(date.split('/')[0])
+
+  const amountDueMatches = [...text.matchAll(/Amount due\s+([\d,]+\.\d{2})/g)]
+  let total = null
+  if (amountDueMatches.length > 0) {
+    total = parseFloat(amountDueMatches.reduce((s, m) => s + parseFloat(m[1].replace(/,/g, '')), 0).toFixed(2))
+  } else {
+    const tm = text.match(/Total amount\s+([\d,]+\.\d{2})/)
+    if (tm) total = parseFloat(tm[1].replace(/,/g, ''))
+  }
+
+  const lineItems = []
+  const lineRe = /^(.+?)\s+([\d]+\.[\d]+)\s+EA\s+[\d]+\.[\d]+\s+([\d]+\.[\d]+)\s*$/gm
+  let im
+  while ((im = lineRe.exec(text)) !== null) {
+    const full = im[1].trim(), qty = parseFloat(im[2]), amount = parseFloat(im[3])
+    if (amount <= 0) continue
+    let code, desc
+    const spaceIdx = full.search(/\s/)
+    if (spaceIdx > 0) {
+      const prefix = full.slice(0, spaceIdx)
+      if (/^[A-Z][A-Z0-9_-]*$/.test(prefix)) { code = prefix; desc = full.slice(spaceIdx + 1) }
+    }
+    if (!code) {
+      const split = full.match(/^([A-Z][A-Z0-9_-]*?)([A-Z][a-z].+)$/)
+      if (split) { code = split[1]; desc = split[2] }
+    }
+    if (code && desc) lineItems.push({ code, description: desc.trim(), qty, amount, tag: tagBromleyItem(code, desc) })
+  }
+
+  return { docType: 'invoice', date, invoiceNumber, invoiceNumbers, year, startMonth, endMonth, total, lineItems }
+}
+
+// POST /api/financials/parse-bromley-pdf — HTTP handler (used by dashboard import UI)
 const parseBromleyPdf = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' })
-
     const { PDFParse } = require('pdf-parse')
     const parser = new PDFParse({ data: req.file.buffer })
     const d = await parser.getText()
     await parser.destroy()
-    const text = d.text
-
-    // Detect type: statements have "STATEMENT" prominently, invoices have "Invoice"
-    const isStatement = /^\s*STATEMENT/m.test(text)
-
-    if (isStatement) {
-      // ── Statement parser ──────────────────────────────────────────
-      const dateMatch = text.match(/DATE:\s*(\d{1,2}\/\d{1,2}\/(\d{4}))/)
-      const date = dateMatch ? dateMatch[1] : null
-      const year = dateMatch ? parseInt(dateMatch[2]) : null
-
-      const totalMatch = text.match(/Total:\s+([\d,]+\.\d{2})/)
-      const total = totalMatch ? parseFloat(totalMatch[1].replace(/,/g, '')) : null
-
-      // Each invoice row: DOCNUM  DATE  IN  REFERENCE  DUEDATE  AMOUNT
-      const lines = []
-      const rowRe = /(\S+)\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+IN\s+(.+?)\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+([\d,]+\.\d{2})/g
-      let m
-      while ((m = rowRe.exec(text)) !== null) {
-        const reference = m[3].trim()
-        lines.push({
-          documentNumber: m[1],
-          date: m[2],
-          reference,
-          dueDate: m[4],
-          amount: parseFloat(m[5].replace(/,/g, '')),
-          tag: tagBromleyStatement(reference)
-        })
-      }
-
-      return res.json({ success: true, docType: 'statement', date, year, total, lines })
-    }
-
-    // ── Invoice parser ────────────────────────────────────────────────
-    // First "Date:" in the document (may be a multi-invoice bundle PDF)
-    const dateMatch = text.match(/Date:\s*(\d{1,2}\/\d{1,2}\/(\d{4}))/)
-    const date = dateMatch ? dateMatch[1] : null
-
-    // Collect all invoice numbers (may be multiple in a bundle)
-    const invoiceNumbers = [...text.matchAll(/^Invoice:\s*([\w\/-]+)/gm)].map(n => n[1])
-    const invoiceNumber = invoiceNumbers[0] || null
-
-    // Service period: "Service period Jul-Sep2026" or similar (quarterly billing)
-    let startMonth = null, endMonth = null, year = null
-    const periodMatch = text.match(/[Ss]ervice period\s+([A-Za-z]{3})-([A-Za-z]{3,9})(\d{2,4})/)
-    if (periodMatch) {
-      startMonth = MONTH_ABBR[periodMatch[1].toLowerCase()] || null
-      endMonth   = MONTH_ABBR[periodMatch[2].slice(0,3).toLowerCase()] || null
-      year = parseInt(periodMatch[3])
-      if (year < 100) year += 2000
-    }
-    if (!year && dateMatch) year = parseInt(dateMatch[2])
-    // Derive month from invoice date when no service period line is present
-    if (!startMonth && date) {
-      startMonth = endMonth = parseInt(date.split('/')[0])
-    }
-
-    // Sum all "Amount due" values — handles multi-invoice bundle PDFs
-    const amountDueMatches = [...text.matchAll(/Amount due\s+([\d,]+\.\d{2})/g)]
-    let total = null
-    if (amountDueMatches.length > 0) {
-      total = parseFloat(amountDueMatches.reduce((s, m) => s + parseFloat(m[1].replace(/,/g, '')), 0).toFixed(2))
-    } else {
-      const tm = text.match(/Total amount\s+([\d,]+\.\d{2})/)
-      if (tm) total = parseFloat(tm[1].replace(/,/g, ''))
-    }
-
-    // Line items: step 1 — anchor from right to extract qty + amount
-    // Handles variable quantities (2.75 EA, 4.00 EA), hyphens/underscores in codes,
-    // and codes concatenated directly with description (e.g. QUEEN-BRLQueen Bed)
-    const lineItems = []
-    const lineRe = /^(.+?)\s+([\d]+\.[\d]+)\s+EA\s+[\d]+\.[\d]+\s+([\d]+\.[\d]+)\s*$/gm
-    let im
-    while ((im = lineRe.exec(text)) !== null) {
-      const full = im[1].trim()
-      const qty = parseFloat(im[2])
-      const amount = parseFloat(im[3])
-      if (amount <= 0) continue
-
-      let code, desc
-
-      // Step 2a: if there's a space after an all-caps code, split there
-      const spaceIdx = full.search(/\s/)
-      if (spaceIdx > 0) {
-        const prefix = full.slice(0, spaceIdx)
-        if (/^[A-Z][A-Z0-9_-]*$/.test(prefix)) {
-          code = prefix
-          desc = full.slice(spaceIdx + 1)
-        }
-      }
-
-      // Step 2b: no space (or prefix had lowercase) — find code/description boundary
-      // Description always starts with an UpperLower pattern (natural language word)
-      if (!code) {
-        const split = full.match(/^([A-Z][A-Z0-9_-]*?)([A-Z][a-z].+)$/)
-        if (split) { code = split[1]; desc = split[2] }
-      }
-
-      if (code && desc) {
-        lineItems.push({ code, description: desc.trim(), qty, amount, tag: tagBromleyItem(code, desc) })
-      }
-    }
-
-    return res.json({
-      success: true,
-      docType: 'invoice',
-      date,
-      invoiceNumber,
-      invoiceNumbers,
-      year,
-      startMonth,
-      endMonth,
-      total,
-      lineItems
-    })
+    return res.json({ success: true, ...parseBromleyText(d.text) })
   } catch (err) {
     console.error('parseBromleyPdf error:', err)
     res.status(500).json({ success: false, message: 'Failed to parse PDF: ' + err.message })
@@ -889,5 +885,6 @@ module.exports = {
   toggleVisibility,
   parseCaribbeaStatement,
   parseBromleyPdf,
+  parseBromleyText,
   importBookingTransactions,
 }

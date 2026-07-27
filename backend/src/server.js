@@ -24,6 +24,7 @@ const propertySettingsRoutes = require('./routes/propertySettingsRoutes')
 const emailTemplateRoutes = require('./routes/emailTemplateRoutes')
 const reviewRoutes = require('./routes/reviewRoutes')
 const supportRoutes = require('./routes/supportRoutes')
+const emailImportRoutes = require('./routes/emailImportRoutes')
 const emailScheduler = require('./jobs/emailScheduler')
 
 const app = express()
@@ -116,6 +117,9 @@ app.use('/api', reviewRoutes)
 
 // Support routes
 app.use('/api/support', supportRoutes)
+
+// Email import webhook (SendGrid Inbound Parse)
+app.use('/api/import', emailImportRoutes)
 
 // Public routes (no authentication required)
 app.use('/api/public', publicRoutes)

@@ -1,0 +1,179 @@
+const sgMail = require('@sendgrid/mail')
+const User = require('../models/User')
+const Property = require('../models/Property')
+const FinancialExpenseItem = require('../models/FinancialExpenseItem')
+const { parseBromleyText } = require('./financialController')
+
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'booking@aspiretowards.com'
+
+const MONTH_NAMES = ['January','February','March','April','May','June',
+  'July','August','September','October','November','December']
+
+function extractEmail(fromStr) {
+  if (!fromStr) return null
+  const match = fromStr.match(/<([^>]+)>/) || fromStr.match(/([^\s<>]+@[^\s<>]+)/)
+  return (match?.[1] || fromStr).trim().toLowerCase()
+}
+
+function detectVendor(text) {
+  if (/bromley mountain/i.test(text)) return 'bromley'
+  return null
+}
+
+async function findPropertyForVendor(userId, vendor) {
+  const props = await Property.findAll({ where: { userId } })
+  if (vendor === 'bromley') {
+    return props.find(p => /bromley/i.test(p.name) || /bromley/i.test(p.city)) || null
+  }
+  return null
+}
+
+async function saveBromleyData(parsed, propertyId) {
+  if (parsed.docType === 'statement') {
+    const created = []
+    for (const line of (parsed.lines || [])) {
+      const parts = line.date.split('/')
+      const mo = parseInt(parts[0]), y = parseInt(parts[2])
+      const rec = await FinancialExpenseItem.create({
+        propertyId, year: y, month: mo,
+        expenseName: line.reference || line.documentNumber,
+        vendor: 'bromley', amount: line.amount,
+        tag: line.tag || 'maintenance',
+        expenseDate: `${y}-${String(mo).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`,
+      })
+      created.push(rec)
+    }
+    return {
+      docType: 'statement',
+      count: created.length,
+      total: parsed.total,
+      detail: `${created.length} invoice line(s) from statement totaling $${(parsed.total || 0).toFixed(2)}`
+    }
+  }
+
+  // Invoice — split evenly across service months
+  const lineItems = parsed.lineItems || []
+  let months = []
+  if (parsed.startMonth && parsed.endMonth && parsed.year) {
+    for (let m = parsed.startMonth; m <= parsed.endMonth; m++) months.push({ year: parsed.year, month: m })
+  } else if (parsed.year && parsed.date) {
+    months = [{ year: parsed.year, month: parseInt(parsed.date.split('/')[0]) }]
+  }
+
+  const divisor = months.length || 1
+  const created = []
+  for (const { year: y, month: mo } of months) {
+    for (const item of lineItems) {
+      const rec = await FinancialExpenseItem.create({
+        propertyId, year: y, month: mo,
+        expenseName: item.description,
+        vendor: 'bromley',
+        amount: parseFloat((item.amount / divisor).toFixed(2)),
+        tag: item.tag,
+      })
+      created.push(rec)
+    }
+  }
+
+  const invoiceLabel = parsed.invoiceNumbers?.length > 1
+    ? `${parsed.invoiceNumbers.length} invoices (${parsed.invoiceNumbers.join(', ')})`
+    : (parsed.invoiceNumber || 'unknown')
+  const monthLabel = months.map(m => `${MONTH_NAMES[m.month - 1]} ${m.year}`).join(', ')
+
+  return {
+    docType: 'invoice',
+    count: created.length,
+    total: parsed.total,
+    detail: `${lineItems.length} expense item(s) from ${invoiceLabel} → ${monthLabel}${divisor > 1 ? ` (split across ${divisor} months)` : ''}`
+  }
+}
+
+async function sendResultEmail(toEmail, results) {
+  if (!process.env.SENDGRID_API_KEY) {
+    console.log('Email import result (no SendGrid key):', JSON.stringify(results))
+    return
+  }
+  try {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+    const successCount = results.filter(r => !r.error).length
+    const lines = results.map(r =>
+      r.error
+        ? `• ${r.filename}: ${r.error}`
+        : `• ${r.filename} → ${r.property}: ${r.detail}${r.total ? ` ($${r.total.toFixed(2)})` : ''}`
+    )
+    await sgMail.send({
+      to: toEmail,
+      from: { email: FROM_EMAIL, name: 'AspireTowards' },
+      subject: `Import complete — ${successCount} of ${results.length} file(s) processed`,
+      text: `Your email import results:\n\n${lines.join('\n')}\n\nView your dashboard: https://aspiretowards.com/dashboard.html`,
+      html: `<p><strong>Your email import results:</strong></p><ul>${lines.map(l => `<li style="margin:4px 0">${l}</li>`).join('')}</ul><p><a href="https://aspiretowards.com/dashboard.html">View Dashboard →</a></p>`,
+    })
+  } catch (err) {
+    console.error('Email import: confirmation send failed:', err.response?.body || err.message)
+  }
+}
+
+const processEmailImport = async (req, res) => {
+  // Respond immediately — SendGrid retries if it doesn't get a quick 200
+  res.sendStatus(200)
+
+  try {
+    const fromEmail = extractEmail(req.body.from)
+    if (!fromEmail) return
+
+    const user = await User.findOne({ where: { email: fromEmail } })
+    if (!user) {
+      console.log(`Email import: unrecognized sender <${fromEmail}> — ignoring`)
+      return
+    }
+
+    const pdfs = (req.files || []).filter(f =>
+      f.mimetype === 'application/pdf' || f.originalname?.toLowerCase().endsWith('.pdf')
+    )
+
+    if (pdfs.length === 0) {
+      await sendResultEmail(fromEmail, [{ filename: '(no attachment)', error: 'No PDF attachment found in your email' }])
+      return
+    }
+
+    const results = []
+
+    for (const file of pdfs) {
+      try {
+        const { PDFParse } = require('pdf-parse')
+        const parser = new PDFParse({ data: file.buffer })
+        const d = await parser.getText()
+        await parser.destroy()
+        const text = d.text
+
+        const vendor = detectVendor(text)
+        if (!vendor) {
+          results.push({ filename: file.originalname, error: 'Unrecognized document — not a known Bromley or Caribbean PDF' })
+          continue
+        }
+
+        const property = await findPropertyForVendor(user.id, vendor)
+        if (!property) {
+          results.push({ filename: file.originalname, error: `No ${vendor} property found in your account` })
+          continue
+        }
+
+        const parsed = parseBromleyText(text)
+        const summary = await saveBromleyData(parsed, property.id)
+        results.push({ filename: file.originalname, property: property.name, ...summary })
+
+        console.log(`Email import: ${file.originalname} → ${property.name} (${summary.count} items, user ${user.email})`)
+      } catch (fileErr) {
+        console.error(`Email import: error processing ${file.originalname}:`, fileErr.message)
+        results.push({ filename: file.originalname, error: `Processing failed: ${fileErr.message}` })
+      }
+    }
+
+    await sendResultEmail(fromEmail, results)
+
+  } catch (err) {
+    console.error('processEmailImport error:', err)
+  }
+}
+
+module.exports = { processEmailImport }
