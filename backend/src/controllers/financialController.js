@@ -285,6 +285,8 @@ const getYearDetail = async (req, res) => {
       }
     })
 
+    const annualTotals = computeAnnualMetrics(months, annualConfig, purchasePrice)
+
     res.json({
       success: true,
       property: { id: property.id, name: property.name },
