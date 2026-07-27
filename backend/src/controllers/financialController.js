@@ -463,6 +463,69 @@ const deleteYear = async (req, res) => {
   }
 }
 
+// DELETE /api/financials/:propertyId/monthly-batch — undo a batch of monthly upserts
+const deleteMonthlyBatch = async (req, res) => {
+  try {
+    const { propertyId } = req.params
+    const { monthlyIds } = req.body
+    if (!Array.isArray(monthlyIds) || !monthlyIds.length) {
+      return res.status(400).json({ success: false, message: 'monthlyIds array required' })
+    }
+    const property = await Property.findOne({ where: { id: propertyId, userId: req.user.id } })
+    if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
+
+    const records = await FinancialMonthly.findAll({ where: { id: monthlyIds, propertyId } })
+    for (const rec of records) {
+      await FinancialExpenseItem.destroy({ where: { propertyId, year: rec.year, month: rec.month } })
+    }
+    const deleted = await FinancialMonthly.destroy({ where: { id: monthlyIds, propertyId } })
+    res.json({ success: true, deleted })
+  } catch (err) {
+    console.error('deleteMonthlyBatch error:', err)
+    res.status(500).json({ success: false, message: 'Server error' })
+  }
+}
+
+// DELETE /api/financials/:propertyId/booking-transactions-undo — undo an Evolve CSV import
+// Deletes the specified transactions and recomputes affected months from what remains
+const undoBookingTransactions = async (req, res) => {
+  try {
+    const { propertyId } = req.params
+    const { transactionIds } = req.body
+    if (!Array.isArray(transactionIds) || !transactionIds.length) {
+      return res.status(400).json({ success: false, message: 'transactionIds array required' })
+    }
+    const property = await Property.findOne({ where: { id: propertyId, userId: req.user.id } })
+    if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
+
+    const records = await FinancialBookingTransaction.findAll({ where: { id: transactionIds, propertyId } })
+    const affectedMonths = new Set(records.map(r => `${r.year}-${r.month}`))
+
+    await FinancialBookingTransaction.destroy({ where: { id: transactionIds, propertyId } })
+
+    for (const key of affectedMonths) {
+      const [yearStr, monthStr] = key.split('-')
+      const year = parseInt(yearStr), month = parseInt(monthStr)
+      const remaining = await FinancialBookingTransaction.findAll({ where: { propertyId, year, month } })
+      if (remaining.length === 0) {
+        await FinancialMonthly.destroy({ where: { propertyId, year, month, syncSource: 'evolve' } })
+      } else {
+        const grossIncome = remaining.reduce((s, t) => s + parseFloat(t.grossAmount || 0), 0)
+        const nightsBooked = remaining.reduce((s, t) => s + parseInt(t.nightsBooked || 0), 0)
+        await FinancialMonthly.update(
+          { grossIncome, nightsBooked, numReservations: remaining.length },
+          { where: { propertyId, year, month } }
+        )
+      }
+    }
+
+    res.json({ success: true, deleted: records.length, monthsRecomputed: affectedMonths.size })
+  } catch (err) {
+    console.error('undoBookingTransactions error:', err)
+    res.status(500).json({ success: false, message: 'Server error' })
+  }
+}
+
 // POST /api/financials/parse-caribbean-statement — parse a Caribbean Resorts PDF statement
 const parseCaribbeaStatement = async (req, res) => {
   try {
@@ -602,6 +665,7 @@ const importBookingTransactions = async (req, res) => {
 
     let created = 0, updated = 0
     const affectedMonths = new Set()
+    const createdIds = []
 
     for (const b of bookings) {
       if (!b.externalBookingId) continue
@@ -622,11 +686,11 @@ const importBookingTransactions = async (req, res) => {
         defaults,
       })
       if (!wasCreated) {
-        // Update in case payout amount or status changed in a newer report
         await record.update(defaults)
         updated++
       } else {
         created++
+        createdIds.push(record.id)
       }
       affectedMonths.add(`${b.year}-${b.month}`)
     }
@@ -652,7 +716,7 @@ const importBookingTransactions = async (req, res) => {
       }
     }
 
-    res.json({ success: true, created, updated, monthsRecomputed: affectedMonths.size })
+    res.json({ success: true, created, updated, monthsRecomputed: affectedMonths.size, createdIds })
   } catch (err) {
     console.error('importBookingTransactions error:', err)
     res.status(500).json({ success: false, message: 'Server error' })
@@ -668,7 +732,9 @@ module.exports = {
   upsertFinancialSettings,
   upsertYearSummary,
   deleteMonthly,
+  deleteMonthlyBatch,
   deleteYear,
+  undoBookingTransactions,
   addExpenseItem,
   updateExpenseItem,
   deleteExpenseItem,

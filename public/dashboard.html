@@ -1132,6 +1132,14 @@
         </div>
     </footer>
 
+    <!-- Undo import toast -->
+    <div id="undo-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-gray-900 text-white px-5 py-3 rounded-xl shadow-xl text-sm">
+        <svg class="w-4 h-4 text-teal-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        <span id="undo-toast-msg" class="mr-2"></span>
+        <button onclick="undoImport()" class="px-3 py-1 bg-teal-600 hover:bg-teal-500 rounded-lg font-medium transition">Undo</button>
+        <button onclick="dismissUndoToast()" class="text-gray-400 hover:text-white ml-1">✕</button>
+    </div>
+
     <script>
         const API_URL = `${window.CONFIG.API_BASE_URL}/api`;
 
@@ -3235,10 +3243,54 @@ Total: $${props.totalAmount}`);
             document.getElementById('fin-import-preview').classList.remove('hidden');
         }
 
+        // Undo toast state
+        let undoState = null;
+        let undoTimer = null;
+
+        function showUndoToast(msg, state) {
+            undoState = state;
+            document.getElementById('undo-toast-msg').textContent = msg;
+            const toast = document.getElementById('undo-toast');
+            toast.classList.remove('hidden');
+            clearTimeout(undoTimer);
+            undoTimer = setTimeout(dismissUndoToast, 30000);
+        }
+
+        function dismissUndoToast() {
+            document.getElementById('undo-toast').classList.add('hidden');
+            undoState = null;
+        }
+
+        async function undoImport() {
+            if (!undoState) return;
+            dismissUndoToast();
+            const { type, propertyId } = undoState;
+            try {
+                if (type === 'caribbean-pdf' || type === 'monthly') {
+                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/monthly-batch`, {
+                        method: 'DELETE', headers: authHeaders(),
+                        body: JSON.stringify({ monthlyIds: undoState.monthlyIds })
+                    });
+                } else if (type === 'evolve-csv') {
+                    if (undoState.transactionIds && undoState.transactionIds.length > 0) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/booking-transactions-undo`, {
+                            method: 'DELETE', headers: authHeaders(),
+                            body: JSON.stringify({ transactionIds: undoState.transactionIds })
+                        });
+                    }
+                }
+                finState.summaryData = null;
+                await loadFinYear(finState.year);
+            } catch(e) {
+                alert('Undo failed: ' + e.message);
+            }
+        }
+
         async function confirmImport() {
             const btn = document.getElementById('fin-import-confirm-btn');
             const type = document.getElementById('fin-import-type').value;
             const year = parseInt(document.getElementById('fin-import-year').value);
+            const propertyId = finState.propertyId;
 
             btn.disabled = true;
             btn.textContent = 'Saving...';
@@ -3246,27 +3298,33 @@ Total: $${props.totalAmount}`);
             try {
                 if (type === 'caribbean-pdf') {
                     const batch = importState.caribbeanBatch || [];
+                    const monthlyIds = [];
                     for (let i = 0; i < batch.length; i++) {
                         btn.textContent = `Saving ${i + 1} of ${batch.length}...`;
                         const p = batch[i];
-                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                        const resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/monthly`, {
                             method: 'POST', headers: authHeaders(),
                             body: JSON.stringify({
                                 year: p.year, month: p.month,
                                 grossIncome: p.grossIncome,
                                 managementFee: p.managementFee,
-                                platformCharges: p.otherExpenses, // Caribbean stores total non-mgmt expenses here
+                                platformCharges: p.otherExpenses,
                                 nightsBooked: p.nightsBooked,
                                 numReservations: p.numReservations,
                                 rawExpenses: p.rawExpenses || [],
                             })
                         });
+                        const d = await resp.json();
+                        if (d.record?.id) monthlyIds.push(d.record.id);
                     }
+                    closeImportModal();
+                    finState.summaryData = null;
+                    await loadFinYear(finState.year);
+                    showUndoToast(`${batch.length} month${batch.length !== 1 ? 's' : ''} imported — undo?`, { type, propertyId, monthlyIds });
+                    return;
                 } else if (type === 'evolve-csv') {
                     const { individualBookings, guestContacts } = importState.rows;
-                    // Send individual bookings — backend deduplicates by externalBookingId
-                    // and recomputes monthly totals from all stored bookings for each month
-                    const txnRes = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/booking-transactions`, {
+                    const txnRes = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/booking-transactions`, {
                         method: 'POST', headers: authHeaders(),
                         body: JSON.stringify({ bookings: individualBookings })
                     });
@@ -3275,49 +3333,49 @@ Total: $${props.totalAmount}`);
                     if (guestContacts.length > 0) {
                         const gRes = await fetch(`${window.CONFIG.API_BASE_URL}/api/guests/bulk-import`, {
                             method: 'POST', headers: authHeaders(),
-                            body: JSON.stringify({ propertyId: finState.propertyId, bookings: guestContacts })
+                            body: JSON.stringify({ propertyId, bookings: guestContacts })
                         });
                         const gData = await gRes.json();
-                        if (!gRes.ok || !gData.success) {
-                            guestMsg = `\n\nGuest import failed: ${gData.message || gRes.status}`;
-                        } else {
-                            guestMsg = `\n${gData.results.created} guest(s) added, ${gData.results.updated} updated.`;
-                        }
+                        guestMsg = (!gRes.ok || !gData.success)
+                            ? `\n\nGuest import failed: ${gData.message || gRes.status}`
+                            : `\n${gData.results.created} guest(s) added, ${gData.results.updated} updated.`;
                     }
                     closeImportModal();
                     finState.summaryData = null;
                     await loadFinYear(finState.year);
-                    if (txnData.updated > 0 || guestMsg) {
-                        alert(`Import complete: ${txnData.created} new booking(s) added, ${txnData.updated} existing booking(s) updated, ${txnData.monthsRecomputed} month(s) recomputed.${guestMsg}`);
+                    const toastMsg = `${txnData.created} new booking(s), ${txnData.updated} updated — undo new?`;
+                    if (txnData.createdIds?.length > 0) {
+                        showUndoToast(toastMsg, { type, propertyId, transactionIds: txnData.createdIds });
                     }
+                    if (guestMsg) alert(guestMsg.trim());
                     return;
                 } else if (type === 'annual-summary') {
                     for (const row of importState.rows) {
-                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/year-summary`, {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/year-summary`, {
                             method: 'POST', headers: authHeaders(),
                             body: JSON.stringify(row)
                         });
                     }
                 } else if (type === 'monthly') {
                     let saved = 0, skipped = 0;
+                    const monthlyIds = [];
                     for (const row of importState.rows) {
-                        const r = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                        const r = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/monthly`, {
                             method: 'POST', headers: authHeaders(),
                             body: JSON.stringify({ year, ...row, skipIfExists: true })
                         });
                         const d = await r.json();
-                        d.skipped ? skipped++ : saved++;
+                        if (d.skipped) { skipped++; } else { saved++; if (d.record?.id) monthlyIds.push(d.record.id); }
                     }
-                    if (skipped > 0) {
-                        closeImportModal();
-                        finState.summaryData = null;
-                        await loadFinYear(finState.year);
-                        alert(`Import complete: ${saved} month(s) imported, ${skipped} month(s) skipped (already had data). Use the Edit button on individual months to update existing records.`);
-                        return;
-                    }
+                    closeImportModal();
+                    finState.summaryData = null;
+                    await loadFinYear(finState.year);
+                    const msg = skipped > 0 ? `${saved} month(s) imported, ${skipped} skipped (already had data)` : `${saved} month(s) imported`;
+                    showUndoToast(`${msg} — undo?`, { type, propertyId, monthlyIds });
+                    return;
                 } else {
                     for (const row of importState.rows) {
-                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/expenses`, {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses`, {
                             method: 'POST', headers: authHeaders(),
                             body: JSON.stringify({ year, ...row })
                         });

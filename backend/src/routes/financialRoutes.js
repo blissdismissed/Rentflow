@@ -10,7 +10,9 @@ const {
   upsertFinancialSettings,
   upsertYearSummary,
   deleteMonthly,
+  deleteMonthlyBatch,
   deleteYear,
+  undoBookingTransactions,
   addExpenseItem,
   updateExpenseItem,
   deleteExpenseItem,
@@ -35,6 +37,8 @@ router.post('/:propertyId/booking-transactions', importBookingTransactions)
 router.post('/:propertyId/settings', upsertFinancialSettings)
 router.delete('/:propertyId/year/:year', deleteYear)
 router.delete('/:propertyId/monthly/:monthlyId', deleteMonthly)
+router.delete('/:propertyId/monthly-batch', deleteMonthlyBatch)
+router.delete('/:propertyId/booking-transactions-undo', undoBookingTransactions)
 router.post('/:propertyId/expenses', addExpenseItem)
 router.put('/expenses/:id', updateExpenseItem)
 router.delete('/expenses/:id', deleteExpenseItem)

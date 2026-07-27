@@ -4,7 +4,7 @@ const router = express.Router()
 const { authenticate } = require('../middleware/auth')
 const sgMail = require('@sendgrid/mail')
 
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || process.env.SENDGRID_FROM_EMAIL || 'aspiretowards@gmail.com'
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'aspiretowards@gmail.com'
 const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'noreply@aspiretowards.com'
 const FROM_NAME = process.env.SENDGRID_FROM_NAME || 'AspireTowards'
 
