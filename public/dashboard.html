@@ -732,9 +732,9 @@
                 <!-- Expense items (shown for itemized properties) -->
                 <div id="fin-expense-section" class="hidden">
                     <div class="flex items-center justify-between mb-3">
-                        <h4 class="font-semibold text-gray-900">Itemized Expenses</h4>
-                        <button onclick="openExpenseModal(null)"
-                            class="px-3 py-1.5 bg-teal-600 text-white text-xs rounded-lg hover:bg-teal-700 transition">
+                        <h4 id="fin-expense-title" class="font-semibold text-gray-900">Expense Details</h4>
+                        <button id="fin-expense-add-btn" onclick="openExpenseModal(null)"
+                            class="px-3 py-1.5 bg-teal-600 text-white text-xs rounded-lg hover:bg-teal-700 transition hidden">
                             + Add Expense
                         </button>
                     </div>
@@ -754,6 +754,7 @@
                             <tbody id="fin-expense-body"></tbody>
                         </table>
                     </div>
+                    <div id="fin-expense-summary" class="hidden mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3"></div>
                 </div>
             </div>
 
@@ -2535,10 +2536,15 @@ Total: $${props.totalAmount}`);
         function renderExpenseItems(data) {
             const section = document.getElementById('fin-expense-section');
             const itemized = isItemized(data);
-            section.classList.toggle('hidden', !itemized);
-            if (!itemized) return;
-
             const items = data.expenseItems || [];
+
+            // Show section for Vermont (always) or Caribbean (when items exist)
+            section.classList.toggle('hidden', !itemized && items.length === 0);
+            if (!itemized && items.length === 0) return;
+
+            document.getElementById('fin-expense-title').textContent = itemized ? 'Itemized Expenses' : 'Expense Details (from PDF imports)';
+            document.getElementById('fin-expense-add-btn').classList.toggle('hidden', !itemized);
+
             const tagColors = {
                 utilities: 'bg-blue-100 text-blue-700',
                 housekeeping: 'bg-green-100 text-green-700',
@@ -2546,6 +2552,7 @@ Total: $${props.totalAmount}`);
                 hoa: 'bg-purple-100 text-purple-700',
                 other: 'bg-gray-100 text-gray-600'
             };
+            const tagLabels = { utilities: 'Utilities', housekeeping: 'Housekeeping', maintenance: 'Maintenance', hoa: 'HOA', other: 'Other' };
 
             document.getElementById('fin-expense-body').innerHTML = items.length === 0
                 ? `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No expense items yet. Click + Add Expense to start.</td></tr>`
@@ -2557,10 +2564,30 @@ Total: $${props.totalAmount}`);
                     <td class="px-4 py-2 text-right font-medium">${item.amount != null ? finFmt(item.amount) : '—'}</td>
                     <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tagColors[item.tag] || tagColors.other}">${item.tag}</span></td>
                     <td class="px-4 py-2 flex gap-2">
-                        <button onclick="openExpenseModal('${item.id}')" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
-                        <button onclick="deleteExpense('${item.id}')" class="text-red-500 hover:text-red-700 text-xs">Del</button>
+                        ${itemized ? `<button onclick="openExpenseModal('${item.id}')" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
+                        <button onclick="deleteExpense('${item.id}')" class="text-red-500 hover:text-red-700 text-xs">Del</button>` : ''}
                     </td>
                 </tr>`).join('');
+
+            // Category summary cards
+            const summaryEl = document.getElementById('fin-expense-summary');
+            if (items.length > 0) {
+                const byTag = {};
+                items.forEach(item => {
+                    const t = item.tag || 'other';
+                    byTag[t] = (byTag[t] || 0) + parseFloat(item.amount || 0);
+                });
+                summaryEl.classList.remove('hidden');
+                summaryEl.innerHTML = Object.entries(byTag)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([tag, total]) => `
+                    <div class="bg-white rounded-lg border border-gray-200 px-4 py-3 text-center">
+                        <div class="text-xs font-medium mb-1"><span class="px-2 py-0.5 rounded-full ${tagColors[tag] || tagColors.other}">${tagLabels[tag] || tag}</span></div>
+                        <div class="text-base font-semibold text-gray-800">${finFmt(total)}</div>
+                    </div>`).join('');
+            } else {
+                summaryEl.classList.add('hidden');
+            }
         }
 
         // Month modal
