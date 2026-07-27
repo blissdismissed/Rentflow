@@ -523,28 +523,19 @@ const parseCaribbeaStatement = async (req, res) => {
       else knownOtherExpenses += amount
     }
 
-    // Try to read Total Expenses directly from the statement.
-    // Many Caribbean statement formats print a "Total Expenses" or "Total Owner Expenses" line.
-    // If found, use (totalExpenses - managementFee) to catch any line items not in KNOWN_EXPENSES.
-    const totalExpensesPatterns = [
-      /Total\s+(?:Owner\s+)?Expenses?\s+\$([0-9,]+\.\d{2})/i,
-      /Total\s+Charges?\s+\$([0-9,]+\.\d{2})/i,
-      /Total\s+Deductions?\s+\$([0-9,]+\.\d{2})/i,
-    ]
-    let totalExpensesFromPdf = null
-    for (const pat of totalExpensesPatterns) {
-      const m = text.match(pat)
-      if (m) { totalExpensesFromPdf = parseFloat(m[1].replace(/,/g, '')); break }
-    }
+    // Net due to owner — handle both positive ($X) and negative (($X)) formats
+    let netDue = null
+    const netMatchPos = text.match(/Net Due to \(from\) Owner\s+\$([0-9,]+\.?\d*)/)
+    const netMatchNeg = text.match(/Net Due to \(from\) Owner\s+\(\$([0-9,]+\.?\d*)\)/)
+    if (netMatchPos) netDue = parseFloat(netMatchPos[1].replace(/,/g, ''))
+    else if (netMatchNeg) netDue = -parseFloat(netMatchNeg[1].replace(/,/g, ''))
 
-    // Prefer total-from-PDF minus management; fall back to summing known items
-    const otherExpenses = totalExpensesFromPdf != null
-      ? parseFloat((totalExpensesFromPdf - managementFee).toFixed(2))
+    // Use netDue as ground truth: otherExpenses = grossIncome - managementFee - netDue
+    // This is the most reliable calculation — avoids ambiguity in how the PDF totals expenses.
+    // Fall back to summing known line items if netDue not found.
+    const otherExpenses = netDue != null
+      ? parseFloat((grossIncome - managementFee - netDue).toFixed(2))
       : parseFloat(knownOtherExpenses.toFixed(2))
-
-    // Net due to owner
-    const netMatch = text.match(/Net Due to \(from\) Owner\s+\$([0-9,]+\.?\d*)/)
-    const netDue = netMatch ? parseFloat(netMatch[1].replace(/,/g, '')) : null
 
     res.json({
       success: true,
