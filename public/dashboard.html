@@ -2615,6 +2615,7 @@ Total: $${props.totalAmount}`);
         async function loadFinYear(year) {
             finState.year = parseInt(year);
             document.getElementById('fin-annual-modal-title').textContent = `Mortgage & T&I — ${year}`;
+            closeUtilityModal(); // tracker shows data for a specific year — close it so stale data isn't shown
             try {
                 const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/year/${year}`, { headers: authHeaders() });
                 const data = await res.json();
@@ -3409,18 +3410,26 @@ Total: $${props.totalAmount}`);
             };
             try {
                 const isEdit = finState.editingExpenseId && finState.editingExpenseId !== 'null';
+                let resp;
                 if (isEdit) {
-                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/expenses/${finState.editingExpenseId}`, {
+                    resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/expenses/${finState.editingExpenseId}`, {
                         method: 'PUT', headers: authHeaders(), body: JSON.stringify(body)
                     });
                 } else {
-                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/expenses`, {
+                    resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/expenses`, {
                         method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
                     });
                 }
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    throw new Error(err.message || `Server error ${resp.status}`);
+                }
                 closeExpenseModal();
                 await loadFinYear(finState.year);
-            } catch(e) { console.error('saveExpenseItem error:', e); }
+            } catch(e) {
+                console.error('saveExpenseItem error:', e);
+                alert('Failed to save expense: ' + e.message);
+            }
         }
 
         async function deleteExpense(id) {
