@@ -2,7 +2,7 @@ const { Resend } = require('resend')
 const User = require('../models/User')
 const Property = require('../models/Property')
 const FinancialExpenseItem = require('../models/FinancialExpenseItem')
-const { parseBromleyText } = require('./financialController')
+const { parseBromleyText, smartSaveBromleyItems } = require('./financialController')
 
 const FROM_EMAIL = process.env.EMAIL_FROM || 'booking@aspiretowards.com'
 
@@ -29,47 +29,49 @@ async function findPropertyForVendor(userId, vendor) {
 }
 
 async function saveBromleyData(parsed, propertyId) {
-  // Cleaning invoice — save each line item with expenseDate so the UI can group by cleaning date
+  // Cleaning invoice — smart save: replaces statement summaries for the same cleaning date
   if (parsed.type === 'cleaning') {
-    const created = []
-    for (const item of (parsed.lineItems || [])) {
-      const y = item.cleaningYear || parsed.year
-      const mo = item.cleaningMonth || parsed.startMonth
-      if (!y || !mo) continue
-      const rec = await FinancialExpenseItem.create({
-        propertyId, year: y, month: mo,
-        expenseName: item.description,
-        vendor: 'bromley', amount: item.amount, tag: item.tag,
-        expenseDate: item.cleaningDate || null,
-      })
-      created.push(rec)
-    }
+    const items = (parsed.lineItems || [])
+      .filter(i => i.cleaningYear && i.cleaningMonth)
+      .map(i => ({
+        year: i.cleaningYear, month: i.cleaningMonth,
+        expenseName: i.description,
+        vendor: 'bromley', amount: i.amount, tag: i.tag,
+        expenseDate: i.cleaningDate || null,
+      }))
+    const { created, replaced } = await smartSaveBromleyItems(propertyId, items)
     const dateSet = new Set((parsed.lineItems || []).map(i => i.cleaningDate).filter(Boolean))
+    const replaceNote = replaced.length ? ` (filled in detail for ${replaced.length} statement summary entries)` : ''
     return {
       docType: 'invoice', count: created.length, total: parsed.total,
-      detail: `${dateSet.size} cleaning(s) · ${created.length} item(s) totaling $${(parsed.total || 0).toFixed(2)}`
+      detail: `${dateSet.size} cleaning(s) · ${created.length} item(s)${replaceNote} totaling $${(parsed.total || 0).toFixed(2)}`
     }
   }
 
   if (parsed.docType === 'statement') {
-    const created = []
-    for (const line of (parsed.lines || [])) {
+    const items = (parsed.lines || []).map(line => {
       const parts = line.date.split('/')
       const mo = parseInt(parts[0]), y = parseInt(parts[2])
-      const rec = await FinancialExpenseItem.create({
-        propertyId, year: y, month: mo,
+      let expenseDate = `${y}-${String(mo).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`
+      const scmDate = line.reference?.match(/S\/C\/M\s+(\d{1,2})\/(\d{1,2})\/(\d{2,4})/)
+      if (scmDate) {
+        let sy = parseInt(scmDate[3])
+        if (sy < 100) sy += 2000
+        expenseDate = `${sy}-${String(parseInt(scmDate[1])).padStart(2,'0')}-${String(parseInt(scmDate[2])).padStart(2,'0')}`
+      }
+      return {
+        year: y, month: mo,
         expenseName: line.reference || line.documentNumber,
         vendor: 'bromley', amount: line.amount,
         tag: line.tag || 'maintenance',
-        expenseDate: `${y}-${String(mo).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`,
-      })
-      created.push(rec)
-    }
+        expenseDate,
+      }
+    })
+    const { created, skipped } = await smartSaveBromleyItems(propertyId, items)
+    const skipNote = skipped.length ? ` (${skipped.length} skipped — line item detail already imported)` : ''
     return {
-      docType: 'statement',
-      count: created.length,
-      total: parsed.total,
-      detail: `${created.length} invoice line(s) from statement totaling $${(parsed.total || 0).toFixed(2)}`
+      docType: 'statement', count: created.length, total: parsed.total,
+      detail: `${created.length} entry(s) from statement${skipNote} totaling $${(parsed.total || 0).toFixed(2)}`
     }
   }
 

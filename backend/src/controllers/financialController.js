@@ -203,6 +203,11 @@ const getPropertySummary = async (req, res) => {
       if (purchasePrice > 0) {
         allTimeTotals.noi = (allTimeTotals.netIncome - allTimeTotals.hoaPayment) / purchasePrice
       }
+      const totalDays = years.reduce((sum, y) => {
+        const isLeap = (y.year % 4 === 0 && y.year % 100 !== 0) || (y.year % 400 === 0)
+        return sum + (isLeap ? 366 : 365)
+      }, 0)
+      allTimeTotals.occupancyRatio = totalDays > 0 ? allTimeTotals.nightsBooked / totalDays : 0
       allTimeAvg = Object.fromEntries(Object.entries(allTimeTotals).map(([k, v]) => [k, v / years.length]))
     }
 
@@ -747,9 +752,10 @@ function parseBromleyText(text) {
 
   const lineItems = []
   if (isCleaningInvoice && rawItems.length > 0) {
-    // Reference field pattern: "MM/DD/YY [S/C/M] CustomerNo" — marks each cleaning event's service date
-    // Multi-invoice PDFs have one reference date per invoice; items belong to nearest preceding date
-    const refDateRe = /(\d{1,2}\/\d{1,2}\/(\d{2,4}))\s+(?:S\/C\/M\s+)?\d{7}/g
+    // Reference field pattern — handles two Bromley formats:
+    //   Old: "12/29/24 S/C/M 5005700"  (date first)
+    //   New: "S/C/M 1/3/26 5005700"    (S/C/M first, used in 2025+ invoices)
+    const refDateRe = /(?:S\/C\/M\s+)?(\d{1,2}\/\d{1,2}\/(\d{2,4}))\s+(?:S\/C\/M\s+)?\d{7}/g
     const refMatches = [...text.matchAll(refDateRe)]
 
     for (const { pos, ...item } of rawItems) {
@@ -904,6 +910,90 @@ const importBookingTransactions = async (req, res) => {
   }
 }
 
+// ── Smart dedup batch save ────────────────────────────────────────────────────
+// Summary items (from statements): expenseName starts with "S/C/M"
+// Detail items (from invoice line items): descriptive names like "Housekeeping Labor"
+//
+// Rules:
+//   - Detail incoming, only a summary exists → delete summary, save detail
+//   - Detail incoming, detail already exists → save anyway (re-import)
+//   - Summary incoming, anything already exists for that date → skip
+//   - Non-cleaning items → always save
+
+async function smartSaveBromleyItems(propertyId, items) {
+  const created = [], skipped = [], replaced = []
+
+  // Gather all unique cleaning dates from incoming items
+  const cleaningDates = [...new Set(
+    items
+      .filter(i => i.vendor === 'bromley' && i.tag === 'housekeeping' && i.expenseDate)
+      .map(i => i.expenseDate)
+  )]
+
+  // Load existing DB records for those dates in one pass
+  const existingByDate = {}
+  for (const date of cleaningDates) {
+    const rows = await FinancialExpenseItem.findAll({
+      where: { propertyId, vendor: 'bromley', expenseDate: date, tag: 'housekeeping' }
+    })
+    existingByDate[date] = rows.map(r => r.toJSON())
+  }
+
+  // Track dates where we've already cleared summaries this batch
+  const clearedDates = new Set()
+
+  for (const item of items) {
+    const isCleaning = item.vendor === 'bromley' && item.tag === 'housekeeping' && item.expenseDate
+    if (isCleaning) {
+      const date = item.expenseDate
+      const existing = existingByDate[date] || []
+      const isSummary = /^S\/C\/M\b/i.test(item.expenseName || '')
+
+      if (isSummary) {
+        // Skip statement-level summary if ANY record already exists for this date
+        if (existing.length > 0) {
+          skipped.push({ date, expenseName: item.expenseName, amount: item.amount })
+          continue
+        }
+      } else {
+        // Detail item — if only summaries exist, zero them out (once per date)
+        // We keep the summary rows as scaffold markers (amount=0) rather than deleting them,
+        // so the cleaning event has a stable DB record. The detail rows carry the actual amounts.
+        if (!clearedDates.has(date)) {
+          const summaryIds = existing
+            .filter(e => /^S\/C\/M\b/i.test(e.expenseName || ''))
+            .map(e => e.id)
+          if (summaryIds.length > 0 && summaryIds.length === existing.length) {
+            await FinancialExpenseItem.update({ amount: 0 }, { where: { id: summaryIds } })
+            replaced.push({ date, count: summaryIds.length })
+          }
+          clearedDates.add(date)
+        }
+      }
+    }
+
+    const rec = await FinancialExpenseItem.create({ propertyId, ...item })
+    created.push(rec.toJSON())
+  }
+
+  return { created, skipped, replaced }
+}
+
+// POST /api/financials/:propertyId/expenses/batch — smart dedup batch save
+const batchSaveExpenses = async (req, res) => {
+  try {
+    const property = await Property.findOne({ where: { id: req.params.propertyId, userId: req.user.id } })
+    if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
+
+    const { items = [] } = req.body
+    const result = await smartSaveBromleyItems(property.id, items)
+    res.json({ success: true, ...result })
+  } catch (err) {
+    console.error('batchSaveExpenses error:', err)
+    res.status(500).json({ success: false, message: 'Server error' })
+  }
+}
+
 module.exports = {
   getFinancialProperties,
   getPropertySummary,
@@ -923,5 +1013,7 @@ module.exports = {
   parseCaribbeaStatement,
   parseBromleyPdf,
   parseBromleyText,
+  smartSaveBromleyItems,
+  batchSaveExpenses,
   importBookingTransactions,
 }

@@ -16,6 +16,7 @@ const {
   addExpenseItem,
   updateExpenseItem,
   deleteExpenseItem,
+  batchSaveExpenses,
   toggleVisibility,
   parseCaribbeaStatement,
   parseBromleyPdf,
@@ -41,6 +42,7 @@ router.delete('/:propertyId/year/:year', deleteYear)
 router.delete('/:propertyId/monthly/:monthlyId', deleteMonthly)
 router.delete('/:propertyId/monthly-batch', deleteMonthlyBatch)
 router.delete('/:propertyId/booking-transactions-undo', undoBookingTransactions)
+router.post('/:propertyId/expenses/batch', batchSaveExpenses)
 router.post('/:propertyId/expenses', addExpenseItem)
 router.put('/expenses/:id', updateExpenseItem)
 router.delete('/expenses/:id', deleteExpenseItem)

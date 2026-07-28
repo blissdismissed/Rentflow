@@ -683,6 +683,8 @@
                         </table>
                     </div>
                 </div>
+                <!-- All-years analytics -->
+                <div id="fin-summary-analytics" class="mt-4"></div>
             </div>
 
             <!-- Year Detail View -->
@@ -2274,7 +2276,7 @@ Total: $${props.totalAmount}`);
                     <td class="px-4 py-3 text-right">${finPct(allTimeTotals.percentageOfIncome)}</td>
                     <td class="px-4 py-3 text-right">${allTimeTotals.nightsBooked}</td>
                     <td class="px-4 py-3 text-right">${allTimeTotals.numReservations}</td>
-                    <td class="px-4 py-3 text-right">—</td>
+                    <td class="px-4 py-3 text-right">${allTimeTotals.occupancyRatio != null ? (allTimeTotals.occupancyRatio * 100).toFixed(0) + '%' : '—'}</td>
                     <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.hoaPayment)}</td>
                     <td class="px-4 py-3 text-right">—</td>
                     <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.actualMortgagePaid)}</td>
@@ -2303,6 +2305,111 @@ Total: $${props.totalAmount}`);
 
             renderSummaryHeader();
             renderSummaryRows(data);
+            renderSummaryAnalytics(data);
+        }
+
+        function renderSummaryAnalytics(data) {
+            const el = document.getElementById('fin-summary-analytics');
+            const t = data.allTimeTotals;
+            const years = data.years || [];
+            if (!t || years.length === 0 || (t.grossIncome === 0 && t.grossExpenses === 0)) {
+                el.innerHTML = '';
+                return;
+            }
+
+            function statCard(label, value, sub = '', accent = 'teal') {
+                const colors = { teal: 'border-teal-400 text-teal-700', blue: 'border-blue-400 text-blue-700', orange: 'border-orange-400 text-orange-700', purple: 'border-purple-400 text-purple-700', gray: 'border-gray-300 text-gray-600' };
+                const c = colors[accent] || colors.teal;
+                return `<div class="bg-white rounded-xl shadow-sm p-4 border-l-4 ${c.split(' ')[0]}">
+                    <p class="text-xs font-medium text-gray-500 mb-1">${label}</p>
+                    <p class="text-xl font-bold ${c.split(' ')[1]}">${value}</p>
+                    ${sub ? `<p class="text-xs text-gray-400 mt-0.5">${sub}</p>` : ''}
+                </div>`;
+            }
+
+            // ── Derived metrics ─────────────────────────────────────────────
+            const avgNightlyRate   = t.nightsBooked > 0 ? t.grossIncome / t.nightsBooked : null;
+            const avgBookingValue  = t.numReservations > 0 ? t.grossIncome / t.numReservations : null;
+            const netPerNight      = t.nightsBooked > 0 ? t.netIncome / t.nightsBooked : null;
+            const avgStay          = t.numReservations > 0 ? t.nightsBooked / t.numReservations : null;
+            const avgGrossPerYear  = data.allTimeAvg?.grossIncome;
+            const avgNetPerYear    = data.allTimeAvg?.netIncome;
+            const occupancy        = t.occupancyRatio;
+
+            const bestRevYear  = years.reduce((a, b) => b.grossIncome > a.grossIncome ? b : a);
+            const bestNetYear  = years.reduce((a, b) => b.netIncome > a.netIncome ? b : a);
+
+            // ── Revenue by year bars ─────────────────────────────────────────
+            const maxRev = Math.max(...years.map(y => y.grossIncome), 1);
+            const yearBars = years.map(y => {
+                const h = Math.round((y.grossIncome / maxRev) * 48);
+                const isActive = y.grossIncome > 0;
+                return `<div class="flex flex-col items-center gap-0.5 flex-1" title="${y.year}: ${finFmt(y.grossIncome)}">
+                    <div class="w-full flex items-end justify-center" style="height:48px">
+                        <div style="height:${h}px;width:100%;min-height:${isActive?'2px':'0'}" class="${isActive ? 'bg-teal-400' : 'bg-gray-100'} rounded-t transition-all hover:bg-teal-600"></div>
+                    </div>
+                    <span class="text-gray-400" style="font-size:9px">${y.year}</span>
+                </div>`;
+            }).join('');
+
+            // ── All-time expense breakdown ────────────────────────────────────
+            const expBreakdown = [
+                { label: 'Cleaning',    value: t.cleaningFee     || 0, color: '#14b8a6' },
+                { label: 'Utilities',   value: t.utilities       || 0, color: '#3b82f6' },
+                { label: 'Maintenance', value: t.maintenance     || 0, color: '#f97316' },
+                { label: 'HOA',         value: t.hoaPayment      || 0, color: '#a855f7' },
+                { label: 'Platform',    value: t.platformCharges || 0, color: '#ec4899' },
+                { label: 'Other',       value: t.otherExpenses   || 0, color: '#6b7280' },
+            ].filter(e => e.value > 0);
+            const allSegments = [{ label: 'Mgmt Fee', value: t.managementFee || 0, color: '#64748b' }, ...expBreakdown].filter(e => e.value > 0);
+            const barTotal = allSegments.reduce((s, e) => s + e.value, 0);
+            const barSegments = allSegments.map(e => {
+                const pct = barTotal > 0 ? (e.value / barTotal * 100).toFixed(1) : 0;
+                return `<div title="${e.label}: ${finFmt(e.value)} (${pct}%)" style="width:${pct}%;background:${e.color};min-width:${pct > 0 ? '2px' : '0'}" class="h-full transition-all"></div>`;
+            }).join('');
+            const legendItems = allSegments.map(e => {
+                const pct = barTotal > 0 ? (e.value / barTotal * 100).toFixed(0) : 0;
+                return `<div class="flex items-center gap-1.5 text-xs text-gray-600 whitespace-nowrap">
+                    <span class="w-2.5 h-2.5 rounded-sm shrink-0" style="background:${e.color}"></span>
+                    <span>${e.label}</span>
+                    <span class="font-medium text-gray-800">${pct}%</span>
+                </div>`;
+            }).join('');
+
+            el.innerHTML = `
+            <div class="mb-3 flex items-center justify-between">
+                <h4 class="font-semibold text-gray-900">All-Time Analytics</h4>
+                <span class="text-xs text-gray-400">${years.length} year${years.length !== 1 ? 's' : ''} · ${t.numReservations || 0} reservations · ${t.nightsBooked || 0} nights</span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                ${avgGrossPerYear  != null ? statCard('Avg Gross / Year',    finFmt(avgGrossPerYear),  'avg annual gross income',             'teal')   : ''}
+                ${avgNetPerYear    != null ? statCard('Avg Net / Year',      finFmtSigned(avgNetPerYear), 'avg annual net income',            avgNetPerYear >= 0 ? 'teal' : 'orange') : ''}
+                ${avgNightlyRate            ? statCard('Avg Nightly Rate',   finFmt(avgNightlyRate),   'all-time gross ÷ nights',             'teal')   : ''}
+                ${avgBookingValue           ? statCard('Avg Booking Value',  finFmt(avgBookingValue),  'all-time gross ÷ reservations',       'blue')   : ''}
+                ${netPerNight      != null  ? statCard('Net Per Night',      finFmtSigned(netPerNight),'all-time net ÷ nights',               netPerNight >= 0 ? 'teal' : 'orange') : ''}
+                ${avgStay                   ? statCard('Avg Stay Length',    avgStay.toFixed(1) + ' nights', 'all-time nights ÷ reservations','blue')   : ''}
+                ${occupancy        != null  ? statCard('Overall Occupancy',  (occupancy * 100).toFixed(1) + '%', `${t.nightsBooked} nights over ${years.length} yr${years.length !== 1 ? 's' : ''}`, occupancy >= 0.5 ? 'teal' : 'gray') : ''}
+                ${bestRevYear               ? statCard('Best Revenue Year',  String(bestRevYear.year), finFmt(bestRevYear.grossIncome) + ' gross',       'purple') : ''}
+                ${bestNetYear               ? statCard('Best Net Year',      String(bestNetYear.year), finFmtSigned(bestNetYear.netIncome) + ' net',      'purple') : ''}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <p class="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Gross Revenue by Year</p>
+                    <div class="flex items-end gap-1 w-full">${yearBars}</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">All-Time Expense Breakdown</p>
+                        <span class="text-xs text-gray-400">${finFmt(barTotal)} total</span>
+                    </div>
+                    ${barTotal > 0 ? `
+                    <div class="h-5 rounded-lg overflow-hidden flex w-full mb-3">${barSegments}</div>
+                    <div class="flex flex-wrap gap-x-4 gap-y-1.5">${legendItems}</div>
+                    ` : '<p class="text-sm text-gray-400">No expense data yet</p>'}
+                </div>
+            </div>`;
         }
 
         function drillToYear(year) {
@@ -2649,7 +2756,9 @@ Total: $${props.totalAmount}`);
 
             ${(() => {
                 // Cleanings Analytics — Bromley only, requires housekeeping items with expenseDate
-                const cleanItems = (data.expenseItems || []).filter(i => i.vendor === 'bromley' && i.tag === 'housekeeping' && i.expenseDate);
+                // Exclude zeroed scaffold markers (statement summaries superseded by invoice detail)
+                const cleanItems = (data.expenseItems || []).filter(i => i.vendor === 'bromley' && i.tag === 'housekeeping' && i.expenseDate
+                    && !(/^S\/C\/M\b/i.test(i.expenseName || '') && parseFloat(i.amount || 0) === 0));
                 if (!cleanItems.length) return '';
 
                 const byDate = {};
@@ -2714,6 +2823,8 @@ Total: $${props.totalAmount}`);
             const displayItems = [];
             for (const item of items) {
                 if (item.vendor === 'bromley' && item.tag === 'housekeeping' && item.expenseDate) {
+                    // Skip zeroed scaffold markers (statement summaries superseded by invoice detail)
+                    if (/^S\/C\/M\b/i.test(item.expenseName || '') && parseFloat(item.amount || 0) === 0) continue;
                     if (!cleaningGroups[item.expenseDate]) cleaningGroups[item.expenseDate] = { month: item.month, total: 0, count: 0, ids: [] };
                     cleaningGroups[item.expenseDate].total += parseFloat(item.amount || 0);
                     cleaningGroups[item.expenseDate].count++;
@@ -3701,29 +3812,29 @@ Total: $${props.totalAmount}`);
 
                     if (parsed.docType === 'invoice') {
                         if (parsed.type === 'cleaning') {
-                            // Cleaning invoice — save each line item with expenseDate for analytics grouping
-                            for (const item of (parsed.lineItems || [])) {
-                                const y = item.cleaningYear || parsed.year;
-                                const mo = item.cleaningMonth || parsed.startMonth;
-                                if (!y || !mo) continue;
-                                const resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses`, {
-                                    method: 'POST', headers: authHeaders(),
-                                    body: JSON.stringify({
-                                        year: y, month: mo,
-                                        expenseName: item.description,
-                                        vendor: 'bromley', amount: item.amount, tag: item.tag,
-                                        expenseDate: item.cleaningDate || null,
-                                    })
-                                });
-                                const d = await resp.json();
-                                if (d.item?.id) createdExpenseIds.push(d.item.id);
-                            }
+                            // Cleaning invoice — batch save with smart dedup (replaces statement summaries)
+                            const batchItems = (parsed.lineItems || [])
+                                .filter(i => (i.cleaningYear || parsed.year) && (i.cleaningMonth || parsed.startMonth))
+                                .map(i => ({
+                                    year: i.cleaningYear || parsed.year,
+                                    month: i.cleaningMonth || parsed.startMonth,
+                                    expenseName: i.description,
+                                    vendor: 'bromley', amount: i.amount, tag: i.tag,
+                                    expenseDate: i.cleaningDate || null,
+                                }));
+                            const batchResp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses/batch`, {
+                                method: 'POST', headers: authHeaders(),
+                                body: JSON.stringify({ items: batchItems })
+                            });
+                            const batchData = await batchResp.json();
+                            (batchData.created || []).forEach(i => { if (i.id) createdExpenseIds.push(i.id); });
                             closeImportModal();
                             finState.summaryData = null;
                             await loadFinYear(finState.year);
                             const dateSet = new Set((parsed.lineItems || []).map(i => i.cleaningDate).filter(Boolean));
                             const n = dateSet.size;
-                            showUndoToast(`${n} cleaning event${n !== 1 ? 's' : ''} saved — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
+                            const replaceNote = batchData.replaced?.length ? ` (filled in detail for ${batchData.replaced.length} statement entries)` : '';
+                            showUndoToast(`${n} cleaning event${n !== 1 ? 's' : ''} saved${replaceNote} — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
                         } else {
                             // Regular invoice — line items split across months
                             let months = [];
@@ -3763,29 +3874,31 @@ Total: $${props.totalAmount}`);
                         // Statement — save selected lines as expense items
                         const checked = Array.from(document.querySelectorAll('.bromley-stmt-check:checked'));
                         const selected = checked.map(cb => parsed.lines[parseInt(cb.dataset.idx)]);
-                        for (const line of selected) {
-                            // Parse month from line.date (MM/DD/YYYY)
+                        // Statement — batch save with smart dedup (skips rows where detail exists)
+                        const stmtItems = selected.map(line => {
                             const parts = line.date.split('/');
-                            const mo = parseInt(parts[0]);
-                            const y = parseInt(parts[2]);
-                            const resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses`, {
-                                method: 'POST', headers: authHeaders(),
-                                body: JSON.stringify({
-                                    year: y, month: mo,
-                                    expenseName: line.reference || line.documentNumber,
-                                    vendor: 'bromley',
-                                    amount: line.amount,
-                                    tag: line.tag || 'other',
-                                    expenseDate: `${y}-${String(mo).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`,
-                                })
-                            });
-                            const d = await resp.json();
-                            if (d.item?.id) createdExpenseIds.push(d.item.id);
-                        }
+                            const mo = parseInt(parts[0]), y = parseInt(parts[2]);
+                            let expenseDate = `${y}-${String(mo).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`;
+                            const scmDate = (line.reference || '').match(/S\/C\/M\s+(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+                            if (scmDate) {
+                                let sy = parseInt(scmDate[3]); if (sy < 100) sy += 2000;
+                                expenseDate = `${sy}-${String(parseInt(scmDate[1])).padStart(2,'0')}-${String(parseInt(scmDate[2])).padStart(2,'0')}`;
+                            }
+                            return { year: y, month: mo, expenseName: line.reference || line.documentNumber, vendor: 'bromley', amount: line.amount, tag: line.tag || 'other', expenseDate };
+                        });
+                        const stmtResp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses/batch`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify({ items: stmtItems })
+                        });
+                        const stmtData = await stmtResp.json();
+                        (stmtData.created || []).forEach(i => { if (i.id) createdExpenseIds.push(i.id); });
                         closeImportModal();
                         finState.summaryData = null;
                         await loadFinYear(finState.year);
-                        showUndoToast(`${selected.length} Bromley invoice(s) saved — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
+                        const savedN = stmtData.created?.length || 0;
+                        const skipN = stmtData.skipped?.length || 0;
+                        const skipNote = skipN > 0 ? ` (${skipN} already imported as detail — skipped)` : '';
+                        showUndoToast(`${savedN} Bromley statement entry(s) saved${skipNote} — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
                     }
                     return;
                 } else if (type === 'caribbean-pdf') {
