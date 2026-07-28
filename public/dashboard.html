@@ -4208,6 +4208,7 @@ Total: $${props.totalAmount}`);
                             btn.disabled = false; btn.textContent = 'Import Selected';
                             importState.pendingStmtSelected = selected;
                             importState.pendingStmtPropertyId = propertyId;
+                            closeImportModal();
                             renderWtrSplitModal(selected);
                             return;
                         }
