@@ -50,15 +50,25 @@ async function saveBromleyData(parsed, propertyId) {
   }
 
   if (parsed.docType === 'statement') {
+    const MABBR = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12}
     const items = (parsed.lines || []).map(line => {
       const parts = line.date.split('/')
-      const mo = parseInt(parts[0]), y = parseInt(parts[2])
+      let mo = parseInt(parts[0]), y = parseInt(parts[2])
       let expenseDate = `${y}-${String(mo).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`
       const scmDate = line.reference?.match(/S\/C\/M\s+(\d{1,2})\/(\d{1,2})\/(\d{2,4})/)
       if (scmDate) {
         let sy = parseInt(scmDate[3])
         if (sy < 100) sy += 2000
         expenseDate = `${sy}-${String(parseInt(scmDate[1])).padStart(2,'0')}-${String(parseInt(scmDate[2])).padStart(2,'0')}`
+        mo = parseInt(scmDate[1]); y = sy
+      } else {
+        // WTR/SWR quarterly billing: use first month of service period, not statement billing date
+        // e.g. "WTR/SWR OCT-DEC2025_53" → October 2025, not the September billing date
+        const wtrM = line.reference?.match(/WTR\/SWR\s+([A-Z]{3})-[A-Z]{3}(\d{2,4})/i)
+        if (wtrM) {
+          const sm = MABBR[wtrM[1].toLowerCase()]; let sy = parseInt(wtrM[2]); if (sy < 100) sy += 2000
+          if (sm && sy) { mo = sm; y = sy; expenseDate = `${sy}-${String(sm).padStart(2,'0')}-01` }
+        }
       }
       return {
         year: y, month: mo,

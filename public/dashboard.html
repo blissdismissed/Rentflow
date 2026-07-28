@@ -744,10 +744,16 @@
                 <div id="fin-expense-section" class="hidden">
                     <div class="flex items-center justify-between mb-3">
                         <h4 id="fin-expense-title" class="font-semibold text-gray-900">Expense Details</h4>
-                        <button id="fin-expense-add-btn" onclick="openExpenseModal(null)"
-                            class="px-3 py-1.5 bg-teal-600 text-white text-xs rounded-lg hover:bg-teal-700 transition hidden">
-                            + Add Expense
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button id="fin-utility-tracker-btn" onclick="openUtilityTracker()"
+                                class="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-xs rounded-lg hover:bg-blue-100 transition hidden">
+                                Utility Tracker
+                            </button>
+                            <button id="fin-expense-add-btn" onclick="openExpenseModal(null)"
+                                class="px-3 py-1.5 bg-teal-600 text-white text-xs rounded-lg hover:bg-teal-700 transition hidden">
+                                + Add Expense
+                            </button>
+                        </div>
                     </div>
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                         <table class="min-w-full text-sm">
@@ -945,6 +951,24 @@
                 <div class="p-6 border-t flex justify-end gap-3">
                     <button onclick="closeExpenseModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
                     <button onclick="saveExpenseItem()" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Utility Tracker Modal -->
+        <div id="fin-utility-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Utility Tracker — <span id="fin-utility-modal-year"></span></h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Click + to add a missing utility expense for that month</p>
+                    </div>
+                    <button onclick="closeUtilityModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div id="fin-utility-grid"></div>
                 </div>
             </div>
         </div>
@@ -2818,6 +2842,7 @@ Total: $${props.totalAmount}`);
 
             document.getElementById('fin-expense-title').textContent = itemized ? 'Itemized Expenses' : 'Expense Details (from PDF imports)';
             document.getElementById('fin-expense-add-btn').classList.toggle('hidden', !itemized);
+            document.getElementById('fin-utility-tracker-btn').classList.toggle('hidden', !itemized);
 
             const tagColors = {
                 utilities: 'bg-blue-100 text-blue-700',
@@ -3080,6 +3105,88 @@ Total: $${props.totalAmount}`);
             document.getElementById('fin-expense-modal').classList.remove('hidden');
         }
         function closeExpenseModal() { document.getElementById('fin-expense-modal').classList.add('hidden'); }
+
+        // ── Utility Tracker ──────────────────────────────────────────────────────
+        const UTILITY_TYPES = [
+            { key: 'internet', label: 'Internet', match: /internet|wifi|broadband/i },
+            { key: 'electric', label: 'Electric', match: /electric/i },
+            { key: 'water',    label: 'Water',    match: /\bwater\b|wtr/i },
+            { key: 'sewer',    label: 'Sewer',    match: /sewer|swr/i },
+        ];
+
+        function classifyUtility(expenseName) {
+            const name = expenseName || '';
+            for (const t of UTILITY_TYPES) {
+                if (t.match.test(name)) return t.key;
+            }
+            return null;
+        }
+
+        function openUtilityTracker() {
+            const items = finState.yearData?.expenseItems || [];
+            // Build month → utility type → { total, count } map
+            const byMonth = {};
+            for (const item of items) {
+                if (item.tag !== 'utilities') continue;
+                const type = classifyUtility(item.expenseName);
+                if (!type) continue;
+                const m = item.month;
+                if (!byMonth[m]) byMonth[m] = {};
+                if (!byMonth[m][type]) byMonth[m][type] = { total: 0, count: 0 };
+                byMonth[m][type].total += parseFloat(item.amount || 0);
+                byMonth[m][type].count++;
+            }
+
+            let html = '<div class="overflow-x-auto"><table class="w-full text-sm border-collapse">';
+            html += '<thead><tr class="bg-gray-50 border-b-2 border-gray-200">';
+            html += '<th class="px-3 py-2 text-left font-semibold text-gray-700 w-24">Month</th>';
+            for (const t of UTILITY_TYPES) {
+                html += `<th class="px-3 py-2 text-center font-semibold text-gray-700">${t.label}</th>`;
+            }
+            html += '</tr></thead><tbody>';
+
+            for (let m = 1; m <= 12; m++) {
+                const monthData = byMonth[m] || {};
+                const allPresent = UTILITY_TYPES.every(t => monthData[t.key]);
+                html += `<tr class="border-b border-gray-100 ${allPresent ? '' : 'bg-amber-50/40'}">`;
+                html += `<td class="px-3 py-2.5 font-medium text-gray-800">${MONTH_NAMES[m - 1]}</td>`;
+                for (const t of UTILITY_TYPES) {
+                    const d = monthData[t.key];
+                    if (d) {
+                        html += `<td class="px-3 py-2.5 text-center">
+                            <span class="inline-flex flex-col items-center gap-0.5">
+                                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <span class="text-xs text-gray-600 font-medium">${finFmt(d.total)}</span>
+                            </span>
+                        </td>`;
+                    } else {
+                        html += `<td class="px-3 py-2.5 text-center">
+                            <button onclick="addUtilityExpense(${m}, '${t.key}', '${t.label}')"
+                                class="inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-dashed border-gray-300 hover:border-teal-400 hover:bg-teal-50 text-gray-300 hover:text-teal-600 transition"
+                                title="Add ${t.label} for ${MONTH_NAMES[m - 1]}">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                            </button>
+                        </td>`;
+                    }
+                }
+                html += '</tr>';
+            }
+            html += '</tbody></table></div>';
+
+            document.getElementById('fin-utility-modal-year').textContent = finState.year;
+            document.getElementById('fin-utility-grid').innerHTML = html;
+            document.getElementById('fin-utility-modal').classList.remove('hidden');
+        }
+
+        function closeUtilityModal() { document.getElementById('fin-utility-modal').classList.add('hidden'); }
+
+        function addUtilityExpense(month, type, label) {
+            closeUtilityModal();
+            openExpenseModal(null);
+            document.getElementById('fin-e-month').value = month;
+            document.getElementById('fin-e-tag').value = 'utilities';
+            document.getElementById('fin-e-name').value = label;
+        }
 
         async function saveExpenseItem() {
             const body = {
@@ -3891,14 +3998,24 @@ Total: $${props.totalAmount}`);
                         const checked = Array.from(document.querySelectorAll('.bromley-stmt-check:checked'));
                         const selected = checked.map(cb => parsed.lines[parseInt(cb.dataset.idx)]);
                         // Statement — batch save with smart dedup (skips rows where detail exists)
+                        const STMT_MABBR = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
                         const stmtItems = selected.map(line => {
                             const parts = line.date.split('/');
-                            const mo = parseInt(parts[0]), y = parseInt(parts[2]);
+                            let mo = parseInt(parts[0]), y = parseInt(parts[2]);
                             let expenseDate = `${y}-${String(mo).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`;
                             const scmDate = (line.reference || '').match(/S\/C\/M\s+(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
                             if (scmDate) {
                                 let sy = parseInt(scmDate[3]); if (sy < 100) sy += 2000;
                                 expenseDate = `${sy}-${String(parseInt(scmDate[1])).padStart(2,'0')}-${String(parseInt(scmDate[2])).padStart(2,'0')}`;
+                                mo = parseInt(scmDate[1]); y = sy;
+                            } else {
+                                // WTR/SWR quarterly billing: use first month of service period
+                                // e.g. "WTR/SWR OCT-DEC2025_53" → October 2025, not the September billing date
+                                const wtrM = (line.reference || '').match(/WTR\/SWR\s+([A-Z]{3})-[A-Z]{3}(\d{2,4})/i);
+                                if (wtrM) {
+                                    const sm = STMT_MABBR[wtrM[1].toLowerCase()]; let sy = parseInt(wtrM[2]); if (sy < 100) sy += 2000;
+                                    if (sm && sy) { mo = sm; y = sy; expenseDate = `${sy}-${String(sm).padStart(2,'0')}-01`; }
+                                }
                             }
                             return { year: y, month: mo, expenseName: line.reference || line.documentNumber, vendor: 'bromley', amount: line.amount, tag: line.tag || 'other', expenseDate };
                         });
