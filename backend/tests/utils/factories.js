@@ -133,11 +133,85 @@ async function createCleaningAssignment(bookingId, cleanerId, overrides = {}) {
   return await CleaningAssignment.create({ ...defaults, ...overrides })
 }
 
+/**
+ * Create a test PropertyFinancialSettings record
+ */
+async function createFinancialSettings(propertyId, overrides = {}) {
+  const PropertyFinancialSettings = require('../../src/models/PropertyFinancialSettings')
+  return await PropertyFinancialSettings.create({
+    propertyId,
+    dataSource: 'itemized',
+    wtrSplitMode: 'split',
+    ...overrides
+  })
+}
+
+/**
+ * Create a test FinancialMonthly record
+ */
+async function createFinancialMonthly(propertyId, overrides = {}) {
+  const FinancialMonthly = require('../../src/models/FinancialMonthly')
+  return await FinancialMonthly.create({
+    propertyId,
+    month: 1,
+    year: 2025,
+    grossIncome: 0,
+    managementFee: 0,
+    cleaningFee: 0,
+    utilities: 0,
+    maintenance: 0,
+    otherExpenses: 0,
+    platformCharges: 0,
+    nightsBooked: 0,
+    numReservations: 0,
+    hoaPayment: 0,
+    actualMortgagePaid: 0,
+    ...overrides
+  })
+}
+
+/**
+ * Create a test FinancialExpenseItem record
+ */
+async function createExpenseItem(propertyId, overrides = {}) {
+  const FinancialExpenseItem = require('../../src/models/FinancialExpenseItem')
+  return await FinancialExpenseItem.create({
+    propertyId,
+    year: overrides.year || 2025,
+    month: overrides.month || 1,
+    expenseName: 'Test Expense',
+    tag: 'maintenance',
+    amount: 100,
+    expenseDate: '2025-01-15',
+    vendor: 'test-vendor',
+    ...overrides
+  })
+}
+
+/**
+ * Create a test FinancialAnnualConfig record
+ */
+async function createAnnualConfig(propertyId, year, overrides = {}) {
+  const FinancialAnnualConfig = require('../../src/models/FinancialAnnualConfig')
+  return await FinancialAnnualConfig.create({
+    propertyId,
+    year,
+    scheduledMortgage: 0,
+    taxesInsurance: 0,
+    notes: '',
+    ...overrides
+  })
+}
+
 module.exports = {
   createUser,
   createProperty,
   createBooking,
   createPayment,
   createCleaner,
-  createCleaningAssignment
+  createCleaningAssignment,
+  createFinancialSettings,
+  createFinancialMonthly,
+  createExpenseItem,
+  createAnnualConfig
 }

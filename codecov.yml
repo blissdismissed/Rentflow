@@ -1,0 +1,21 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto      # must not drop vs previous commit
+        threshold: 2%     # allow up to 2% drop before failing
+    patch:
+      default:
+        target: 70%       # new code in each PR must be 70%+ covered
+        threshold: 5%
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: true   # only comment when coverage changes
+
+ignore:
+  - "backend/src/config/**"
+  - "backend/src/migrations/**"
+  - "backend/src/seeders/**"
+  - "backend/src/server.js"
