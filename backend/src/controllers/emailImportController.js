@@ -62,22 +62,33 @@ async function saveBromleyData(parsed, propertyId) {
         expenseDate = `${sy}-${String(parseInt(scmDate[1])).padStart(2,'0')}-${String(parseInt(scmDate[2])).padStart(2,'0')}`
         mo = parseInt(scmDate[1]); y = sy
       } else {
-        // WTR/SWR quarterly billing: use first month of service period, not statement billing date
-        // e.g. "WTR/SWR OCT-DEC2025_53" → October 2025, not the September billing date
-        const wtrM = line.reference?.match(/WTR\/SWR\s+([A-Z]{3})-[A-Z]{3}(\d{2,4})/i)
+        // WTR/SWR quarterly billing: split evenly across the service period months
+        // e.g. "WTR/SWR OCT-DEC2025_53" → $90.82 each in October, November, December 2025
+        const wtrM = line.reference?.match(/WTR\/SWR\s+([A-Z]{3})-([A-Z]{3})(\d{2,4})/i)
         if (wtrM) {
-          const sm = MABBR[wtrM[1].toLowerCase()]; let sy = parseInt(wtrM[2]); if (sy < 100) sy += 2000
-          if (sm && sy) { mo = sm; y = sy; expenseDate = `${sy}-${String(sm).padStart(2,'0')}-01` }
+          const sm = MABBR[wtrM[1].toLowerCase()], em = MABBR[wtrM[2].toLowerCase()]
+          let sy = parseInt(wtrM[3]); if (sy < 100) sy += 2000
+          if (sm && em && sy) {
+            const months = []; for (let m = sm; m <= em; m++) months.push(m)
+            const perMonth = parseFloat((line.amount / months.length).toFixed(2))
+            return months.map(m => ({
+              year: sy, month: m,
+              expenseName: line.reference || line.documentNumber,
+              vendor: 'bromley', amount: perMonth,
+              tag: line.tag || 'maintenance',
+              expenseDate: `${sy}-${String(m).padStart(2,'0')}-01`,
+            }))
+          }
         }
       }
-      return {
+      return [{
         year: y, month: mo,
         expenseName: line.reference || line.documentNumber,
         vendor: 'bromley', amount: line.amount,
         tag: line.tag || 'maintenance',
         expenseDate,
-      }
-    })
+      }]
+    }).flat())
     const { created, skipped } = await smartSaveBromleyItems(propertyId, items)
     const skipNote = skipped.length ? ` (${skipped.length} skipped — line item detail already imported)` : ''
     return {

@@ -685,6 +685,29 @@
                 </div>
                 <!-- All-years analytics -->
                 <div id="fin-summary-analytics" class="mt-4"></div>
+                <!-- Property Settings -->
+                <div id="fin-prop-settings" class="mt-4 hidden">
+                    <details class="bg-white rounded-xl shadow-sm border border-gray-100">
+                        <summary class="px-5 py-3.5 cursor-pointer text-sm font-semibold text-gray-700 flex items-center gap-2 select-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            Property Settings
+                        </summary>
+                        <div class="px-5 pb-5 pt-2 border-t border-gray-100">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Quarterly Water/Sewer Import</label>
+                                    <p class="text-xs text-gray-400 mb-2">How to distribute quarterly WTR/SWR bills across months when importing statements</p>
+                                    <select id="fin-wtr-mode-select" onchange="saveWtrSplitMode(this.value)"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500">
+                                        <option value="split">Split evenly across all months (default)</option>
+                                        <option value="first">First month of service period only</option>
+                                        <option value="last">Last month of service period only</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
             </div>
 
             <!-- Year Detail View -->
@@ -951,6 +974,52 @@
                 <div class="p-6 border-t flex justify-end gap-3">
                     <button onclick="closeExpenseModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
                     <button onclick="saveExpenseItem()" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- WTR/SWR Split Mode Modal -->
+        <div id="fin-wtr-split-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Quarterly Utility Bill</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Choose how to distribute across months</p>
+                    </div>
+                    <button onclick="closeWtrSplitModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div id="fin-wtr-split-detail" class="mb-5 space-y-2"></div>
+                    <p class="text-sm font-medium text-gray-700 mb-3">How would you like to record this?</p>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="confirmWtrSplit('first')"
+                            class="wtr-split-btn flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 border-gray-200 hover:border-teal-400 hover:bg-teal-50 transition text-center"
+                            data-choice="first">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                            <span class="text-sm font-semibold text-gray-800">First month</span>
+                            <span class="text-xs text-gray-400" id="wtr-first-label">—</span>
+                        </button>
+                        <button onclick="confirmWtrSplit('split')"
+                            class="wtr-split-btn flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 border-gray-200 hover:border-teal-400 hover:bg-teal-50 transition text-center"
+                            data-choice="split">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            <span class="text-sm font-semibold text-gray-800">Split evenly</span>
+                            <span class="text-xs text-gray-400" id="wtr-split-label">—</span>
+                        </button>
+                        <button onclick="confirmWtrSplit('last')"
+                            class="wtr-split-btn flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 border-gray-200 hover:border-teal-400 hover:bg-teal-50 transition text-center"
+                            data-choice="last">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                            <span class="text-sm font-semibold text-gray-800">Last month</span>
+                            <span class="text-xs text-gray-400" id="wtr-last-label">—</span>
+                        </button>
+                    </div>
+                    <div class="mt-4 flex items-center gap-2">
+                        <input type="checkbox" id="wtr-save-default" class="rounded">
+                        <label for="wtr-save-default" class="text-xs text-gray-500">Save as default for this property</label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2330,6 +2399,7 @@ Total: $${props.totalAmount}`);
             renderSummaryHeader();
             renderSummaryRows(data);
             renderSummaryAnalytics(data);
+            renderPropertySettings(data);
         }
 
         function renderSummaryAnalytics(data) {
@@ -2434,6 +2504,16 @@ Total: $${props.totalAmount}`);
                     ` : '<p class="text-sm text-gray-400">No expense data yet</p>'}
                 </div>
             </div>`;
+        }
+
+        function renderPropertySettings(data) {
+            const section = document.getElementById('fin-prop-settings');
+            const isVt = data?.dataSource !== 'caribbean';
+            section.classList.toggle('hidden', !isVt);
+            if (!isVt) return;
+            const mode = data?.wtrSplitMode || 'split';
+            const sel = document.getElementById('fin-wtr-mode-select');
+            if (sel) sel.value = mode;
         }
 
         function drillToYear(year) {
@@ -3105,6 +3185,132 @@ Total: $${props.totalAmount}`);
             document.getElementById('fin-expense-modal').classList.remove('hidden');
         }
         function closeExpenseModal() { document.getElementById('fin-expense-modal').classList.add('hidden'); }
+
+        // ── WTR/SWR Split Modal ──────────────────────────────────────────────────
+        const WTR_MABBR = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+
+        function parseWtrRange(reference) {
+            const m = (reference || '').match(/WTR\/SWR\s+([A-Z]{3})-([A-Z]{3})(\d{2,4})/i);
+            if (!m) return null;
+            const sm = WTR_MABBR[m[1].toLowerCase()], em = WTR_MABBR[m[2].toLowerCase()];
+            let sy = parseInt(m[3]); if (sy < 100) sy += 2000;
+            if (!sm || !em || !sy) return null;
+            const months = []; for (let mo = sm; mo <= em; mo++) months.push(mo);
+            return { startMonth: sm, endMonth: em, year: sy, months };
+        }
+
+        function renderWtrSplitModal(selected) {
+            const wtrLines = selected.filter(l => parseWtrRange(l.reference));
+            // Build detail HTML
+            const detailHtml = wtrLines.map(line => {
+                const r = parseWtrRange(line.reference);
+                const names = r.months.map(m => MONTH_NAMES[m - 1]);
+                const perMonth = finFmt(line.amount / r.months.length);
+                return `<div class="bg-gray-50 rounded-lg px-3 py-2">
+                    <span class="font-medium text-gray-800 text-sm">${line.reference}</span>
+                    <span class="text-gray-500 text-sm ml-2">${finFmt(line.amount)}</span>
+                    <div class="text-xs text-gray-400 mt-0.5">${names.join(' · ')} · ${perMonth}/mo</div>
+                </div>`;
+            }).join('');
+            document.getElementById('fin-wtr-split-detail').innerHTML = detailHtml;
+
+            // Update button labels using first WTR line
+            if (wtrLines.length > 0) {
+                const r = parseWtrRange(wtrLines[0].reference);
+                document.getElementById('wtr-first-label').textContent = MONTH_NAMES[r.startMonth - 1] + ' only';
+                document.getElementById('wtr-split-label').textContent = `÷${r.months.length} months`;
+                document.getElementById('wtr-last-label').textContent = MONTH_NAMES[r.endMonth - 1] + ' only';
+            }
+
+            // Pre-select the property's saved default
+            const savedMode = finState.summaryData?.wtrSplitMode || 'split';
+            document.querySelectorAll('.wtr-split-btn').forEach(btn => {
+                const isDefault = btn.dataset.choice === savedMode;
+                btn.classList.toggle('border-teal-400', isDefault);
+                btn.classList.toggle('bg-teal-50', isDefault);
+                btn.classList.toggle('border-gray-200', !isDefault);
+            });
+            document.getElementById('wtr-save-default').checked = false;
+            document.getElementById('fin-wtr-split-modal').classList.remove('hidden');
+        }
+
+        function closeWtrSplitModal() {
+            document.getElementById('fin-wtr-split-modal').classList.add('hidden');
+        }
+
+        async function confirmWtrSplit(choice) {
+            const saveDefault = document.getElementById('wtr-save-default').checked;
+            closeWtrSplitModal();
+            if (saveDefault) {
+                await saveWtrSplitMode(choice);
+            }
+            const selected = importState.pendingStmtSelected || [];
+            const propertyId = importState.pendingStmtPropertyId || finState.propertyId;
+            await performStatementSave(selected, propertyId, choice);
+        }
+
+        async function saveWtrSplitMode(mode) {
+            try {
+                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/settings`, {
+                    method: 'POST', headers: authHeaders(),
+                    body: JSON.stringify({ wtrSplitMode: mode })
+                });
+                if (finState.summaryData) finState.summaryData.wtrSplitMode = mode;
+                const sel = document.getElementById('fin-wtr-mode-select');
+                if (sel) sel.value = mode;
+            } catch(e) { console.error('saveWtrSplitMode error:', e); }
+        }
+
+        async function performStatementSave(selected, propertyId, wtrChoice) {
+            const STMT_MABBR = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+            const stmtItems = [];
+            const createdExpenseIds = [];
+
+            for (const line of selected) {
+                const parts = line.date.split('/');
+                let mo = parseInt(parts[0]), y = parseInt(parts[2]);
+                let expenseDate = `${y}-${String(mo).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`;
+
+                const scmDate = (line.reference || '').match(/S\/C\/M\s+(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+                if (scmDate) {
+                    let sy = parseInt(scmDate[3]); if (sy < 100) sy += 2000;
+                    expenseDate = `${sy}-${String(parseInt(scmDate[1])).padStart(2,'0')}-${String(parseInt(scmDate[2])).padStart(2,'0')}`;
+                    mo = parseInt(scmDate[1]); y = sy;
+                    stmtItems.push({ year: y, month: mo, expenseName: line.reference || line.documentNumber, vendor: 'bromley', amount: line.amount, tag: line.tag || 'other', expenseDate });
+                    continue;
+                }
+
+                const wtrRange = parseWtrRange(line.reference);
+                if (wtrRange) {
+                    const { startMonth: sm, endMonth: em, year: sy, months } = wtrRange;
+                    const targetMonths = wtrChoice === 'first' ? [months[0]] : wtrChoice === 'last' ? [months[months.length - 1]] : months;
+                    const perMonthAmt = parseFloat((line.amount / targetMonths.length).toFixed(2));
+                    for (const m of targetMonths) {
+                        stmtItems.push({ year: sy, month: m, expenseName: line.reference || line.documentNumber, vendor: 'bromley', amount: perMonthAmt, tag: line.tag || 'other', expenseDate: `${sy}-${String(m).padStart(2,'0')}-01` });
+                    }
+                    continue;
+                }
+
+                stmtItems.push({ year: y, month: mo, expenseName: line.reference || line.documentNumber, vendor: 'bromley', amount: line.amount, tag: line.tag || 'other', expenseDate });
+            }
+
+            const stmtResp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses/batch`, {
+                method: 'POST', headers: authHeaders(),
+                body: JSON.stringify({ items: stmtItems })
+            });
+            const stmtData = await stmtResp.json();
+            (stmtData.created || []).forEach(i => { if (i.id) createdExpenseIds.push(i.id); });
+            closeImportModal();
+            const stmtYears = [...new Set(stmtItems.map(i => i.year).filter(Boolean))].sort((a,b) => a-b);
+            finState.summaryData = null;
+            await loadFinSummary();
+            finState.year = stmtYears[0] || finState.year;
+            await setFinView('year');
+            const savedN = stmtData.created?.length || 0;
+            const skipN = stmtData.skipped?.length || 0;
+            const skipNote = skipN > 0 ? ` (${skipN} already imported as detail — skipped)` : '';
+            showUndoToast(`${savedN} Bromley statement entry(s) saved${skipNote} — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
+        }
 
         // ── Utility Tracker ──────────────────────────────────────────────────────
         const UTILITY_TYPES = [
@@ -3994,47 +4200,18 @@ Total: $${props.totalAmount}`);
                             showUndoToast(`${n} Bromley expense item${n !== 1 ? 's' : ''} saved — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
                         }
                     } else {
-                        // Statement — save selected lines as expense items
+                        // Statement — detect WTR/SWR quarterly entries, prompt for split mode if found
                         const checked = Array.from(document.querySelectorAll('.bromley-stmt-check:checked'));
                         const selected = checked.map(cb => parsed.lines[parseInt(cb.dataset.idx)]);
-                        // Statement — batch save with smart dedup (skips rows where detail exists)
-                        const STMT_MABBR = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
-                        const stmtItems = selected.map(line => {
-                            const parts = line.date.split('/');
-                            let mo = parseInt(parts[0]), y = parseInt(parts[2]);
-                            let expenseDate = `${y}-${String(mo).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`;
-                            const scmDate = (line.reference || '').match(/S\/C\/M\s+(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
-                            if (scmDate) {
-                                let sy = parseInt(scmDate[3]); if (sy < 100) sy += 2000;
-                                expenseDate = `${sy}-${String(parseInt(scmDate[1])).padStart(2,'0')}-${String(parseInt(scmDate[2])).padStart(2,'0')}`;
-                                mo = parseInt(scmDate[1]); y = sy;
-                            } else {
-                                // WTR/SWR quarterly billing: use first month of service period
-                                // e.g. "WTR/SWR OCT-DEC2025_53" → October 2025, not the September billing date
-                                const wtrM = (line.reference || '').match(/WTR\/SWR\s+([A-Z]{3})-[A-Z]{3}(\d{2,4})/i);
-                                if (wtrM) {
-                                    const sm = STMT_MABBR[wtrM[1].toLowerCase()]; let sy = parseInt(wtrM[2]); if (sy < 100) sy += 2000;
-                                    if (sm && sy) { mo = sm; y = sy; expenseDate = `${sy}-${String(sm).padStart(2,'0')}-01`; }
-                                }
-                            }
-                            return { year: y, month: mo, expenseName: line.reference || line.documentNumber, vendor: 'bromley', amount: line.amount, tag: line.tag || 'other', expenseDate };
-                        });
-                        const stmtResp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses/batch`, {
-                            method: 'POST', headers: authHeaders(),
-                            body: JSON.stringify({ items: stmtItems })
-                        });
-                        const stmtData = await stmtResp.json();
-                        (stmtData.created || []).forEach(i => { if (i.id) createdExpenseIds.push(i.id); });
-                        closeImportModal();
-                        const stmtYears = [...new Set(stmtItems.map(i => i.year).filter(Boolean))].sort((a,b) => a-b);
-                        finState.summaryData = null;
-                        await loadFinSummary();
-                        finState.year = stmtYears[0] || finState.year;
-                        await setFinView('year');
-                        const savedN = stmtData.created?.length || 0;
-                        const skipN = stmtData.skipped?.length || 0;
-                        const skipNote = skipN > 0 ? ` (${skipN} already imported as detail — skipped)` : '';
-                        showUndoToast(`${savedN} Bromley statement entry(s) saved${skipNote} — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
+                        const hasWtr = selected.some(l => parseWtrRange(l.reference));
+                        if (hasWtr) {
+                            btn.disabled = false; btn.textContent = 'Import Selected';
+                            importState.pendingStmtSelected = selected;
+                            importState.pendingStmtPropertyId = propertyId;
+                            renderWtrSplitModal(selected);
+                            return;
+                        }
+                        await performStatementSave(selected, propertyId, finState.summaryData?.wtrSplitMode || 'split');
                     }
                     return;
                 } else if (type === 'caribbean-pdf') {

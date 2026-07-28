@@ -17,6 +17,11 @@ PropertyFinancialSettings.init(
       type: DataTypes.STRING(20),
       defaultValue: 'manual',
       comment: 'evolve, caribbean, manual'
+    },
+    wtrSplitMode: {
+      type: DataTypes.STRING(10),
+      defaultValue: 'split',
+      comment: 'first, split, last — how to distribute quarterly WTR/SWR bills across months'
     }
   },
   {

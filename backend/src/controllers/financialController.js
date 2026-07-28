@@ -141,8 +141,8 @@ const getPropertySummary = async (req, res) => {
 
     const settings = await PropertyFinancialSettings.findOne({ where: { propertyId: property.id } })
     const purchasePrice = parseFloat(settings?.purchasePrice || 0)
-
     const dataSource = settings?.dataSource || 'manual'
+    const wtrSplitMode = settings?.wtrSplitMode || 'split'
 
     const [allMonthly, allExpenseItems, allConfigs] = await Promise.all([
       FinancialMonthly.findAll({ where: { propertyId: property.id }, order: [['year', 'ASC'], ['month', 'ASC']] }),
@@ -216,6 +216,7 @@ const getPropertySummary = async (req, res) => {
       property: { id: property.id, name: property.name, city: property.city, state: property.state },
       purchasePrice,
       dataSource,
+      wtrSplitMode,
       years,
       allTimeTotals,
       allTimeAvg
@@ -245,6 +246,7 @@ const getYearDetail = async (req, res) => {
     const settings = await PropertyFinancialSettings.findOne({ where: { propertyId } })
     const purchasePrice = parseFloat(settings?.purchasePrice || 0)
     const dataSource = settings?.dataSource || 'manual'
+    const wtrSplitMode = settings?.wtrSplitMode || 'split'
 
     const annualConfig = await FinancialAnnualConfig.findOne({ where: { propertyId, year } })
 
@@ -298,6 +300,7 @@ const getYearDetail = async (req, res) => {
       year: parseInt(year),
       purchasePrice,
       dataSource,
+      wtrSplitMode,
       annualConfig: annualConfig || null,
       months,
       annualTotals,
@@ -396,10 +399,11 @@ const upsertFinancialSettings = async (req, res) => {
     const property = await Property.findOne({ where: { id: propertyId, userId: req.user.id } })
     if (!property) return res.status(404).json({ success: false, message: 'Property not found' })
 
-    const { purchasePrice, dataSource } = req.body
+    const { purchasePrice, dataSource, wtrSplitMode } = req.body
     const updates = {}
     if (purchasePrice !== undefined) updates.purchasePrice = purchasePrice
     if (dataSource !== undefined) updates.dataSource = dataSource
+    if (wtrSplitMode !== undefined) updates.wtrSplitMode = wtrSplitMode
     const [settings, created] = await PropertyFinancialSettings.findOrCreate({
       where: { propertyId },
       defaults: { propertyId, ...updates }
