@@ -686,36 +686,60 @@ function parseBromleyText(text) {
   const isStatement = /^\s*STATEMENT/m.test(text)
 
   if (isStatement) {
-    // DATE: field may have non-date content between label and value (e.g. customer number)
+    // DATE: field may have non-date content between label and value (e.g. customer number on own line)
     const dateMatch = text.match(/DATE:[\s\S]*?(\d{1,2}\/\d{1,2}\/(\d{4}))/)
     const date = dateMatch ? dateMatch[1] : null
     const year = dateMatch ? parseInt(dateMatch[2]) : null
-    const totalMatch = text.match(/Total:\s+([\d,]+\.\d{2})/)
+
+    // Total appears as "AMOUNT\tTotal:" (amount BEFORE the label) in newer pdf-parse output
+    let totalMatch = text.match(/([\d,]+\.\d{2})\s*\t\s*Total:/i)
+    if (!totalMatch) totalMatch = text.match(/Total:\s*([\d,]+\.\d{2})/i)
     const total = totalMatch ? parseFloat(totalMatch[1].replace(/,/g, '')) : null
 
-    // Parse rows line by line — the column regex fails when date is directly concatenated
-    // with the type field (e.g. "10/31/2025IN" with no space) as pdf-parse sometimes does.
-    // Strict month (1-12) and day (1-31) prevent false matches like "39/30/2025" that arise
-    // when WTR/SWR document numbers are concatenated with the billing date.
-    const DATE_RE = /(?:0?[1-9]|1[0-2])\/(?:0?[1-9]|[12]\d|3[01])\/\d{4}/
+    // pdf-parse v2 outputs tab-separated columns in this order (NOT the visual left-to-right order):
+    //   DUE_DATE \t REFERENCE \t IN \t BILLING_DATE \t DOC_NUMBER AMOUNT
+    // Example: "5/16/2026\tS/C/M 4/14/26\tIN\t4/16/2026\tIN0021700 194.57"
     const lines = []
+    const DATE_RE = /(?:0?[1-9]|1[0-2])\/(?:0?[1-9]|[12]\d|3[01])\/\d{4}/
     for (const rawLine of text.split('\n')) {
       const line = rawLine.trim()
-      // Anchor: billing date immediately followed by optional whitespace then "IN" + whitespace/EOL
+
+      // Tab-delimited format (actual pdf-parse output)
+      const parts = line.split('\t')
+      if (parts.length >= 5 && parts[2].trim() === 'IN') {
+        const dueDate = parts[0].trim()
+        const reference = parts[1].trim()
+        const billingDate = parts[3].trim()
+        const lastPart = parts.slice(4).join('\t').trim()
+        // Amount is last currency value; everything before it is the document number
+        const amtMatch = lastPart.match(/([\d,]+\.\d{2})\s*$/)
+        if (!amtMatch) continue
+        const amount = parseFloat(amtMatch[1].replace(/,/g, ''))
+        if (!DATE_RE.test(billingDate)) continue
+        const documentNumber = lastPart.slice(0, lastPart.length - amtMatch[0].length).trim()
+        lines.push({
+          documentNumber,
+          date: billingDate,
+          reference: reference || documentNumber,
+          dueDate,
+          amount,
+          tag: tagBromleyStatement(reference || documentNumber),
+        })
+        continue
+      }
+
+      // Space-delimited fallback for older statement formats
       const bm = line.match(new RegExp('(' + DATE_RE.source + ')\\s*IN(?:\\s|$)'))
       if (!bm) continue
       const billingDate = bm[1]
       const afterIn = line.slice(bm.index + bm[0].length).trim()
-      // Amount is the last currency value on the line
       const amtMatch = afterIn.match(/([\d,]+\.\d{2})\s*$/)
       if (!amtMatch) continue
       const amount = parseFloat(amtMatch[1].replace(/,/g, ''))
-      // Due date is the last date before the amount
       const beforeAmt = afterIn.slice(0, afterIn.length - amtMatch[0].length).trim()
       const dueDateMatch = beforeAmt.match(/(\d{1,2}\/\d{1,2}\/\d{4})\s*$/)
       if (!dueDateMatch) continue
       const dueDate = dueDateMatch[1]
-      // Reference is between IN and due date; document number is before the billing date
       const reference = beforeAmt.slice(0, beforeAmt.length - dueDateMatch[0].length).trim()
       const documentNumber = line.slice(0, bm.index).trim()
       lines.push({
