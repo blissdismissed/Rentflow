@@ -45,6 +45,7 @@ jobs:
       AWS_S3_BUCKET: test-bucket
       API_URL: http://localhost:5000
       FRONTEND_URL: http://localhost:8000
+      RATE_LIMIT_MAX_REQUESTS: 100000
 
     steps:
       - name: Checkout code
