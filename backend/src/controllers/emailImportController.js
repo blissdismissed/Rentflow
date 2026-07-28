@@ -38,6 +38,7 @@ async function saveBromleyData(parsed, propertyId) {
         expenseName: i.description,
         vendor: 'bromley', amount: i.amount, tag: i.tag,
         expenseDate: i.cleaningDate || null,
+        qty: i.qty || null,
       }))
     const { created, replaced } = await smartSaveBromleyItems(propertyId, items)
     const dateSet = new Set((parsed.lineItems || []).map(i => i.cleaningDate).filter(Boolean))

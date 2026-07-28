@@ -17,6 +17,7 @@ FinancialExpenseItem.init(
     expenseName: { type: DataTypes.STRING(255), allowNull: true },
     vendor: { type: DataTypes.STRING(255), allowNull: true },
     amount: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
+    qty: { type: DataTypes.DECIMAL(10, 4), allowNull: true },
     tag: {
       type: DataTypes.STRING(50),
       defaultValue: 'other',

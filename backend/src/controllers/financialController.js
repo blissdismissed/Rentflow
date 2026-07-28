@@ -675,7 +675,7 @@ function tagBromleyItem(code, desc) {
 
 function tagBromleyStatement(reference) {
   const s = reference.toLowerCase()
-  if (/water|sewer|electric|util/.test(s)) return 'utilities'
+  if (/water|sewer|wtr|swr|electric|util/.test(s)) return 'utilities'
   if (/hoa|assoc/.test(s)) return 'hoa'
   if (/s\/c\/m|clean|housekeep/.test(s)) return 'housekeeping'
   return 'maintenance'
@@ -686,17 +686,46 @@ function parseBromleyText(text) {
   const isStatement = /^\s*STATEMENT/m.test(text)
 
   if (isStatement) {
-    const dateMatch = text.match(/DATE:\s*(\d{1,2}\/\d{1,2}\/(\d{4}))/)
+    // DATE: field may have non-date content between label and value (e.g. customer number)
+    const dateMatch = text.match(/DATE:[\s\S]*?(\d{1,2}\/\d{1,2}\/(\d{4}))/)
     const date = dateMatch ? dateMatch[1] : null
     const year = dateMatch ? parseInt(dateMatch[2]) : null
     const totalMatch = text.match(/Total:\s+([\d,]+\.\d{2})/)
     const total = totalMatch ? parseFloat(totalMatch[1].replace(/,/g, '')) : null
+
+    // Parse rows line by line — the column regex fails when date is directly concatenated
+    // with the type field (e.g. "10/31/2025IN" with no space) as pdf-parse sometimes does.
+    // Strict month (1-12) and day (1-31) prevent false matches like "39/30/2025" that arise
+    // when WTR/SWR document numbers are concatenated with the billing date.
+    const DATE_RE = /(?:0?[1-9]|1[0-2])\/(?:0?[1-9]|[12]\d|3[01])\/\d{4}/
     const lines = []
-    const rowRe = /(\S+)\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+IN\s+(.+?)\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+([\d,]+\.\d{2})/g
-    let m
-    while ((m = rowRe.exec(text)) !== null) {
-      const reference = m[3].trim()
-      lines.push({ documentNumber: m[1], date: m[2], reference, dueDate: m[4], amount: parseFloat(m[5].replace(/,/g, '')), tag: tagBromleyStatement(reference) })
+    for (const rawLine of text.split('\n')) {
+      const line = rawLine.trim()
+      // Anchor: billing date immediately followed by optional whitespace then "IN" + whitespace/EOL
+      const bm = line.match(new RegExp('(' + DATE_RE.source + ')\\s*IN(?:\\s|$)'))
+      if (!bm) continue
+      const billingDate = bm[1]
+      const afterIn = line.slice(bm.index + bm[0].length).trim()
+      // Amount is the last currency value on the line
+      const amtMatch = afterIn.match(/([\d,]+\.\d{2})\s*$/)
+      if (!amtMatch) continue
+      const amount = parseFloat(amtMatch[1].replace(/,/g, ''))
+      // Due date is the last date before the amount
+      const beforeAmt = afterIn.slice(0, afterIn.length - amtMatch[0].length).trim()
+      const dueDateMatch = beforeAmt.match(/(\d{1,2}\/\d{1,2}\/\d{4})\s*$/)
+      if (!dueDateMatch) continue
+      const dueDate = dueDateMatch[1]
+      // Reference is between IN and due date; document number is before the billing date
+      const reference = beforeAmt.slice(0, beforeAmt.length - dueDateMatch[0].length).trim()
+      const documentNumber = line.slice(0, bm.index).trim()
+      lines.push({
+        documentNumber,
+        date: billingDate,
+        reference: reference || documentNumber,
+        dueDate,
+        amount,
+        tag: tagBromleyStatement(reference || documentNumber),
+      })
     }
     return { docType: 'statement', date, year, total, lines }
   }
