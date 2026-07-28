@@ -88,7 +88,7 @@ async function saveBromleyData(parsed, propertyId) {
         tag: line.tag || 'maintenance',
         expenseDate,
       }]
-    }).flat())
+    }).flat()
     const { created, skipped } = await smartSaveBromleyItems(propertyId, items)
     const skipNote = skipped.length ? ` (${skipped.length} skipped — line item detail already imported)` : ''
     return {
