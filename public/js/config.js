@@ -9,7 +9,7 @@
 
 // Development config
 
-const CONFIG = {
+/* const CONFIG = {
   // API Configuration
   API_BASE_URL: 'http://localhost:5000',  // Change to 'http://your-ec2-ip' or 'https://yourdomain.com' for production
 
@@ -19,11 +19,11 @@ const CONFIG = {
   // Feature flags
   ENABLE_ANALYTICS: false,
   ENABLE_DEBUG: true,  // Set to false in production
-}
+} */
 
 
 // Production configuration
-/* const CONFIG = {
+const CONFIG = {
   API_BASE_URL: 'https://api.aspiretowards.com',
   ENV: 'production',
   ENABLE_ANALYTICS: true,
@@ -31,7 +31,7 @@ const CONFIG = {
 
   // Stripe Configuration
   STRIPE_PUBLISHABLE_KEY: 'pk_test_51SJcTTRof35cBGM2T9MlBeLRq3W6AJSaFPx4NjWYuG04K1wznZmAa87XZOLm4dutCrzlFgmptPsfbVK2cE67hFET00bbrf6xXD',
-} */
+}
 
 
 // Make config available globally

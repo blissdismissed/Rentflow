@@ -39,6 +39,11 @@ class GuestController {
         ]
       }
 
+      // Validate sortBy to prevent SQL injection
+      const allowedSortCols = ['lastStayDate', 'totalStays', 'totalSpent', 'name', 'createdAt']
+      const safeSortBy = allowedSortCols.includes(sortBy) ? sortBy : 'lastStayDate'
+      const safeOrder = order === 'ASC' ? 'ASC' : 'DESC'
+
       // Get guests who have stayed at owner's properties
       const guests = await Guest.findAll({
         where: whereClause,
@@ -46,6 +51,7 @@ class GuestController {
           {
             model: GuestStay,
             as: 'stays',
+            required: true,
             where: propertyId ? { propertyId } : { propertyId: propertyIds },
             include: [
               {
@@ -54,14 +60,25 @@ class GuestController {
                 attributes: ['id', 'name']
               }
             ],
-            order: [['checkOut', 'DESC']]
           }
         ],
-        order: [[sortBy, order]],
+        order: [[safeSortBy, safeOrder]],
         distinct: true
       })
 
-      res.json({ success: true, guests })
+      // Sort each guest's stays by checkOut desc in JS (can't order nested includes in Sequelize)
+      guests.forEach(g => {
+        if (g.stays) g.stays.sort((a, b) => new Date(b.checkOut) - new Date(a.checkOut))
+      })
+
+      // Also send the owner's full property list so the filter dropdown is always populated
+      const properties = await Property.findAll({
+        where: { userId },
+        attributes: ['id', 'name'],
+        order: [['name', 'ASC']]
+      })
+
+      res.json({ success: true, guests, properties })
     } catch (error) {
       console.error('Error fetching guests:', error)
       res.status(500).json({ success: false, message: 'Error fetching guests', error: error.message })
@@ -341,14 +358,35 @@ class GuestController {
         if (b.status === 'Canceled') { results.skipped++; continue }
         if (!b.guestName) { results.skipped++; continue }
 
-        // Upsert guest by email, then phone, then name
+        // Upsert guest by externalBookingId (via stay), then email, then phone, then name
         let guest = null
-        if (b.email) {
+
+        // Most reliable: find existing stay with same bookingId → get the guest
+        if (b.externalBookingId) {
+          const existingStay = await GuestStay.findOne({
+            where: { externalBookingId: b.externalBookingId, propertyId },
+            include: [{ model: Guest, as: 'guest' }]
+          })
+          if (existingStay?.guest) guest = existingStay.guest
+        }
+
+        // Fallback: match by email, phone, or name+property
+        if (!guest && b.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email)) {
           guest = await Guest.findOne({ where: { email: b.email } })
         }
         if (!guest && b.phone) {
           guest = await Guest.findOne({ where: { phoneNumber: b.phone } })
         }
+        if (!guest && b.guestName) {
+          const existingStay = await GuestStay.findOne({
+            where: { propertyId },
+            include: [{ model: Guest, as: 'guest', where: { name: b.guestName }, required: true }]
+          })
+          if (existingStay?.guest) guest = existingStay.guest
+        }
+
+        // Sanitize email — only store if it looks like a real email
+        const safeEmail = (b.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email)) ? b.email : null
 
         const payout = parseFloat(String(b.totalPayout || '0').replace(/[$,]/g, '')) || 0
         const nights = parseInt(b.nightsStayed || b.nights || 0) || 0
@@ -357,7 +395,7 @@ class GuestController {
 
         if (!guest) {
           guest = await Guest.create({
-            email: b.email || null,
+            email: safeEmail,
             name: b.guestName,
             phoneNumber: b.phone || null,
             totalStays: b.status === 'Checked out' ? 1 : 0,
@@ -373,7 +411,7 @@ class GuestController {
             await guest.update({
               name: guest.name || b.guestName,
               phoneNumber: guest.phoneNumber || b.phone || null,
-              email: guest.email || b.email || null,
+              email: guest.email || safeEmail,
               totalStays: (guest.totalStays || 0) + 1,
               totalSpent: parseFloat(guest.totalSpent || 0) + payout,
               firstStayDate: guest.firstStayDate && checkOut && new Date(guest.firstStayDate) < checkOut ? guest.firstStayDate : checkOut,
@@ -449,23 +487,24 @@ class GuestController {
         return res.json({ success: true, sent: 0, message: 'No eligible guests (must have email + marketing opt-in)' })
       }
 
-      const sgMail = require('@sendgrid/mail')
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+      const { Resend } = require('resend')
+      const r = new Resend(process.env.RESEND_API_KEY)
 
       const senderName = fromName || 'Rentflow'
-      const fromEmail = process.env.FROM_EMAIL
+      const fromEmail = process.env.EMAIL_FROM
 
       let sent = 0
       const errors = []
       for (const guest of guests) {
         try {
-          await sgMail.send({
-            to: guest.email,
-            from: { email: fromEmail, name: senderName },
+          const { error } = await r.emails.send({
+            to: [guest.email],
+            from: `${senderName} <${fromEmail}>`,
             subject,
             text: message,
             html: message.replace(/\n/g, '<br>'),
           })
+          if (error) throw new Error(error.message)
           sent++
         } catch (e) {
           errors.push({ email: guest.email, error: e.message })

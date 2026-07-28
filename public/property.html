@@ -1051,7 +1051,7 @@
             <!-- Bottom Bar -->
             <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
                 <p class="text-sm text-gray-500">
-                    © 2025 AspireTowards. All rights reserved.
+                    © 2026 AspireTowards. All rights reserved.
                 </p>
                 <div class="flex space-x-6 mt-4 md:mt-0">
                     <a href="#" class="text-sm hover:text-white transition">Privacy Policy</a>
@@ -1336,13 +1336,14 @@
         document.getElementById('wallet-connect-mobile')?.addEventListener('click', openWalletModal)
         document.getElementById('wallet-modal-close')?.addEventListener('click', closeWalletModal)
 
-        // Get slug from URL
+        // Get params from URL
         const urlParams = new URLSearchParams(window.location.search)
         const slug = urlParams.get('slug')
+        const propertyId = urlParams.get('id')
         const fromDashboard = urlParams.get('from') === 'dashboard'
 
-        if (!slug) {
-            window.location.href = 'properties.html'
+        if (!slug && !propertyId) {
+            window.location.href = fromDashboard ? 'dashboard.html' : 'properties.html'
         }
 
         if (fromDashboard) {
@@ -1354,24 +1355,39 @@
         // Load property details
         async function loadProperty() {
             try {
-                const response = await fetch(`${API_URL}/properties/${slug}`)
-                const data = await response.json()
+                let property, fetchedBookedDates = []
 
-                if (data.success && data.property) {
-                    currentProperty = data.property
-                    bookedDates = data.property.bookedDates || []
-                    displayProperty(data.property)
-                    initializeDatePickers()
-                    if (fromDashboard) {
-                        document.getElementById('owner-edit-link').href = `/edit-property.html?id=${data.property.id}`
-                    }
+                if (fromDashboard && propertyId) {
+                    // Owner preview — use private authenticated endpoint (not /api/public)
+                    const token = localStorage.getItem('token')
+                    const response = await fetch(`${window.CONFIG.API_BASE_URL}/api/properties/${propertyId}`, {
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                    })
+                    const data = await response.json()
+                    if (!response.ok || !data.success) throw new Error(data.message || 'Property not found')
+                    // Private endpoint wraps in data.data.property
+                    property = data.data?.property || data.property
                 } else {
-                    throw new Error('Property not found')
+                    // Public view — use slug via public endpoint
+                    const identifier = slug || propertyId
+                    const response = await fetch(`${API_URL}/public/properties/${identifier}`)
+                    const data = await response.json()
+                    if (!data.success || !data.property) throw new Error('Property not found')
+                    property = data.property
+                    fetchedBookedDates = data.property.bookedDates || []
+                }
+
+                currentProperty = property
+                bookedDates = fetchedBookedDates
+                displayProperty(property)
+                initializeDatePickers()
+                if (fromDashboard) {
+                    document.getElementById('owner-edit-link').href = `/edit-property.html?id=${property.id}`
                 }
             } catch (error) {
                 console.error('Error loading property:', error)
                 alert('Property not found')
-                window.location.href = 'properties.html'
+                window.location.href = fromDashboard ? 'dashboard.html' : 'properties.html'
             }
         }
 

@@ -100,6 +100,24 @@
             border-color: #EF4444;
             color: #991B1B;
         }
+
+        /* All-Years summary table — sortable + resizable columns */
+        #fin-summary-table th {
+            position: relative;
+            user-select: none;
+        }
+        #fin-summary-table th.sortable { cursor: pointer; }
+        #fin-summary-table th.sortable:hover { background-color: #e5e7eb; }
+        #fin-summary-table th .sort-icon { margin-left: 4px; opacity: 0.35; font-size: 10px; }
+        #fin-summary-table th.sort-active .sort-icon { opacity: 1; color: #0F766E; }
+        .col-resize-handle {
+            position: absolute;
+            right: 0; top: 0; bottom: 0;
+            width: 5px;
+            cursor: col-resize;
+            z-index: 1;
+        }
+        .col-resize-handle:hover, .col-resize-handle.dragging { background: #0F766E; opacity: 0.4; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -112,7 +130,12 @@
                         <h1 class="text-2xl sm:text-3xl font-display font-bold text-gray-900 leading-none mt-0.5">AspireTowards</h1>
                     </a>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3">
+                    <button onclick="openSearch()" title="Search (⌘K)"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 rounded-lg text-sm transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span class="hidden sm:inline text-xs text-gray-400">⌘K</span>
+                    </button>
                     <span id="user-name" class="text-gray-700 font-medium hidden sm:block"></span>
                     <button onclick="logout()" class="text-gray-600 hover:text-gray-900 font-medium">
                         Sign Out
@@ -133,12 +156,13 @@
                     </h2>
                     <p class="mt-2 text-gray-600">Here's an overview of your properties and activity</p>
                 </div>
-                <button onclick="openEditNameModal()" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center space-x-2">
+                <a href="/dashboard/account-settings.html" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center space-x-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
-                    <span>Edit Name</span>
-                </button>
+                    <span>Account Settings</span>
+                </a>
             </div>
         </div>
 
@@ -606,14 +630,20 @@
                         <span id="fin-visibility-label" class="text-sm font-medium"></span>
                     </div>
                 </div>
-                <div class="flex bg-gray-100 rounded-lg p-1">
-                    <button id="fin-btn-summary" onclick="setFinView('summary')"
-                        class="px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow text-gray-900 transition">
-                        All Years
-                    </button>
-                    <button id="fin-btn-year" onclick="setFinView('year')"
-                        class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition">
-                        Year Detail
+                <div class="flex items-center gap-3">
+                    <div class="flex bg-gray-100 rounded-lg p-1">
+                        <button id="fin-btn-summary" onclick="setFinView('summary')"
+                            class="px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow text-gray-900 transition">
+                            All Years
+                        </button>
+                        <button id="fin-btn-year" onclick="setFinView('year')"
+                            class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition">
+                            Year Detail
+                        </button>
+                    </div>
+                    <button id="fin-import-btn" onclick="openImportModal()" class="hidden px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        Import
                     </button>
                 </div>
             </div>
@@ -639,40 +669,44 @@
                         <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">NOI (All Time)</p>
                         <p class="text-2xl font-bold text-gray-900 mt-1" id="fin-noi">—</p>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-4">
-                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Purchase Price</p>
+                    <div class="bg-white rounded-xl shadow-sm p-4 cursor-pointer group" onclick="editPurchasePrice()" title="Click to edit">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Purchase Price <span class="text-gray-300 group-hover:text-gray-400">✎</span></p>
                         <p class="text-2xl font-bold text-gray-900 mt-1" id="fin-purchase-price">—</p>
                     </div>
                 </div>
                 <!-- Summary table -->
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
-                            <thead>
-                                <tr class="bg-gray-50 border-b border-gray-200">
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 sticky left-0 bg-gray-50">Year</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Gross Income</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Mgmt Fees</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Expenses</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Net Income</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">%</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Nights</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Res.</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Occ.</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">HOA</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Mortgage</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Actual Paid</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Extra Paid</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700">T&amp;I</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Gross Profits</th>
-                                    <th class="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">Breakeven</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Notes</th>
-                                    <th class="px-4 py-3"></th>
-                                </tr>
-                            </thead>
+                        <table id="fin-summary-table" class="min-w-full text-sm">
+                            <thead id="fin-summary-head"></thead>
                             <tbody id="fin-summary-body"></tbody>
                         </table>
                     </div>
+                </div>
+                <!-- All-years analytics -->
+                <div id="fin-summary-analytics" class="mt-4"></div>
+                <!-- Property Settings -->
+                <div id="fin-prop-settings" class="mt-4 hidden">
+                    <details class="bg-white rounded-xl shadow-sm border border-gray-100">
+                        <summary class="px-5 py-3.5 cursor-pointer text-sm font-semibold text-gray-700 flex items-center gap-2 select-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            Property Settings
+                        </summary>
+                        <div class="px-5 pb-5 pt-2 border-t border-gray-100">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Quarterly Water/Sewer Import</label>
+                                    <p class="text-xs text-gray-400 mb-2">How to distribute quarterly WTR/SWR bills across months when importing statements</p>
+                                    <select id="fin-wtr-mode-select" onchange="saveWtrSplitMode(this.value)"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500">
+                                        <option value="split">Split evenly across all months (default)</option>
+                                        <option value="first">First month of service period only</option>
+                                        <option value="last">Last month of service period only</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
                 </div>
             </div>
 
@@ -690,16 +724,24 @@
                             Mortgage &amp; T&amp;I
                         </button>
                     </div>
-                    <button onclick="openMonthModal(null)"
-                        class="px-4 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 transition flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Add / Edit Month
-                    </button>
-                    <button onclick="openImportModal()"
-                        class="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                        Import CSV
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openMonthModal(null)"
+                            class="px-4 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 transition flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Add / Edit Month
+                        </button>
+                        <button id="fin-delete-year-btn" onclick="confirmDeleteYearFromDetail()" class="px-3 py-2 text-sm border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Delete Year
+                        </button>
+                    </div>
+                </div>
+                <!-- Inline delete confirmation for year (shown from Year Detail view) -->
+                <div id="fin-delete-year-detail-confirm" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 text-sm">
+                    <span id="fin-delete-year-detail-msg" class="text-red-700 font-medium"></span>
+                    <span class="text-red-500 text-xs">Removes all monthly records, totals, and expense items. Mortgage &amp; T&amp;I config is kept.</span>
+                    <button onclick="executeDeleteYearFromDetail()" class="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700">Yes, delete</button>
+                    <button onclick="cancelDeleteYearFromDetail()" class="px-3 py-1 border border-gray-300 text-gray-600 text-xs rounded-lg hover:bg-gray-50">Cancel</button>
                 </div>
 
                 <!-- Monthly table -->
@@ -718,14 +760,23 @@
                 <!-- Annual summary metrics -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="fin-annual-metrics"></div>
 
+                <!-- Analytics section -->
+                <div id="fin-analytics" class="hidden mb-6"></div>
+
                 <!-- Expense items (shown for itemized properties) -->
                 <div id="fin-expense-section" class="hidden">
                     <div class="flex items-center justify-between mb-3">
-                        <h4 class="font-semibold text-gray-900">Itemized Expenses</h4>
-                        <button onclick="openExpenseModal(null)"
-                            class="px-3 py-1.5 bg-teal-600 text-white text-xs rounded-lg hover:bg-teal-700 transition">
-                            + Add Expense
-                        </button>
+                        <h4 id="fin-expense-title" class="font-semibold text-gray-900">Expense Details</h4>
+                        <div class="flex items-center gap-2">
+                            <button id="fin-utility-tracker-btn" onclick="openUtilityTracker()"
+                                class="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-xs rounded-lg hover:bg-blue-100 transition hidden">
+                                Utility Tracker
+                            </button>
+                            <button id="fin-expense-add-btn" onclick="openExpenseModal(null)"
+                                class="px-3 py-1.5 bg-teal-600 text-white text-xs rounded-lg hover:bg-teal-700 transition hidden">
+                                + Add Expense
+                            </button>
+                        </div>
                     </div>
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                         <table class="min-w-full text-sm">
@@ -743,6 +794,7 @@
                             <tbody id="fin-expense-body"></tbody>
                         </table>
                     </div>
+                    <div id="fin-expense-summary" class="hidden mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3"></div>
                 </div>
             </div>
 
@@ -765,7 +817,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
-                            <select id="fin-m-month" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <select id="fin-m-month" onchange="loadMonthDataIntoModal()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                                 <option value="1">January</option><option value="2">February</option><option value="3">March</option>
                                 <option value="4">April</option><option value="5">May</option><option value="6">June</option>
                                 <option value="7">July</option><option value="8">August</option><option value="9">September</option>
@@ -826,7 +878,7 @@
                             <input type="number" step="0.01" id="fin-m-hoa" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Actual Mortgage Paid</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Actual Mortgage Paid This Month</label>
                             <input type="number" step="0.01" id="fin-m-mortgage" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
                         </div>
                     </div>
@@ -926,6 +978,70 @@
             </div>
         </div>
 
+        <!-- WTR/SWR Split Mode Modal -->
+        <div id="fin-wtr-split-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Quarterly Utility Bill</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Choose how to distribute across months</p>
+                    </div>
+                    <button onclick="closeWtrSplitModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div id="fin-wtr-split-detail" class="mb-5 space-y-2"></div>
+                    <p class="text-sm font-medium text-gray-700 mb-3">How would you like to record this?</p>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="confirmWtrSplit('first')"
+                            class="wtr-split-btn flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 border-gray-200 hover:border-teal-400 hover:bg-teal-50 transition text-center"
+                            data-choice="first">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                            <span class="text-sm font-semibold text-gray-800">First month</span>
+                            <span class="text-xs text-gray-400" id="wtr-first-label">—</span>
+                        </button>
+                        <button onclick="confirmWtrSplit('split')"
+                            class="wtr-split-btn flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 border-gray-200 hover:border-teal-400 hover:bg-teal-50 transition text-center"
+                            data-choice="split">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            <span class="text-sm font-semibold text-gray-800">Split evenly</span>
+                            <span class="text-xs text-gray-400" id="wtr-split-label">—</span>
+                        </button>
+                        <button onclick="confirmWtrSplit('last')"
+                            class="wtr-split-btn flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 border-gray-200 hover:border-teal-400 hover:bg-teal-50 transition text-center"
+                            data-choice="last">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                            <span class="text-sm font-semibold text-gray-800">Last month</span>
+                            <span class="text-xs text-gray-400" id="wtr-last-label">—</span>
+                        </button>
+                    </div>
+                    <div class="mt-4 flex items-center gap-2">
+                        <input type="checkbox" id="wtr-save-default" class="rounded">
+                        <label for="wtr-save-default" class="text-xs text-gray-500">Save as default for this property</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Utility Tracker Modal -->
+        <div id="fin-utility-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Utility Tracker — <span id="fin-utility-modal-year"></span></h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Click + to add a missing utility expense for that month</p>
+                    </div>
+                    <button onclick="closeUtilityModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div id="fin-utility-grid"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- CSV Import Modal -->
         <div id="fin-import-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
             <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
@@ -942,8 +1058,8 @@
                             <select id="fin-import-type" onchange="resetImport()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
                                 <option value="monthly">Monthly Summary (CSV)</option>
                                 <option value="expenses">Expense Items (CSV)</option>
-                                <option value="annual-summary">Annual Totals — all years (CSV)</option>
                                 <option value="caribbean-pdf">Caribbean Statement (PDF)</option>
+                                <option value="bromley-pdf">Bromley Invoice / Statement (PDF)</option>
                                 <option value="evolve-csv">Evolve Booking Report (CSV)</option>
                             </select>
                         </div>
@@ -971,7 +1087,7 @@
                     <div class="mt-4" id="fin-import-file-wrap">
                         <label class="block text-sm font-medium text-gray-700 mb-1" id="fin-import-file-label">Choose file</label>
                         <input type="file" id="fin-import-file" accept=".csv,.pdf" onchange="handleImportFile()"
-                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100" multiple>
                         <p id="fin-import-type-hint" class="mt-1 text-xs text-gray-400"></p>
                     </div>
                     <div id="fin-import-error" class="hidden mt-2 text-sm text-red-600"></div>
@@ -988,52 +1104,79 @@
                     </div>
                 </div>
 
-                <!-- Caribbean PDF verification form -->
+                <!-- Caribbean PDF batch review table -->
                 <div id="fin-import-caribbean-verify" class="hidden flex-1 overflow-auto p-6">
-                    <p class="text-sm font-medium text-gray-700 mb-4">Review &amp; edit extracted values before saving:</p>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Month</label>
-                            <select id="fin-verify-month" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                <option value="1">January</option><option value="2">February</option><option value="3">March</option>
-                                <option value="4">April</option><option value="5">May</option><option value="6">June</option>
-                                <option value="7">July</option><option value="8">August</option><option value="9">September</option>
-                                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Year</label>
-                            <input id="fin-verify-year" type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Gross Income (Total Room Revenue)</label>
-                            <input id="fin-verify-grossIncome" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Management Commission</label>
-                            <input id="fin-verify-managementFee" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Platform Charges (all other expenses)</label>
-                            <input id="fin-verify-platformCharges" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Guest Nights Sold</label>
-                            <input id="fin-verify-nightsBooked" type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1"># Reservations</label>
-                            <input id="fin-verify-numReservations" type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Net Due to Owner (reference only)</label>
-                            <input id="fin-verify-netDue" type="number" step="0.01" readonly class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
-                        </div>
+                    <p class="text-sm font-medium text-gray-700 mb-3">Review parsed data — click any cell to edit before saving:</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Month</th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Year</th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Gross Income</th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Mgmt Fee</th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Other Exp.</th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Nights</th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Res.</th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 text-gray-400">Net Due (ref)</th>
+                                    <th class="px-3 py-2 text-xs font-semibold text-gray-600">Breakdown</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fin-caribbean-batch-body" class="divide-y divide-gray-100"></tbody>
+                        </table>
                     </div>
-                    <div id="fin-verify-raw-expenses" class="hidden">
-                        <p class="text-xs font-medium text-gray-500 mb-2">Expense breakdown from statement (for reference):</p>
-                        <div id="fin-verify-expense-lines" class="space-y-0.5 text-xs text-gray-600 bg-gray-50 rounded-lg p-3 font-mono"></div>
-                        <p class="text-xs text-gray-400 mt-2">Platform Charges = sum of all lines except Management Commission. Edit the field above if the total is off.</p>
+                    <p class="text-xs text-gray-400 mt-3">HOA and mortgage can be entered in the month editor after saving.</p>
+                </div>
+
+                <!-- Bromley PDF review panel -->
+                <div id="fin-import-bromley-verify" class="hidden flex-1 overflow-auto p-6">
+                    <div id="fin-bromley-doc-info" class="mb-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700 flex flex-wrap gap-4"></div>
+                    <!-- Invoice line items -->
+                    <div id="fin-bromley-invoice-section" class="hidden">
+                        <div class="flex items-center gap-4 mb-3">
+                            <p class="text-sm font-medium text-gray-700">Line items — review and adjust before saving:</p>
+                            <div class="flex items-center gap-2 ml-auto text-sm text-gray-600">
+                                <label>Apply to:</label>
+                                <select id="bromley-apply-mode" class="px-2 py-1 border border-gray-300 rounded text-sm">
+                                    <option value="split">Split evenly across all months</option>
+                                    <option value="first">First month only</option>
+                                    <option value="last">Last month only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table class="min-w-full text-sm border border-gray-200 rounded-lg overflow-hidden mb-3">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Code</th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Description</th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Category</th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fin-bromley-items-body" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                        <p class="text-xs text-gray-400">Each line item will be saved as an expense record tagged by category.</p>
+                    </div>
+                    <!-- Statement invoice list -->
+                    <div id="fin-bromley-statement-section" class="hidden">
+                        <p class="text-sm font-medium text-gray-700 mb-3">Invoices on this statement (select ones to record as expenses):</p>
+                        <table class="min-w-full text-sm border border-gray-200 rounded-lg overflow-hidden mb-3">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">
+                                        <input type="checkbox" id="bromley-stmt-check-all" onchange="toggleAllBromleyLines(this.checked)" class="rounded">
+                                    </th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Document #</th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Date</th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Reference</th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Category</th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Due Date</th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fin-bromley-stmt-body" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                        <p class="text-xs text-gray-400">Selected invoices will be saved as a single combined expense item per month.</p>
                     </div>
                 </div>
 
@@ -1095,50 +1238,6 @@
         </div>
     </div>
 
-    <!-- Edit Name Modal -->
-    <div id="edit-name-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-display font-bold text-gray-900">Edit Display Name</h3>
-                <button onclick="closeEditNameModal()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <form id="edit-name-form" onsubmit="updateName(event)">
-                <div class="mb-4">
-                    <label for="display-name" class="block text-sm font-medium text-gray-700 mb-2">
-                        Display Name
-                    </label>
-                    <input
-                        type="text"
-                        id="display-name"
-                        name="name"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        placeholder="Enter your name"
-                        required
-                    >
-                    <p class="mt-2 text-sm text-gray-500">This name will be displayed on your dashboard and profile</p>
-                </div>
-                <div class="flex space-x-3">
-                    <button
-                        type="submit"
-                        class="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition"
-                    >
-                        Save Changes
-                    </button>
-                    <button
-                        type="button"
-                        onclick="closeEditNameModal()"
-                        class="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
-                    >
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-gray-300 mt-16">
@@ -1168,9 +1267,9 @@
                 <div>
                     <h4 class="text-white font-semibold mb-4">Account</h4>
                     <ul class="space-y-2">
-                        <li><a href="#" onclick="openEditNameModal(); return false;" class="hover:text-white transition">Edit Profile</a></li>
+                        <li><a href="/dashboard/account-settings.html" class="hover:text-white transition">Account Settings</a></li>
+                        <li><a href="/dashboard/support.html" class="hover:text-white transition">Support</a></li>
                         <li><a href="#" onclick="logout(); return false;" class="hover:text-white transition">Sign Out</a></li>
-                        <li><a href="/index.html#contact" class="hover:text-white transition">Support</a></li>
                     </ul>
                 </div>
             </div>
@@ -1178,16 +1277,47 @@
             <!-- Bottom Bar -->
             <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
                 <p class="text-sm text-gray-500">
-                    © 2025 AspireTowards. All rights reserved.
+                    © 2026 AspireTowards. All rights reserved.
                 </p>
                 <div class="flex space-x-6 mt-4 md:mt-0">
                     <a href="#" class="text-sm hover:text-white transition">Privacy Policy</a>
                     <a href="#" class="text-sm hover:text-white transition">Terms of Service</a>
-                    <a href="/index.html#contact" class="text-sm hover:text-white transition">Contact</a>
+                    <a href="/dashboard/support.html" class="text-sm hover:text-white transition">Contact</a>
                 </div>
             </div>
         </div>
     </footer>
+
+    <!-- Search overlay (⌘K command palette) -->
+    <div id="search-overlay" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-start justify-center pt-16 px-4" onclick="if(event.target===this)closeSearch()">
+        <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+                <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input id="search-input" type="text" placeholder="Search features, actions, or type a question…"
+                    class="flex-1 outline-none text-gray-900 text-sm placeholder-gray-400 bg-transparent"
+                    oninput="runSearch(this.value)" onkeydown="searchKeydown(event)">
+                <kbd class="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded font-mono">esc</kbd>
+            </div>
+            <div id="search-results" class="max-h-80 overflow-y-auto py-1"></div>
+            <div id="search-empty" class="hidden py-10 text-center">
+                <p class="text-gray-400 text-sm">No results found.</p>
+                <a href="/dashboard/support.html?type=feature" class="inline-block mt-2 text-teal-600 hover:underline text-sm font-medium">Request a feature →</a>
+            </div>
+            <div id="search-hint" class="px-4 py-2 border-t border-gray-100 flex items-center gap-4 text-xs text-gray-400">
+                <span><kbd class="bg-gray-100 px-1 rounded">↑↓</kbd> navigate</span>
+                <span><kbd class="bg-gray-100 px-1 rounded">↵</kbd> select</span>
+                <span><kbd class="bg-gray-100 px-1 rounded">esc</kbd> close</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Undo import toast -->
+    <div id="undo-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-gray-900 text-white px-5 py-3 rounded-xl shadow-xl text-sm">
+        <svg class="w-4 h-4 text-teal-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        <span id="undo-toast-msg" class="mr-2"></span>
+        <button onclick="undoImport()" class="px-3 py-1 bg-teal-600 hover:bg-teal-500 rounded-lg font-medium transition">Undo</button>
+        <button onclick="dismissUndoToast()" class="text-gray-400 hover:text-white ml-1">✕</button>
+    </div>
 
     <script>
         const API_URL = `${window.CONFIG.API_BASE_URL}/api`;
@@ -1520,7 +1650,7 @@
                                 <span class="font-medium text-teal-600">$${property.basePrice}/night</span>
                             </div>
                             <div class="flex space-x-2 mt-3">
-                                <a href="/property.html?slug=${property.slug}&from=dashboard" class="flex-1 text-center px-3 py-1.5 bg-teal-600 text-white text-sm rounded hover:bg-teal-700 transition">
+                                <a href="/property.html?id=${property.id}&from=dashboard" class="flex-1 text-center px-3 py-1.5 bg-teal-600 text-white text-sm rounded hover:bg-teal-700 transition">
                                     View
                                 </a>
                                 <a href="/edit-property.html?id=${property.id}" class="flex-1 text-center px-3 py-1.5 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition">
@@ -1585,71 +1715,6 @@
             await loadPendingTasks();
         }
 
-        // Modal functions
-        function openEditNameModal() {
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                try {
-                    const user = JSON.parse(userStr);
-                    document.getElementById('display-name').value = user.name || '';
-                } catch (e) {
-                    console.error('Error parsing user data:', e);
-                }
-            }
-            document.getElementById('edit-name-modal').classList.remove('hidden');
-        }
-
-        function closeEditNameModal() {
-            document.getElementById('edit-name-modal').classList.add('hidden');
-            document.getElementById('edit-name-form').reset();
-        }
-
-        // Update user name
-        async function updateName(event) {
-            event.preventDefault();
-
-            const newName = document.getElementById('display-name').value.trim();
-
-            if (!newName) {
-                alert('Please enter a valid name');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/auth/profile`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ name: newName })
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    // Update localStorage with new user data
-                    const userStr = localStorage.getItem('user');
-                    if (userStr) {
-                        const user = JSON.parse(userStr);
-                        user.name = newName;
-                        localStorage.setItem('user', JSON.stringify(user));
-                    }
-
-                    // Update UI
-                    loadUserData();
-                    closeEditNameModal();
-
-                    // Show success message
-                    alert('Name updated successfully!');
-                } else {
-                    alert(data.message || 'Failed to update name');
-                }
-            } catch (error) {
-                console.error('Error updating name:', error);
-                alert('Failed to update name. Please try again.');
-            }
-        }
 
         // Tab switching functionality
         function switchTab(tabName) {
@@ -2065,9 +2130,18 @@ Total: $${props.totalAmount}`);
         function setFinDefaultProperty() {
             if (!finState.propertyId) return;
             localStorage.setItem('fin_default_property_id', finState.propertyId);
+            updateDefaultBtn();
+        }
+
+        function updateDefaultBtn() {
             const btn = document.getElementById('fin-set-default-btn');
-            btn.textContent = '✓ Default set';
-            setTimeout(() => { btn.textContent = 'Set as default'; }, 2000);
+            if (!btn) return;
+            const savedDefault = localStorage.getItem('fin_default_property_id');
+            const isDefault = savedDefault === finState.propertyId;
+            btn.textContent = isDefault ? '✓ Default' : 'Set as default';
+            btn.className = isDefault
+                ? 'text-xs text-teal-700 font-medium whitespace-nowrap'
+                : 'text-xs text-teal-600 hover:text-teal-800 whitespace-nowrap';
         }
 
         async function setFinProperty(propertyId) {
@@ -2077,13 +2151,16 @@ Total: $${props.totalAmount}`);
                 document.getElementById('fin-empty').classList.remove('hidden');
                 document.getElementById('fin-summary-view').classList.add('hidden');
                 document.getElementById('fin-year-view').classList.add('hidden');
+                document.getElementById('fin-import-btn').classList.add('hidden');
                 wrap.classList.remove('flex');
                 wrap.classList.add('hidden');
                 return;
             }
             wrap.classList.remove('hidden');
             wrap.classList.add('flex');
+            document.getElementById('fin-import-btn').classList.remove('hidden');
             updateVisibilityToggle();
+            updateDefaultBtn();
             document.getElementById('fin-empty').classList.add('hidden');
             await setFinView(finState.view);
         }
@@ -2146,23 +2223,104 @@ Total: $${props.totalAmount}`);
             } catch(e) { console.error('loadFinSummary error:', e); }
         }
 
-        function renderSummary(data) {
-            const { years = [], allTimeTotals, purchasePrice } = data;
+        // ── All-Years table: column definitions, sort, resize ─────────────
+        const FIN_SUMMARY_COLS = [
+            { key: 'year',              label: 'Year',         align: 'left',  sticky: true, getValue: y => y.year },
+            { key: 'grossIncome',       label: 'Gross Income', align: 'right', getValue: y => parseFloat(y.grossIncome || 0) },
+            { key: 'managementFee',     label: 'Mgmt Fees',    align: 'right', getValue: y => parseFloat(y.managementFee || 0) },
+            { key: 'grossExpenses',     label: 'Expenses',     align: 'right', getValue: y => parseFloat(y.grossExpenses || 0) },
+            { key: 'netIncome',         label: 'Net Income',   align: 'right', getValue: y => parseFloat(y.netIncome || 0) },
+            { key: 'percentageOfIncome',label: '%',            align: 'right', getValue: y => parseFloat(y.percentageOfIncome || 0) },
+            { key: 'nightsBooked',      label: 'Nights',       align: 'right', getValue: y => y.nightsBooked || 0 },
+            { key: 'numReservations',   label: 'Res.',         align: 'right', getValue: y => y.numReservations || 0 },
+            { key: 'occupancyRatio',    label: 'Occ.',         align: 'right', getValue: y => y.occupancyRatio || 0 },
+            { key: 'hoaPayment',        label: 'HOA',          align: 'right', getValue: y => parseFloat(y.hoaPayment || 0) },
+            { key: 'scheduledMortgage', label: 'Mortgage',     align: 'right', getValue: y => parseFloat(y.scheduledMortgage || 0) },
+            { key: 'actualMortgagePaid',label: 'Actual Paid',  align: 'right', getValue: y => parseFloat(y.actualMortgagePaid || 0) },
+            { key: 'extraPaid',         label: 'Extra Paid',   align: 'right', getValue: y => parseFloat(y.extraPaid || 0) },
+            { key: 'taxesInsurance',    label: 'T&I',          align: 'right', getValue: y => parseFloat(y.taxesInsurance || 0) },
+            { key: 'grossProfits',      label: 'Gross Profits',align: 'right', getValue: y => parseFloat(y.grossProfits || 0) },
+            { key: 'breakEvenIdeal',    label: 'Breakeven',    align: 'right', getValue: y => parseFloat(y.breakEvenIdeal || 0) },
+            { key: 'notes',             label: 'Notes',        align: 'left',  getValue: y => y.notes || '' },
+        ];
 
-            document.getElementById('fin-total-net').textContent = allTimeTotals ? finFmtSigned(allTimeTotals.netIncome) : '—';
-            const profitEl = document.getElementById('fin-total-profit');
-            if (allTimeTotals) {
-                profitEl.textContent = finFmtSigned(allTimeTotals.grossProfits);
-                profitEl.className = 'text-2xl font-bold mt-1 ' + finColorClass(allTimeTotals.grossProfits);
+        const finSortState = { col: 'year', dir: 'desc' };
+        const FIN_COL_WIDTHS_KEY = 'fin_summary_col_widths';
+
+        function loadFinColWidths() {
+            try { return JSON.parse(localStorage.getItem(FIN_COL_WIDTHS_KEY) || '{}'); } catch { return {}; }
+        }
+        function saveFinColWidth(key, px) {
+            const w = loadFinColWidths(); w[key] = px;
+            localStorage.setItem(FIN_COL_WIDTHS_KEY, JSON.stringify(w));
+        }
+
+        function sortSummaryBy(col) {
+            if (finSortState.col === col) {
+                finSortState.dir = finSortState.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                finSortState.col = col;
+                finSortState.dir = col === 'year' ? 'desc' : 'desc';
             }
-            document.getElementById('fin-noi').textContent = allTimeTotals?.noi != null ? finPct(allTimeTotals.noi) : '—';
-            document.getElementById('fin-purchase-price').textContent = purchasePrice ? finFmt(purchasePrice) : '—';
+            renderSummaryHeader();
+            renderSummaryRows(finState.summaryData);
+        }
 
-            const tbody = document.getElementById('fin-summary-body');
-            const rows = [...years];
+        function renderSummaryHeader() {
+            const savedWidths = loadFinColWidths();
+            const cols = FIN_SUMMARY_COLS;
+            const thCells = cols.map(c => {
+                const isSort = finSortState.col === c.key;
+                const icon = isSort ? (finSortState.dir === 'asc' ? '▲' : '▼') : '⇕';
+                const stickyClass = c.sticky ? 'sticky left-0 bg-gray-50' : '';
+                const alignClass = c.align === 'right' ? 'text-right' : 'text-left';
+                const widthStyle = savedWidths[c.key] ? `min-width:${savedWidths[c.key]}px;` : '';
+                return `<th data-col="${c.key}" class="sortable px-4 py-3 ${alignClass} font-semibold text-gray-700 whitespace-nowrap ${stickyClass} ${isSort ? 'sort-active' : ''}" style="${widthStyle}" onclick="sortSummaryBy('${c.key}')">
+                    ${c.label}<span class="sort-icon">${icon}</span>
+                    <div class="col-resize-handle" onclick="event.stopPropagation()" onmousedown="initColResize(event, '${c.key}')"></div>
+                </th>`;
+            }).join('');
+            // Two non-sortable action columns
+            document.getElementById('fin-summary-head').innerHTML =
+                `<tr class="bg-gray-50 border-b border-gray-200">${thCells}<th class="px-4 py-3"></th><th class="px-4 py-3"></th></tr>`;
+        }
+
+        function initColResize(e, colKey) {
+            e.preventDefault();
+            const th = e.target.closest('th');
+            const startX = e.clientX;
+            const startWidth = th.getBoundingClientRect().width;
+            const handle = e.target;
+            handle.classList.add('dragging');
+
+            function onMove(ev) {
+                const newW = Math.max(60, startWidth + ev.clientX - startX);
+                th.style.minWidth = newW + 'px';
+            }
+            function onUp(ev) {
+                handle.classList.remove('dragging');
+                const finalW = Math.max(60, startWidth + ev.clientX - startX);
+                saveFinColWidth(colKey, finalW);
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            }
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        }
+
+        function renderSummaryRows(data) {
+            if (!data) return;
+            const { years = [], allTimeTotals } = data;
+            const colDef = FIN_SUMMARY_COLS.find(c => c.key === finSortState.col);
+            const rows = [...years].sort((a, b) => {
+                const av = colDef ? colDef.getValue(a) : a.year;
+                const bv = colDef ? colDef.getValue(b) : b.year;
+                const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+                return finSortState.dir === 'asc' ? cmp : -cmp;
+            });
 
             let html = rows.map(y => {
-                return `<tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="drillToYear(${y.year})">
+                return `<tr id="fin-yr-row-${y.year}" class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="drillToYear(${y.year})">
                     <td class="px-4 py-3 font-medium text-teal-600 sticky left-0 bg-white hover:bg-gray-50">
                         ${y.year}${!y.hasMonthlyDetail ? ' <span class="text-xs text-gray-400 font-normal" title="Annual total only — no monthly breakdown">est.</span>' : ''}
                     </td>
@@ -2183,6 +2341,21 @@ Total: $${props.totalAmount}`);
                     <td class="px-4 py-3 text-right ${finColorClass(y.breakEvenIdeal)}">${finFmtSigned(y.breakEvenIdeal)}</td>
                     <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">${y.notes || ''}</td>
                     <td class="px-4 py-3 text-teal-600 text-xs">Detail →</td>
+                    <td class="px-4 py-3" onclick="event.stopPropagation()">
+                        <button onclick="confirmDeleteYear(${y.year})" class="text-gray-300 hover:text-red-400 transition" title="Delete ${y.year} data">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                </tr>
+                <tr id="fin-yr-confirm-${y.year}" class="hidden bg-red-50 border-b border-red-100">
+                    <td colspan="19" class="px-4 py-3">
+                        <div class="flex items-center gap-3 text-sm">
+                            <span class="text-red-700 font-medium">Delete all ${y.year} data?</span>
+                            <span class="text-red-500 text-xs">Removes monthly records, annual totals, and expense items. Mortgage &amp; T&amp;I config is kept.</span>
+                            <button onclick="executeDeleteYear(${y.year})" class="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700">Yes, delete</button>
+                            <button onclick="cancelDeleteYear(${y.year})" class="px-3 py-1 border border-gray-300 text-gray-600 text-xs rounded-lg hover:bg-gray-50">Cancel</button>
+                        </div>
+                    </td>
                 </tr>`;
             }).join('');
 
@@ -2196,7 +2369,7 @@ Total: $${props.totalAmount}`);
                     <td class="px-4 py-3 text-right">${finPct(allTimeTotals.percentageOfIncome)}</td>
                     <td class="px-4 py-3 text-right">${allTimeTotals.nightsBooked}</td>
                     <td class="px-4 py-3 text-right">${allTimeTotals.numReservations}</td>
-                    <td class="px-4 py-3 text-right">—</td>
+                    <td class="px-4 py-3 text-right">${allTimeTotals.occupancyRatio != null ? (allTimeTotals.occupancyRatio * 100).toFixed(0) + '%' : '—'}</td>
                     <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.hoaPayment)}</td>
                     <td class="px-4 py-3 text-right">—</td>
                     <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.actualMortgagePaid)}</td>
@@ -2204,16 +2377,225 @@ Total: $${props.totalAmount}`);
                     <td class="px-4 py-3 text-right">${finFmt(allTimeTotals.taxesInsurance)}</td>
                     <td class="px-4 py-3 text-right ${finColorClass(allTimeTotals.grossProfits)}">${finFmtSigned(allTimeTotals.grossProfits)}</td>
                     <td class="px-4 py-3 text-right">—</td>
-                    <td class="px-4 py-3" colspan="2"></td>
+                    <td class="px-4 py-3" colspan="3"></td>
                 </tr>`;
             }
 
-            tbody.innerHTML = html;
+            document.getElementById('fin-summary-body').innerHTML = html;
+        }
+
+        function renderSummary(data) {
+            const { allTimeTotals, purchasePrice } = data;
+
+            document.getElementById('fin-total-net').textContent = allTimeTotals ? finFmtSigned(allTimeTotals.netIncome) : '—';
+            const profitEl = document.getElementById('fin-total-profit');
+            if (allTimeTotals) {
+                profitEl.textContent = finFmtSigned(allTimeTotals.grossProfits);
+                profitEl.className = 'text-2xl font-bold mt-1 ' + finColorClass(allTimeTotals.grossProfits);
+            }
+            document.getElementById('fin-noi').textContent = allTimeTotals?.noi != null ? finPct(allTimeTotals.noi) : '—';
+            document.getElementById('fin-purchase-price').textContent = purchasePrice ? finFmt(purchasePrice) : '—';
+
+            renderSummaryHeader();
+            renderSummaryRows(data);
+            renderSummaryAnalytics(data);
+            renderPropertySettings(data);
+        }
+
+        function renderSummaryAnalytics(data) {
+            const el = document.getElementById('fin-summary-analytics');
+            const t = data.allTimeTotals;
+            const years = data.years || [];
+            if (!t || years.length === 0 || (t.grossIncome === 0 && t.grossExpenses === 0)) {
+                el.innerHTML = '';
+                return;
+            }
+
+            function statCard(label, value, sub = '', accent = 'teal') {
+                const colors = { teal: 'border-teal-400 text-teal-700', blue: 'border-blue-400 text-blue-700', orange: 'border-orange-400 text-orange-700', purple: 'border-purple-400 text-purple-700', gray: 'border-gray-300 text-gray-600' };
+                const c = colors[accent] || colors.teal;
+                return `<div class="bg-white rounded-xl shadow-sm p-4 border-l-4 ${c.split(' ')[0]}">
+                    <p class="text-xs font-medium text-gray-500 mb-1">${label}</p>
+                    <p class="text-xl font-bold ${c.split(' ')[1]}">${value}</p>
+                    ${sub ? `<p class="text-xs text-gray-400 mt-0.5">${sub}</p>` : ''}
+                </div>`;
+            }
+
+            // ── Derived metrics ─────────────────────────────────────────────
+            const avgNightlyRate   = t.nightsBooked > 0 ? t.grossIncome / t.nightsBooked : null;
+            const avgBookingValue  = t.numReservations > 0 ? t.grossIncome / t.numReservations : null;
+            const netPerNight      = t.nightsBooked > 0 ? t.netIncome / t.nightsBooked : null;
+            const avgStay          = t.numReservations > 0 ? t.nightsBooked / t.numReservations : null;
+            const avgGrossPerYear  = data.allTimeAvg?.grossIncome;
+            const avgNetPerYear    = data.allTimeAvg?.netIncome;
+            const occupancy        = t.occupancyRatio;
+
+            const bestRevYear  = years.reduce((a, b) => b.grossIncome > a.grossIncome ? b : a);
+            const bestNetYear  = years.reduce((a, b) => b.netIncome > a.netIncome ? b : a);
+
+            // ── Revenue by year bars ─────────────────────────────────────────
+            const maxRev = Math.max(...years.map(y => y.grossIncome), 1);
+            const yearBars = years.map(y => {
+                const h = Math.round((y.grossIncome / maxRev) * 48);
+                const isActive = y.grossIncome > 0;
+                return `<div class="flex flex-col items-center gap-0.5 flex-1" title="${y.year}: ${finFmt(y.grossIncome)}">
+                    <div class="w-full flex items-end justify-center" style="height:48px">
+                        <div style="height:${h}px;width:100%;min-height:${isActive?'2px':'0'}" class="${isActive ? 'bg-teal-400' : 'bg-gray-100'} rounded-t transition-all hover:bg-teal-600"></div>
+                    </div>
+                    <span class="text-gray-400" style="font-size:9px">${y.year}</span>
+                </div>`;
+            }).join('');
+
+            // ── All-time expense breakdown ────────────────────────────────────
+            const expBreakdown = [
+                { label: 'Cleaning',    value: t.cleaningFee     || 0, color: '#14b8a6' },
+                { label: 'Utilities',   value: t.utilities       || 0, color: '#3b82f6' },
+                { label: 'Maintenance', value: t.maintenance     || 0, color: '#f97316' },
+                { label: 'HOA',         value: t.hoaPayment      || 0, color: '#a855f7' },
+                { label: 'Platform',    value: t.platformCharges || 0, color: '#ec4899' },
+                { label: 'Other',       value: t.otherExpenses   || 0, color: '#6b7280' },
+            ].filter(e => e.value > 0);
+            const allSegments = [{ label: 'Mgmt Fee', value: t.managementFee || 0, color: '#64748b' }, ...expBreakdown].filter(e => e.value > 0);
+            const barTotal = allSegments.reduce((s, e) => s + e.value, 0);
+            const barSegments = allSegments.map(e => {
+                const pct = barTotal > 0 ? (e.value / barTotal * 100).toFixed(1) : 0;
+                return `<div title="${e.label}: ${finFmt(e.value)} (${pct}%)" style="width:${pct}%;background:${e.color};min-width:${pct > 0 ? '2px' : '0'}" class="h-full transition-all"></div>`;
+            }).join('');
+            const legendItems = allSegments.map(e => {
+                const pct = barTotal > 0 ? (e.value / barTotal * 100).toFixed(0) : 0;
+                return `<div class="flex items-center gap-1.5 text-xs text-gray-600 whitespace-nowrap">
+                    <span class="w-2.5 h-2.5 rounded-sm shrink-0" style="background:${e.color}"></span>
+                    <span>${e.label}</span>
+                    <span class="font-medium text-gray-800">${pct}%</span>
+                </div>`;
+            }).join('');
+
+            el.innerHTML = `
+            <div class="mb-3 flex items-center justify-between">
+                <h4 class="font-semibold text-gray-900">All-Time Analytics</h4>
+                <span class="text-xs text-gray-400">${years.length} year${years.length !== 1 ? 's' : ''} · ${t.numReservations || 0} reservations · ${t.nightsBooked || 0} nights</span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                ${avgGrossPerYear  != null ? statCard('Avg Gross / Year',    finFmt(avgGrossPerYear),  'avg annual gross income',             'teal')   : ''}
+                ${avgNetPerYear    != null ? statCard('Avg Net / Year',      finFmtSigned(avgNetPerYear), 'avg annual net income',            avgNetPerYear >= 0 ? 'teal' : 'orange') : ''}
+                ${avgNightlyRate            ? statCard('Avg Nightly Rate',   finFmt(avgNightlyRate),   'all-time gross ÷ nights',             'teal')   : ''}
+                ${avgBookingValue           ? statCard('Avg Booking Value',  finFmt(avgBookingValue),  'all-time gross ÷ reservations',       'blue')   : ''}
+                ${netPerNight      != null  ? statCard('Net Per Night',      finFmtSigned(netPerNight),'all-time net ÷ nights',               netPerNight >= 0 ? 'teal' : 'orange') : ''}
+                ${avgStay                   ? statCard('Avg Stay Length',    avgStay.toFixed(1) + ' nights', 'all-time nights ÷ reservations','blue')   : ''}
+                ${occupancy        != null  ? statCard('Overall Occupancy',  (occupancy * 100).toFixed(1) + '%', `${t.nightsBooked} nights over ${years.length} yr${years.length !== 1 ? 's' : ''}`, occupancy >= 0.5 ? 'teal' : 'gray') : ''}
+                ${bestRevYear               ? statCard('Best Revenue Year',  String(bestRevYear.year), finFmt(bestRevYear.grossIncome) + ' gross',       'purple') : ''}
+                ${bestNetYear               ? statCard('Best Net Year',      String(bestNetYear.year), finFmtSigned(bestNetYear.netIncome) + ' net',      'purple') : ''}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <p class="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Gross Revenue by Year</p>
+                    <div class="flex items-end gap-1 w-full">${yearBars}</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">All-Time Expense Breakdown</p>
+                        <span class="text-xs text-gray-400">${finFmt(barTotal)} total</span>
+                    </div>
+                    ${barTotal > 0 ? `
+                    <div class="h-5 rounded-lg overflow-hidden flex w-full mb-3">${barSegments}</div>
+                    <div class="flex flex-wrap gap-x-4 gap-y-1.5">${legendItems}</div>
+                    ` : '<p class="text-sm text-gray-400">No expense data yet</p>'}
+                </div>
+            </div>`;
+        }
+
+        function renderPropertySettings(data) {
+            const section = document.getElementById('fin-prop-settings');
+            const isVt = data?.dataSource !== 'caribbean';
+            section.classList.toggle('hidden', !isVt);
+            if (!isVt) return;
+            const mode = data?.wtrSplitMode || 'split';
+            const sel = document.getElementById('fin-wtr-mode-select');
+            if (sel) sel.value = mode;
         }
 
         function drillToYear(year) {
             finState.year = year;
             setFinView('year');
+        }
+
+        // ── Year delete (All Years table) ──────────────────────────────
+        function confirmDeleteYear(year) {
+            document.getElementById(`fin-yr-confirm-${year}`).classList.remove('hidden');
+        }
+        function cancelDeleteYear(year) {
+            document.getElementById(`fin-yr-confirm-${year}`).classList.add('hidden');
+        }
+        async function executeDeleteYear(year) {
+            const pid = finState.propertyId;
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${pid}/year/${year}`, {
+                    method: 'DELETE', headers: authHeaders()
+                });
+                const body = await res.json();
+                if (!res.ok) throw new Error(body.error || body.message || 'Delete failed');
+                await loadFinSummary();
+            } catch (e) {
+                alert('Delete failed: ' + e.message);
+            }
+        }
+
+        // ── Year delete from Year Detail view ────────────────────────────
+        function confirmDeleteYearFromDetail() {
+            document.getElementById('fin-delete-year-detail-msg').textContent = `Delete all ${finState.year} data?`;
+            document.getElementById('fin-delete-year-detail-confirm').classList.remove('hidden');
+        }
+        function cancelDeleteYearFromDetail() {
+            document.getElementById('fin-delete-year-detail-confirm').classList.add('hidden');
+        }
+        async function executeDeleteYearFromDetail() {
+            const pid = finState.propertyId;
+            const deletedYear = finState.year;
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${pid}/year/${deletedYear}`, {
+                    method: 'DELETE', headers: authHeaders()
+                });
+                const body = await res.json();
+                if (!res.ok) throw new Error(body.error || body.message || 'Delete failed');
+                cancelDeleteYearFromDetail();
+                finState.summaryData = null;
+                await loadFinSummary();
+                // Build the new year list (same logic as initFinYear)
+                const years = finState.summaryData?.years?.map(y => y.year) || [];
+                const currentYear = new Date().getFullYear();
+                if (!years.includes(currentYear)) years.push(currentYear);
+                years.sort((a, b) => b - a);
+                // Navigate to the most recent remaining year (skip the deleted one)
+                const nextYear = years.find(y => y !== deletedYear) || years[0];
+                const sel = document.getElementById('fin-year-select');
+                sel.innerHTML = years.map(y => `<option value="${y}" ${y === nextYear ? 'selected' : ''}>${y}</option>`).join('');
+                await loadFinYear(nextYear);
+            } catch (e) {
+                alert('Delete failed: ' + e.message);
+            }
+        }
+
+        // ── Monthly delete (Year Detail table) ────────────────────────
+        function confirmDeleteMonthly(month, id, monthName) {
+            document.getElementById(`fin-mo-confirm-${month}`).classList.remove('hidden');
+        }
+        function cancelDeleteMonthly(month) {
+            document.getElementById(`fin-mo-confirm-${month}`).classList.add('hidden');
+        }
+        async function executeDeleteMonthly(month, id) {
+            const pid = finState.propertyId;
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${pid}/monthly/${id}`, {
+                    method: 'DELETE', headers: authHeaders()
+                });
+                const body = await res.json();
+                if (!res.ok) throw new Error(body.error || body.message || 'Delete failed');
+                await loadFinYear(finState.year);
+            } catch (e) {
+                alert('Delete failed: ' + e.message);
+            }
         }
 
         async function initFinYear() {
@@ -2233,12 +2615,14 @@ Total: $${props.totalAmount}`);
         async function loadFinYear(year) {
             finState.year = parseInt(year);
             document.getElementById('fin-annual-modal-title').textContent = `Mortgage & T&I — ${year}`;
+            closeUtilityModal(); // tracker shows data for a specific year — close it so stale data isn't shown
             try {
                 const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/year/${year}`, { headers: authHeaders() });
                 const data = await res.json();
                 finState.yearData = data;
                 renderMonthlyTable(data);
                 renderAnnualMetrics(data);
+                renderAnalytics(data);
                 renderExpenseItems(data);
             } catch(e) { console.error('loadFinYear error:', e); }
         }
@@ -2257,8 +2641,8 @@ Total: $${props.totalAmount}`);
             const baseCols = ['Month', 'Gross Income', 'Mgmt Fee'];
             const expCols = itemized
                 ? ['Cleaning', 'Utilities', 'Maint.', 'Other']
-                : ['Platform Charges'];
-            const restCols = ['Net Income', '%', 'Nights', 'Res.', 'Avg Stay', 'Occ.', 'HOA', 'Actual Paid', ''];
+                : ['Other Expenses'];
+            const restCols = ['Net Income', '%', 'Nights', 'Res.', 'Avg Stay', 'Occ.', 'HOA', 'Mortgage Paid', ''];
             const allCols = [...baseCols, ...expCols, ...restCols];
             header.innerHTML = allCols.map(c => `<th class="px-3 py-3 text-${c ? (c === 'Month' ? 'left' : 'right') : 'right'} font-semibold text-gray-700 whitespace-nowrap text-sm">${c}</th>`).join('');
 
@@ -2270,7 +2654,9 @@ Total: $${props.totalAmount}`);
                     ? [finFmt(m.cleaningFee), finFmt(m.utilities), finFmt(m.maintenance), finFmt(m.otherExpenses)]
                     : [finFmt(m.platformCharges)];
                 const net = finFmtSigned(m.netIncome);
-                return `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                const colSpan = 3 + expCells.length + 9;
+                const hasData = !!m.id;
+                return `<tr id="fin-mo-row-${m.month}" class="border-b border-gray-100 hover:bg-gray-50 text-sm">
                     <td class="px-3 py-2 font-medium text-gray-900">${m.monthName}</td>
                     <td class="px-3 py-2 text-right">${finFmt(m.grossIncome)}</td>
                     <td class="px-3 py-2 text-right text-gray-500">${finFmt(m.managementFee)}</td>
@@ -2281,12 +2667,25 @@ Total: $${props.totalAmount}`);
                     <td class="px-3 py-2 text-right">${m.numReservations || 0}</td>
                     <td class="px-3 py-2 text-right">${m.avgLengthOfStay ? m.avgLengthOfStay.toFixed(2) : '—'}</td>
                     <td class="px-3 py-2 text-right">${(m.occupancyRatio * 100).toFixed(0)}%</td>
-                    <td class="px-3 py-2 text-right">${finFmt(m.hoaPayment)}</td>
-                    <td class="px-3 py-2 text-right">${finFmt(m.actualMortgagePaid)}</td>
-                    <td class="px-3 py-2 text-center">
+                    <td class="px-3 py-2 text-right cursor-pointer hover:bg-teal-50 group" title="Click to edit HOA" onclick="inlineEditCell(this, ${m.month}, '${m.id || ''}', 'hoaPayment', ${m.hoaPayment || 0})">${finFmt(m.hoaPayment)}<span class="ml-1 text-gray-300 group-hover:text-teal-400 text-xs hidden group-hover:inline">✎</span></td>
+                    <td class="px-3 py-2 text-right cursor-pointer hover:bg-teal-50 group" title="Click to edit Actual Mortgage Paid" onclick="inlineEditCell(this, ${m.month}, '${m.id || ''}', 'actualMortgagePaid', ${m.actualMortgagePaid || 0})">${finFmt(m.actualMortgagePaid)}<span class="ml-1 text-gray-300 group-hover:text-teal-400 text-xs hidden group-hover:inline">✎</span></td>
+                    <td class="px-3 py-2 text-center flex items-center gap-2 justify-center">
                         <button onclick="openMonthModal(${m.month})" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
+                        ${hasData ? `<button onclick="confirmDeleteMonthly(${m.month}, '${m.id}', '${m.monthName}')" class="text-gray-300 hover:text-red-400 transition" title="Delete ${m.monthName} data">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>` : ''}
                     </td>
-                </tr>`;
+                </tr>
+                ${hasData ? `<tr id="fin-mo-confirm-${m.month}" class="hidden bg-red-50 border-b border-red-100 text-sm">
+                    <td colspan="${colSpan}" class="px-3 py-2">
+                        <div class="flex items-center gap-3">
+                            <span class="text-red-700 font-medium">Delete ${m.monthName} data?</span>
+                            <span class="text-red-500 text-xs">Clears all income, expenses, and stats for this month.</span>
+                            <button onclick="executeDeleteMonthly(${m.month}, '${m.id}')" class="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700">Yes, delete</button>
+                            <button onclick="cancelDeleteMonthly(${m.month})" class="px-3 py-1 border border-gray-300 text-gray-600 text-xs rounded-lg hover:bg-gray-50">Cancel</button>
+                        </div>
+                    </td>
+                </tr>` : ''}`;
             }).join('');
 
             if (totalsRow) {
@@ -2340,13 +2739,192 @@ Total: $${props.totalAmount}`);
             ).join('');
         }
 
+        function renderAnalytics(data) {
+            const el = document.getElementById('fin-analytics');
+            const t = data.annualTotals;
+            const months = data.months || [];
+            const year = data.year;
+
+            // Need at least some income or expense data to show analytics
+            if (!t || (t.grossIncome === 0 && t.grossExpenses === 0)) {
+                el.classList.add('hidden');
+                return;
+            }
+            el.classList.remove('hidden');
+
+            // ── Derived metrics ─────────────────────────────────────────────
+            const activeMonths = months.filter(m => m.grossIncome > 0 || m.numReservations > 0);
+            const avgNightlyRate = t.nightsBooked > 0 ? t.grossIncome / t.nightsBooked : null;
+            const avgBookingValue = t.numReservations > 0 ? t.grossIncome / t.numReservations : null;
+            const avgCleanCost = t.numReservations > 0 && t.cleaningFee > 0 ? t.cleaningFee / t.numReservations : null;
+            const avgNetPerNight = t.nightsBooked > 0 ? t.netIncome / t.nightsBooked : null;
+            const occupancy = t.nightsBooked / 365;
+            const avgStay = t.numReservations > 0 ? t.nightsBooked / t.numReservations : null;
+
+            const bestRevenueMonth = activeMonths.length ? activeMonths.reduce((a, b) => b.grossIncome > a.grossIncome ? b : a) : null;
+            const bestOccMonth = activeMonths.length ? activeMonths.reduce((a, b) => b.nightsBooked > a.nightsBooked ? b : a) : null;
+
+            // ── Expense breakdown ───────────────────────────────────────────
+            const expBreakdown = [
+                { label: 'Cleaning',    value: t.cleaningFee,   color: '#14b8a6' },
+                { label: 'Utilities',   value: t.utilities,     color: '#3b82f6' },
+                { label: 'Maintenance', value: t.maintenance,   color: '#f97316' },
+                { label: 'HOA',         value: t.hoaPayment,    color: '#a855f7' },
+                { label: 'Platform',    value: t.platformCharges, color: '#ec4899' },
+                { label: 'Other',       value: t.otherExpenses, color: '#6b7280' },
+            ].filter(e => e.value > 0);
+
+            const totalTrackedExp = expBreakdown.reduce((s, e) => s + e.value, 0) + (t.managementFee || 0);
+            const allSegments = [
+                { label: 'Mgmt Fee', value: t.managementFee || 0, color: '#64748b' },
+                ...expBreakdown
+            ].filter(e => e.value > 0);
+
+            const barTotal = allSegments.reduce((s, e) => s + e.value, 0);
+
+            // ── Insight cards ────────────────────────────────────────────────
+            function statCard(label, value, sub = '', accent = 'teal') {
+                const colors = { teal: 'border-teal-400 text-teal-700', blue: 'border-blue-400 text-blue-700', orange: 'border-orange-400 text-orange-700', purple: 'border-purple-400 text-purple-700', gray: 'border-gray-300 text-gray-600' };
+                const c = colors[accent] || colors.teal;
+                return `<div class="bg-white rounded-xl shadow-sm p-4 border-l-4 ${c.split(' ')[0]}">
+                    <p class="text-xs font-medium text-gray-500 mb-1">${label}</p>
+                    <p class="text-xl font-bold ${c.split(' ')[1]}">${value}</p>
+                    ${sub ? `<p class="text-xs text-gray-400 mt-0.5">${sub}</p>` : ''}
+                </div>`;
+            }
+
+            // ── Stacked expense bar ──────────────────────────────────────────
+            const barSegments = allSegments.map(e => {
+                const pct = barTotal > 0 ? (e.value / barTotal * 100).toFixed(1) : 0;
+                return `<div title="${e.label}: ${finFmt(e.value)} (${pct}%)" style="width:${pct}%;background:${e.color};min-width:${pct > 0 ? '2px' : '0'}" class="h-full transition-all"></div>`;
+            }).join('');
+
+            const legendItems = allSegments.map(e => {
+                const pct = barTotal > 0 ? (e.value / barTotal * 100).toFixed(0) : 0;
+                return `<div class="flex items-center gap-1.5 text-xs text-gray-600 whitespace-nowrap">
+                    <span class="w-2.5 h-2.5 rounded-sm shrink-0" style="background:${e.color}"></span>
+                    <span>${e.label}</span>
+                    <span class="font-medium text-gray-800">${pct}%</span>
+                </div>`;
+            }).join('');
+
+            // ── Monthly revenue mini bars ────────────────────────────────────
+            const maxRev = Math.max(...months.map(m => m.grossIncome), 1);
+            const miniBarLabels = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+            const miniBars = months.map((m, i) => {
+                const h = Math.round((m.grossIncome / maxRev) * 48);
+                const isActive = m.grossIncome > 0;
+                return `<div class="flex flex-col items-center gap-0.5 flex-1" title="${m.monthName}: ${finFmt(m.grossIncome)}">
+                    <div class="w-full flex items-end justify-center" style="height:48px">
+                        <div style="height:${h}px;width:100%;min-height:${isActive?'2px':'0'}" class="${isActive ? 'bg-teal-400' : 'bg-gray-100'} rounded-t transition-all hover:bg-teal-600"></div>
+                    </div>
+                    <span class="text-gray-400" style="font-size:9px">${miniBarLabels[i]}</span>
+                </div>`;
+            }).join('');
+
+            el.innerHTML = `
+            <div class="mb-3 flex items-center justify-between">
+                <h4 class="font-semibold text-gray-900">${year} Analytics</h4>
+                <span class="text-xs text-gray-400">${activeMonths.length} active month${activeMonths.length !== 1 ? 's' : ''} · ${t.numReservations || 0} reservations · ${t.nightsBooked || 0} nights</span>
+            </div>
+
+            <!-- Insight cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                ${avgNightlyRate ? statCard('Avg Nightly Rate', finFmt(avgNightlyRate), 'gross income ÷ nights booked', 'teal') : ''}
+                ${avgBookingValue ? statCard('Avg Booking Value', finFmt(avgBookingValue), 'gross income ÷ reservations', 'blue') : ''}
+                ${avgCleanCost ? statCard('Avg Cleaning Cost', finFmt(avgCleanCost), 'cleaning expenses ÷ reservations', 'orange') : ''}
+                ${avgNetPerNight != null ? statCard('Net Per Night', finFmtSigned(avgNetPerNight), 'net income ÷ nights booked', avgNetPerNight >= 0 ? 'teal' : 'orange') : ''}
+                ${avgStay ? statCard('Avg Stay Length', avgStay.toFixed(1) + ' nights', 'nights ÷ reservations', 'blue') : ''}
+                ${statCard('Occupancy Rate', (occupancy * 100).toFixed(1) + '%', `${t.nightsBooked} of 365 nights`, occupancy >= 0.5 ? 'teal' : 'gray')}
+                ${bestRevenueMonth ? statCard('Best Revenue Month', bestRevenueMonth.monthName, finFmt(bestRevenueMonth.grossIncome) + ' gross', 'purple') : ''}
+                ${bestOccMonth && bestOccMonth.monthName !== bestRevenueMonth?.monthName ? statCard('Busiest Month', bestOccMonth.monthName, bestOccMonth.nightsBooked + ' nights booked', 'purple') : ''}
+            </div>
+
+            <!-- Revenue by month + Expense breakdown -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <p class="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Monthly Gross Revenue</p>
+                    <div class="flex items-end gap-1 w-full">${miniBars}</div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Expense Breakdown</p>
+                        <span class="text-xs text-gray-400">${finFmt(barTotal)} total</span>
+                    </div>
+                    ${barTotal > 0 ? `
+                    <div class="h-5 rounded-lg overflow-hidden flex w-full mb-3">${barSegments}</div>
+                    <div class="flex flex-wrap gap-x-4 gap-y-1.5">${legendItems}</div>
+                    ` : '<p class="text-sm text-gray-400">No expense data yet</p>'}
+                </div>
+            </div>
+
+            ${(() => {
+                // Cleanings Analytics — Bromley only, requires housekeeping items with expenseDate
+                // Exclude zeroed scaffold markers (statement summaries superseded by invoice detail)
+                const cleanItems = (data.expenseItems || []).filter(i => i.vendor === 'bromley' && i.tag === 'housekeeping' && i.expenseDate
+                    && !(/^S\/C\/M\b/i.test(i.expenseName || '') && parseFloat(i.amount || 0) === 0));
+                if (!cleanItems.length) return '';
+
+                const byDate = {};
+                for (const item of cleanItems) {
+                    if (!byDate[item.expenseDate]) byDate[item.expenseDate] = [];
+                    byDate[item.expenseDate].push(item);
+                }
+                const cleanings = Object.values(byDate).map(its => {
+                    const total = its.reduce((s, i) => s + parseFloat(i.amount || 0), 0);
+                    const laborItem = its.find(i => /labor/i.test(i.expenseName));
+                    const laborAmt = laborItem ? parseFloat(laborItem.amount) : 0;
+                    const laborQty = laborItem ? parseFloat(laborItem.qty || 0) : 0;
+                    return { total, laborAmt, laborQty, suppliesAmt: total - laborAmt, itemCount: its.length };
+                });
+
+                const numC = cleanings.length;
+                const avg = arr => arr.reduce((s,v) => s+v, 0) / arr.length;
+                const median = arr => { const s=[...arr].sort((a,b)=>a-b); const m=Math.floor(s.length/2); return s.length%2 ? s[m] : (s[m-1]+s[m])/2; };
+
+                const totals = cleanings.map(c => c.total);
+                const labors = cleanings.map(c => c.laborAmt);
+                const supplies = cleanings.map(c => c.suppliesAmt);
+
+                // Labor breakdown — only for cleanings that have qty (hours) stored
+                const laborWithHours = cleanings.filter(c => c.laborQty > 0);
+                const avgHours = laborWithHours.length ? avg(laborWithHours.map(c => c.laborQty)) : null;
+                // Effective hourly rate: total labor $ / total hours (not avg of per-cleaning rates)
+                const totalLaborAmt = laborWithHours.reduce((s, c) => s + c.laborAmt, 0);
+                const totalLaborHrs = laborWithHours.reduce((s, c) => s + c.laborQty, 0);
+                const avgHourlyRate = totalLaborHrs > 0 ? totalLaborAmt / totalLaborHrs : null;
+
+                const html = ['<div class="mt-4 bg-white rounded-xl shadow-sm p-4">',
+                    '<div class="flex items-center justify-between mb-3">',
+                    '<p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cleanings Analytics</p>',
+                    '<span class="text-xs text-gray-400">' + numC + ' cleaning event' + (numC !== 1 ? 's' : '') + ' · Bromley</span>',
+                    '</div>',
+                    '<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">',
+                    statCard('Avg Cleaning Cost', finFmt(avg(totals)), 'per S/C/M event', 'teal'),
+                    statCard('Median Cleaning Cost', finFmt(median(totals)), 'per S/C/M event', 'teal'),
+                    statCard('Avg Labor Cost', finFmt(avg(labors)), 'per cleaning', 'blue'),
+                    avgHours != null ? statCard('Avg Hours / Cleaning', avgHours.toFixed(1) + ' hrs', 'labor hours per S/C/M event', 'blue') : '',
+                    avgHourlyRate != null ? statCard('Avg Hourly Rate', finFmt(avgHourlyRate) + ' / hr', 'effective labor rate', 'blue') : '',
+                    statCard('Avg Supplies Cost', finFmt(avg(supplies)), 'linen, bath & misc', 'gray'),
+                    '</div></div>'].join('');
+                return html;
+            })()}`;
+        }
+
         function renderExpenseItems(data) {
             const section = document.getElementById('fin-expense-section');
             const itemized = isItemized(data);
-            section.classList.toggle('hidden', !itemized);
-            if (!itemized) return;
-
             const items = data.expenseItems || [];
+
+            // Show section for Vermont (always) or Caribbean (when items exist)
+            section.classList.toggle('hidden', !itemized && items.length === 0);
+            if (!itemized && items.length === 0) return;
+
+            document.getElementById('fin-expense-title').textContent = itemized ? 'Itemized Expenses' : 'Expense Details (from PDF imports)';
+            document.getElementById('fin-expense-add-btn').classList.toggle('hidden', !itemized);
+            document.getElementById('fin-utility-tracker-btn').classList.toggle('hidden', !itemized);
+
             const tagColors = {
                 utilities: 'bg-blue-100 text-blue-700',
                 housekeeping: 'bg-green-100 text-green-700',
@@ -2354,59 +2932,106 @@ Total: $${props.totalAmount}`);
                 hoa: 'bg-purple-100 text-purple-700',
                 other: 'bg-gray-100 text-gray-600'
             };
+            const tagLabels = { utilities: 'Utilities', housekeeping: 'Housekeeping', maintenance: 'Maintenance', hoa: 'HOA', other: 'Other' };
 
-            document.getElementById('fin-expense-body').innerHTML = items.length === 0
+            // Group Bromley housekeeping items by cleaning date — show one row per S/C/M event
+            const cleaningGroups = {};
+            const displayItems = [];
+            for (const item of items) {
+                if (item.vendor === 'bromley' && item.tag === 'housekeeping' && item.expenseDate) {
+                    // Skip zeroed scaffold markers (statement summaries superseded by invoice detail)
+                    if (/^S\/C\/M\b/i.test(item.expenseName || '') && parseFloat(item.amount || 0) === 0) continue;
+                    if (!cleaningGroups[item.expenseDate]) cleaningGroups[item.expenseDate] = { month: item.month, total: 0, count: 0, ids: [] };
+                    cleaningGroups[item.expenseDate].total += parseFloat(item.amount || 0);
+                    cleaningGroups[item.expenseDate].count++;
+                    cleaningGroups[item.expenseDate].ids.push(item.id);
+                } else {
+                    displayItems.push(item);
+                }
+            }
+            for (const [date, g] of Object.entries(cleaningGroups).sort(([a],[b]) => a.localeCompare(b))) {
+                displayItems.push({ _cleaningDate: date, month: g.month, expenseDate: date, expenseName: 'S/C/M Cleaning', vendor: 'bromley', amount: g.total, tag: 'housekeeping', _groupIds: g.ids, _groupCount: g.count });
+            }
+            displayItems.sort((a, b) => {
+                if (a.month !== b.month) return (a.month || 0) - (b.month || 0);
+                return (a.expenseDate || '').localeCompare(b.expenseDate || '');
+            });
+
+            document.getElementById('fin-expense-body').innerHTML = displayItems.length === 0
                 ? `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No expense items yet. Click + Add Expense to start.</td></tr>`
-                : items.map(item => `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                : displayItems.map(item => `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
                     <td class="px-4 py-2">${MONTH_NAMES[(item.month || 1) - 1]}</td>
                     <td class="px-4 py-2 text-gray-500">${item.expenseDate || '—'}</td>
-                    <td class="px-4 py-2">${item.expenseName || '—'}</td>
+                    <td class="px-4 py-2">${item.expenseName || '—'}${item._groupCount ? ` <span class="text-gray-400 text-xs">(${item._groupCount} items)</span>` : ''}</td>
                     <td class="px-4 py-2 text-gray-500">${item.vendor || '—'}</td>
                     <td class="px-4 py-2 text-right font-medium">${item.amount != null ? finFmt(item.amount) : '—'}</td>
                     <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tagColors[item.tag] || tagColors.other}">${item.tag}</span></td>
                     <td class="px-4 py-2 flex gap-2">
-                        <button onclick="openExpenseModal('${item.id}')" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
-                        <button onclick="deleteExpense('${item.id}')" class="text-red-500 hover:text-red-700 text-xs">Del</button>
+                        ${itemized && item.id ? `<button onclick="openExpenseModal('${item.id}')" class="text-teal-600 hover:text-teal-800 text-xs">Edit</button>
+                        <button onclick="deleteExpense('${item.id}')" class="text-red-500 hover:text-red-700 text-xs">Del</button>` : ''}
                     </td>
                 </tr>`).join('');
+
+            // Category summary cards
+            const summaryEl = document.getElementById('fin-expense-summary');
+            if (items.length > 0) {
+                const byTag = {};
+                items.forEach(item => {
+                    const t = item.tag || 'other';
+                    byTag[t] = (byTag[t] || 0) + parseFloat(item.amount || 0);
+                });
+                summaryEl.classList.remove('hidden');
+                summaryEl.innerHTML = Object.entries(byTag)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([tag, total]) => `
+                    <div class="bg-white rounded-lg border border-gray-200 px-4 py-3 text-center">
+                        <div class="text-xs font-medium mb-1"><span class="px-2 py-0.5 rounded-full ${tagColors[tag] || tagColors.other}">${tagLabels[tag] || tag}</span></div>
+                        <div class="text-base font-semibold text-gray-800">${finFmt(total)}</div>
+                    </div>`).join('');
+            } else {
+                summaryEl.classList.add('hidden');
+            }
         }
 
         // Month modal
+        function loadMonthDataIntoModal() {
+            const month = parseInt(document.getElementById('fin-m-month').value);
+            const data = finState.yearData;
+            const m = data?.months?.find(x => x.month === month);
+            if (m) {
+                document.getElementById('fin-m-gross').value = m.grossIncome || '';
+                document.getElementById('fin-m-mgmt').value = m.managementFee || '';
+                document.getElementById('fin-m-cleaning').value = m.cleaningFee || '';
+                document.getElementById('fin-m-utilities').value = m.utilities || '';
+                document.getElementById('fin-m-maintenance').value = m.maintenance || '';
+                document.getElementById('fin-m-other').value = m.otherExpenses || '';
+                document.getElementById('fin-m-charges').value = m.platformCharges || '';
+                document.getElementById('fin-m-nights').value = m.nightsBooked || '';
+                document.getElementById('fin-m-reservations').value = m.numReservations || '';
+                document.getElementById('fin-m-hoa').value = m.hoaPayment || '';
+                document.getElementById('fin-m-mortgage').value = m.actualMortgagePaid || '';
+            } else {
+                ['fin-m-gross','fin-m-mgmt','fin-m-cleaning','fin-m-utilities','fin-m-maintenance',
+                 'fin-m-other','fin-m-charges','fin-m-nights','fin-m-reservations','fin-m-hoa','fin-m-mortgage']
+                    .forEach(id => { document.getElementById(id).value = ''; });
+            }
+        }
+
         function openMonthModal(month) {
-            const modal = document.getElementById('fin-month-modal');
             const data = finState.yearData;
             const itemized = isItemized(data);
 
             document.getElementById('fin-m-itemized-fields').classList.toggle('hidden', !itemized);
             document.getElementById('fin-m-charges-field').classList.toggle('hidden', itemized);
-
             document.getElementById('fin-m-year').value = finState.year;
 
-            if (month) {
-                const m = data?.months?.find(x => x.month === month);
-                document.getElementById('fin-month-modal-title').textContent = `Edit ${MONTH_NAMES[month - 1]} ${finState.year}`;
-                document.getElementById('fin-m-month').value = month;
-                if (m) {
-                    document.getElementById('fin-m-gross').value = m.grossIncome || '';
-                    document.getElementById('fin-m-mgmt').value = m.managementFee || '';
-                    document.getElementById('fin-m-cleaning').value = m.cleaningFee || '';
-                    document.getElementById('fin-m-utilities').value = m.utilities || '';
-                    document.getElementById('fin-m-maintenance').value = m.maintenance || '';
-                    document.getElementById('fin-m-other').value = m.otherExpenses || '';
-                    document.getElementById('fin-m-charges').value = m.platformCharges || '';
-                    document.getElementById('fin-m-nights').value = m.nightsBooked || '';
-                    document.getElementById('fin-m-reservations').value = m.numReservations || '';
-                    document.getElementById('fin-m-hoa').value = m.hoaPayment || '';
-                    document.getElementById('fin-m-mortgage').value = m.actualMortgagePaid || '';
-                }
-            } else {
-                document.getElementById('fin-month-modal-title').textContent = `Add Month — ${finState.year}`;
-                ['fin-m-gross','fin-m-mgmt','fin-m-cleaning','fin-m-utilities','fin-m-maintenance',
-                 'fin-m-other','fin-m-charges','fin-m-nights','fin-m-reservations','fin-m-hoa','fin-m-mortgage']
-                    .forEach(id => { document.getElementById(id).value = ''; });
-            }
+            const targetMonth = month || 1;
+            document.getElementById('fin-m-month').value = targetMonth;
+            document.getElementById('fin-month-modal-title').textContent =
+                `Edit ${MONTH_NAMES[targetMonth - 1]} ${finState.year}`;
+            loadMonthDataIntoModal();
 
-            modal.classList.remove('hidden');
+            document.getElementById('fin-month-modal').classList.remove('hidden');
         }
         function closeMonthModal() { document.getElementById('fin-month-modal').classList.add('hidden'); }
 
@@ -2435,6 +3060,78 @@ Total: $${props.totalAmount}`);
             } catch(e) { console.error('saveMonth error:', e); }
         }
 
+        // Inline editing for HOA and Actual Mortgage Paid columns
+        function inlineEditCell(td, month, monthId, field, currentValue) {
+            if (td.querySelector('input')) return; // already editing
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = '0.01';
+            input.value = currentValue || '';
+            input.className = 'w-24 px-1 py-0.5 border border-teal-400 rounded text-right text-sm focus:outline-none';
+            td.innerHTML = '';
+            td.appendChild(input);
+            input.focus();
+            input.select();
+
+            const save = async () => {
+                const val = parseFloat(input.value) || 0;
+                try {
+                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                        method: 'POST', headers: authHeaders(),
+                        body: JSON.stringify({ year: finState.year, month, [field]: val })
+                    });
+                    await loadFinYear(finState.year);
+                } catch(e) { console.error('inlineEditCell save error:', e); }
+            };
+            input.addEventListener('blur', save);
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+                if (e.key === 'Escape') { loadFinYear(finState.year); }
+            });
+        }
+
+        function editPurchasePrice() {
+            const display = document.getElementById('fin-purchase-price');
+            if (display.querySelector('input')) return;
+            const current = finState.summaryData?.purchasePrice || finState.yearData?.purchasePrice || 0;
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = '1';
+            input.value = current || '';
+            input.placeholder = '0';
+            input.className = 'w-36 px-2 py-1 border border-teal-400 rounded text-xl font-bold focus:outline-none';
+            display.innerHTML = '';
+            display.appendChild(input);
+            input.focus();
+            input.select();
+
+            const save = async () => {
+                const val = parseFloat(input.value) || null;
+                try {
+                    const resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/settings`, {
+                        method: 'POST', headers: authHeaders(),
+                        body: JSON.stringify({ purchasePrice: val })
+                    });
+                    if (resp.ok) {
+                        display.textContent = val ? finFmt(val) : '—';
+                        // Refresh summary so NOI recalculates
+                        finState.summaryData = null;
+                        loadFinSummary();
+                    } else {
+                        display.textContent = current ? finFmt(current) : '—';
+                    }
+                } catch(e) {
+                    console.error('editPurchasePrice save error:', e);
+                    display.textContent = current ? finFmt(current) : '—';
+                }
+            };
+            input.addEventListener('blur', save);
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+                if (e.key === 'Escape') { display.textContent = current ? finFmt(current) : '—'; }
+            });
+        }
+
         // Annual config modal
         function openAnnualConfigModal() {
             const config = finState.yearData?.annualConfig;
@@ -2453,12 +3150,19 @@ Total: $${props.totalAmount}`);
                 notes: document.getElementById('fin-a-notes').value
             };
             try {
-                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/annual-config`, {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/annual-config`, {
                     method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
                 });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.message || 'Save failed');
                 closeAnnualConfigModal();
+                // Reload both year detail and summary so the new values appear everywhere
+                finState.summaryData = null;
                 await loadFinYear(finState.year);
-            } catch(e) { console.error('saveAnnualConfig error:', e); }
+            } catch(e) {
+                console.error('saveAnnualConfig error:', e);
+                alert('Failed to save Mortgage & T&I: ' + e.message);
+            }
         }
 
         // Expense item modal
@@ -2486,6 +3190,214 @@ Total: $${props.totalAmount}`);
         }
         function closeExpenseModal() { document.getElementById('fin-expense-modal').classList.add('hidden'); }
 
+        // ── WTR/SWR Split Modal ──────────────────────────────────────────────────
+        const WTR_MABBR = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+
+        function parseWtrRange(reference) {
+            const m = (reference || '').match(/WTR\/SWR\s+([A-Z]{3})-([A-Z]{3})(\d{2,4})/i);
+            if (!m) return null;
+            const sm = WTR_MABBR[m[1].toLowerCase()], em = WTR_MABBR[m[2].toLowerCase()];
+            let sy = parseInt(m[3]); if (sy < 100) sy += 2000;
+            if (!sm || !em || !sy) return null;
+            const months = []; for (let mo = sm; mo <= em; mo++) months.push(mo);
+            return { startMonth: sm, endMonth: em, year: sy, months };
+        }
+
+        function renderWtrSplitModal(selected) {
+            const wtrLines = selected.filter(l => parseWtrRange(l.reference));
+            // Build detail HTML
+            const detailHtml = wtrLines.map(line => {
+                const r = parseWtrRange(line.reference);
+                const names = r.months.map(m => MONTH_NAMES[m - 1]);
+                const perMonth = finFmt(line.amount / r.months.length);
+                return `<div class="bg-gray-50 rounded-lg px-3 py-2">
+                    <span class="font-medium text-gray-800 text-sm">${line.reference}</span>
+                    <span class="text-gray-500 text-sm ml-2">${finFmt(line.amount)}</span>
+                    <div class="text-xs text-gray-400 mt-0.5">${names.join(' · ')} · ${perMonth}/mo</div>
+                </div>`;
+            }).join('');
+            document.getElementById('fin-wtr-split-detail').innerHTML = detailHtml;
+
+            // Update button labels using first WTR line
+            if (wtrLines.length > 0) {
+                const r = parseWtrRange(wtrLines[0].reference);
+                document.getElementById('wtr-first-label').textContent = MONTH_NAMES[r.startMonth - 1] + ' only';
+                document.getElementById('wtr-split-label').textContent = `÷${r.months.length} months`;
+                document.getElementById('wtr-last-label').textContent = MONTH_NAMES[r.endMonth - 1] + ' only';
+            }
+
+            // Pre-select the property's saved default
+            const savedMode = finState.summaryData?.wtrSplitMode || 'split';
+            document.querySelectorAll('.wtr-split-btn').forEach(btn => {
+                const isDefault = btn.dataset.choice === savedMode;
+                btn.classList.toggle('border-teal-400', isDefault);
+                btn.classList.toggle('bg-teal-50', isDefault);
+                btn.classList.toggle('border-gray-200', !isDefault);
+            });
+            document.getElementById('wtr-save-default').checked = false;
+            document.getElementById('fin-wtr-split-modal').classList.remove('hidden');
+        }
+
+        function closeWtrSplitModal() {
+            document.getElementById('fin-wtr-split-modal').classList.add('hidden');
+        }
+
+        async function confirmWtrSplit(choice) {
+            const saveDefault = document.getElementById('wtr-save-default').checked;
+            closeWtrSplitModal();
+            if (saveDefault) {
+                await saveWtrSplitMode(choice);
+            }
+            const selected = importState.pendingStmtSelected || [];
+            const propertyId = importState.pendingStmtPropertyId || finState.propertyId;
+            await performStatementSave(selected, propertyId, choice);
+        }
+
+        async function saveWtrSplitMode(mode) {
+            try {
+                await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/settings`, {
+                    method: 'POST', headers: authHeaders(),
+                    body: JSON.stringify({ wtrSplitMode: mode })
+                });
+                if (finState.summaryData) finState.summaryData.wtrSplitMode = mode;
+                const sel = document.getElementById('fin-wtr-mode-select');
+                if (sel) sel.value = mode;
+            } catch(e) { console.error('saveWtrSplitMode error:', e); }
+        }
+
+        async function performStatementSave(selected, propertyId, wtrChoice) {
+            const STMT_MABBR = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+            const stmtItems = [];
+            const createdExpenseIds = [];
+
+            for (const line of selected) {
+                const parts = line.date.split('/');
+                let mo = parseInt(parts[0]), y = parseInt(parts[2]);
+                let expenseDate = `${y}-${String(mo).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`;
+
+                const scmDate = (line.reference || '').match(/S\/C\/M\s+(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+                if (scmDate) {
+                    let sy = parseInt(scmDate[3]); if (sy < 100) sy += 2000;
+                    expenseDate = `${sy}-${String(parseInt(scmDate[1])).padStart(2,'0')}-${String(parseInt(scmDate[2])).padStart(2,'0')}`;
+                    mo = parseInt(scmDate[1]); y = sy;
+                    stmtItems.push({ year: y, month: mo, expenseName: line.reference || line.documentNumber, vendor: 'bromley', amount: line.amount, tag: line.tag || 'other', expenseDate });
+                    continue;
+                }
+
+                const wtrRange = parseWtrRange(line.reference);
+                if (wtrRange) {
+                    const { startMonth: sm, endMonth: em, year: sy, months } = wtrRange;
+                    const targetMonths = wtrChoice === 'first' ? [months[0]] : wtrChoice === 'last' ? [months[months.length - 1]] : months;
+                    const perMonthAmt = parseFloat((line.amount / targetMonths.length).toFixed(2));
+                    for (const m of targetMonths) {
+                        stmtItems.push({ year: sy, month: m, expenseName: line.reference || line.documentNumber, vendor: 'bromley', amount: perMonthAmt, tag: line.tag || 'other', expenseDate: `${sy}-${String(m).padStart(2,'0')}-01` });
+                    }
+                    continue;
+                }
+
+                stmtItems.push({ year: y, month: mo, expenseName: line.reference || line.documentNumber, vendor: 'bromley', amount: line.amount, tag: line.tag || 'other', expenseDate });
+            }
+
+            const stmtResp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses/batch`, {
+                method: 'POST', headers: authHeaders(),
+                body: JSON.stringify({ items: stmtItems })
+            });
+            const stmtData = await stmtResp.json();
+            (stmtData.created || []).forEach(i => { if (i.id) createdExpenseIds.push(i.id); });
+            closeImportModal();
+            const stmtYears = [...new Set(stmtItems.map(i => i.year).filter(Boolean))].sort((a,b) => a-b);
+            finState.summaryData = null;
+            await loadFinSummary();
+            finState.year = stmtYears[0] || finState.year;
+            await setFinView('year');
+            const savedN = stmtData.created?.length || 0;
+            const skipN = stmtData.skipped?.length || 0;
+            const skipNote = skipN > 0 ? ` (${skipN} already imported as detail — skipped)` : '';
+            showUndoToast(`${savedN} Bromley statement entry(s) saved${skipNote} — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
+        }
+
+        // ── Utility Tracker ──────────────────────────────────────────────────────
+        const UTILITY_TYPES = [
+            { key: 'internet', label: 'Internet', match: /internet|wifi|broadband/i },
+            { key: 'electric', label: 'Electric', match: /electric/i },
+            { key: 'water',    label: 'Water',    match: /\bwater\b|wtr/i },
+            { key: 'sewer',    label: 'Sewer',    match: /sewer|swr/i },
+        ];
+
+        function classifyUtility(expenseName) {
+            const name = expenseName || '';
+            for (const t of UTILITY_TYPES) {
+                if (t.match.test(name)) return t.key;
+            }
+            return null;
+        }
+
+        function openUtilityTracker() {
+            const items = finState.yearData?.expenseItems || [];
+            // Build month → utility type → { total, count } map
+            const byMonth = {};
+            for (const item of items) {
+                if (item.tag !== 'utilities') continue;
+                const type = classifyUtility(item.expenseName);
+                if (!type) continue;
+                const m = item.month;
+                if (!byMonth[m]) byMonth[m] = {};
+                if (!byMonth[m][type]) byMonth[m][type] = { total: 0, count: 0 };
+                byMonth[m][type].total += parseFloat(item.amount || 0);
+                byMonth[m][type].count++;
+            }
+
+            let html = '<div class="overflow-x-auto"><table class="w-full text-sm border-collapse">';
+            html += '<thead><tr class="bg-gray-50 border-b-2 border-gray-200">';
+            html += '<th class="px-3 py-2 text-left font-semibold text-gray-700 w-24">Month</th>';
+            for (const t of UTILITY_TYPES) {
+                html += `<th class="px-3 py-2 text-center font-semibold text-gray-700">${t.label}</th>`;
+            }
+            html += '</tr></thead><tbody>';
+
+            for (let m = 1; m <= 12; m++) {
+                const monthData = byMonth[m] || {};
+                const allPresent = UTILITY_TYPES.every(t => monthData[t.key]);
+                html += `<tr class="border-b border-gray-100 ${allPresent ? '' : 'bg-amber-50/40'}">`;
+                html += `<td class="px-3 py-2.5 font-medium text-gray-800">${MONTH_NAMES[m - 1]}</td>`;
+                for (const t of UTILITY_TYPES) {
+                    const d = monthData[t.key];
+                    if (d) {
+                        html += `<td class="px-3 py-2.5 text-center">
+                            <span class="inline-flex flex-col items-center gap-0.5">
+                                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <span class="text-xs text-gray-600 font-medium">${finFmt(d.total)}</span>
+                            </span>
+                        </td>`;
+                    } else {
+                        html += `<td class="px-3 py-2.5 text-center">
+                            <button onclick="addUtilityExpense(${m}, '${t.key}', '${t.label}')"
+                                class="inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-dashed border-gray-300 hover:border-teal-400 hover:bg-teal-50 text-gray-300 hover:text-teal-600 transition"
+                                title="Add ${t.label} for ${MONTH_NAMES[m - 1]}">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                            </button>
+                        </td>`;
+                    }
+                }
+                html += '</tr>';
+            }
+            html += '</tbody></table></div>';
+
+            document.getElementById('fin-utility-modal-year').textContent = finState.year;
+            document.getElementById('fin-utility-grid').innerHTML = html;
+            document.getElementById('fin-utility-modal').classList.remove('hidden');
+        }
+
+        function closeUtilityModal() { document.getElementById('fin-utility-modal').classList.add('hidden'); }
+
+        function addUtilityExpense(month, type, label) {
+            closeUtilityModal();
+            openExpenseModal(null);
+            document.getElementById('fin-e-month').value = month;
+            document.getElementById('fin-e-tag').value = 'utilities';
+            document.getElementById('fin-e-name').value = label;
+        }
+
         async function saveExpenseItem() {
             const body = {
                 year: finState.year,
@@ -2498,18 +3410,26 @@ Total: $${props.totalAmount}`);
             };
             try {
                 const isEdit = finState.editingExpenseId && finState.editingExpenseId !== 'null';
+                let resp;
                 if (isEdit) {
-                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/expenses/${finState.editingExpenseId}`, {
+                    resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/expenses/${finState.editingExpenseId}`, {
                         method: 'PUT', headers: authHeaders(), body: JSON.stringify(body)
                     });
                 } else {
-                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/expenses`, {
+                    resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/expenses`, {
                         method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
                     });
                 }
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    throw new Error(err.message || `Server error ${resp.status}`);
+                }
                 closeExpenseModal();
                 await loadFinYear(finState.year);
-            } catch(e) { console.error('saveExpenseItem error:', e); }
+            } catch(e) {
+                console.error('saveExpenseItem error:', e);
+                alert('Failed to save expense: ' + e.message);
+            }
         }
 
         async function deleteExpense(id) {
@@ -2522,12 +3442,6 @@ Total: $${props.totalAmount}`);
             } catch(e) { console.error('deleteExpense error:', e); }
         }
 
-        // Close modal when clicking outside
-        document.getElementById('edit-name-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeEditNameModal();
-            }
-        });
 
         // Run on page load
         initDashboard();
@@ -2581,16 +3495,25 @@ Total: $${props.totalAmount}`);
 
         // Map raw CSV rows → monthly upsert payloads
         function mapMonthlyRows(rawRows) {
-            // Find header row (first row that contains a month-like value OR has 'month' header)
-            let headerIdx = 0;
-            for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+            // Find header row — search up to 10 rows for month/income keywords
+            let headerIdx = -1;
+            for (let i = 0; i < Math.min(10, rawRows.length); i++) {
                 const normed = rawRows[i].map(normHeader);
-                if (normed.includes('month') || normed.includes('grossincome') || normed.includes('gross')) {
+                if (normed.includes('month') || normed.includes('grossincome') || normed.includes('gross') || normed.includes('managementfee')) {
                     headerIdx = i; break;
                 }
             }
-            const headers = rawRows[headerIdx].map(normHeader);
-            const dataRows = rawRows.slice(headerIdx + 1);
+
+            // If no header row found, check if row 0 first col looks like a month (data starts at row 0)
+            let headers, dataRows;
+            if (headerIdx === -1) {
+                // No header — treat first column as month, assign positional column names
+                headers = rawRows[0].map((_, i) => `col${i}`);
+                dataRows = rawRows;
+            } else {
+                headers = rawRows[headerIdx].map(normHeader);
+                dataRows = rawRows.slice(headerIdx + 1);
+            }
 
             const col = (aliases) => {
                 for (const a of aliases) {
@@ -2602,24 +3525,27 @@ Total: $${props.totalAmount}`);
 
             const cols = {
                 month:          col(['month']),
-                grossIncome:    col(['grossincome','gross']),
-                managementFee:  col(['managementfee','managmentfee','mgmtfee','managementfees']),
-                platformCharges:col(['platformcharges','charges','grosscharges']),
+                grossIncome:    col(['grossincome','gross','totalincome','income']),
+                managementFee:  col(['managementfee','managmentfee','mgmtfee','managementfees','mgmt']),
+                platformCharges:col(['platformcharges','charges','grosscharges','othercharges']),
                 cleaningFee:    col(['cleaningfee','cleaning']),
-                utilities:      col(['utilities']),
-                maintenance:    col(['maintenance','mantenance']),
-                otherExpenses:  col(['otherexpenses','other']),
-                nightsBooked:   col(['nightsbooked','nights']),
-                numReservations:col(['numreservations','reservations','ofreservations','noofreservations']),
-                hoaPayment:     col(['hoapayment','hoa']),
-                actualMortgagePaid: col(['actualmortgagepaid','actualpayments','actualpaid','actualmortgagepaymentsmade']),
+                utilities:      col(['utilities','utility']),
+                maintenance:    col(['maintenance','mantenance','repairs']),
+                otherExpenses:  col(['otherexpenses','other','miscellaneous']),
+                nightsBooked:   col(['nightsbooked','nights','guestnights']),
+                numReservations:col(['numreservations','reservations','ofreservations','noofreservations','reservations','noreservations']),
+                hoaPayment:     col(['hoapayment','hoa','hoamonthly']),
+                actualMortgagePaid: col(['actualmortgagepaid','actualpayments','actualpaid','actualmortgagepaymentsmade','actualmortgage','actualpaymentsmade','mortgage','mortgagepaid','mortgagepayment']),
             };
+
+            // If still no month column, try first column as month fallback
+            const monthColIdx = cols.month !== -1 ? cols.month : 0;
 
             const results = [];
             for (const row of dataRows) {
                 if (!row.some(c => c)) continue; // skip blank rows
-                const month = parseMonthValue(cols.month !== -1 ? row[cols.month] : null);
-                if (!month) continue; // skip totals/summary rows
+                const month = parseMonthValue(row[monthColIdx]);
+                if (!month) continue; // skip totals/summary/header rows
 
                 const get = (key) => cols[key] !== -1 ? parseMoney(row[cols[key]]) : 0;
                 results.push({
@@ -2681,11 +3607,11 @@ Total: $${props.totalAmount}`);
 
         function openImportModal() {
             const yearSel = document.getElementById('fin-import-year');
-            const years = finState.summaryData?.years?.map(y => y.year) || [];
             const cur = new Date().getFullYear();
-            if (!years.includes(cur)) years.push(cur);
-            years.sort((a, b) => b - a);
-            yearSel.innerHTML = years.map(y => `<option value="${y}" ${y === finState.year ? 'selected' : ''}>${y}</option>`).join('');
+            const years = [];
+            for (let y = cur + 1; y >= 2010; y--) years.push(y);
+            const defaultYear = finState.year || cur;
+            yearSel.innerHTML = years.map(y => `<option value="${y}" ${y === defaultYear ? 'selected' : ''}>${y}</option>`).join('');
             resetImport();
             document.getElementById('fin-import-modal').classList.remove('hidden');
         }
@@ -2697,54 +3623,63 @@ Total: $${props.totalAmount}`);
 
         function resetImport() {
             importState.rows = [];
+            importState.bromleyParsed = null;
             const type = document.getElementById('fin-import-type').value;
-            const isPdf = type === 'caribbean-pdf';
+            const isPdf = type === 'caribbean-pdf' || type === 'bromley-pdf';
             const isAnnual = type === 'annual-summary';
 
             document.getElementById('fin-import-preview').classList.add('hidden');
             document.getElementById('fin-import-caribbean-verify').classList.add('hidden');
+            document.getElementById('fin-import-bromley-verify').classList.add('hidden');
             document.getElementById('fin-import-error').classList.add('hidden');
             document.getElementById('fin-import-confirm-btn').disabled = true;
             document.getElementById('fin-import-confirm-btn').textContent = 'Import';
             document.getElementById('fin-import-file').value = '';
 
-            // Year selector: hide for expenses, annual-summary, and caribbean-pdf (year comes from PDF)
             document.getElementById('fin-import-year-wrap').classList.toggle('hidden', type !== 'monthly');
-
-            // Template buttons
             document.getElementById('fin-import-csv-template-btns').classList.toggle('hidden', isPdf || isAnnual);
             document.getElementById('fin-import-annual-template-btn').classList.toggle('hidden', !isAnnual);
 
-            // File input accepts
             const fileInput = document.getElementById('fin-import-file');
             fileInput.accept = isPdf ? '.pdf' : '.csv';
-            document.getElementById('fin-import-file-label').textContent = isPdf ? 'Choose Caribbean statement PDF' : 'Choose CSV file';
+            fileInput.multiple = type === 'caribbean-pdf';
+            if (type === 'caribbean-pdf') {
+                document.getElementById('fin-import-file-label').textContent = 'Choose Caribbean statement PDF(s) — select multiple to import a full year at once';
+            } else if (type === 'bromley-pdf') {
+                document.getElementById('fin-import-file-label').textContent = 'Choose a Bromley invoice or statement PDF';
+            } else {
+                document.getElementById('fin-import-file-label').textContent = 'Choose CSV file';
+            }
 
-            // Hint text
             const hints = {
                 'monthly': 'One row per month. Download the template to see expected columns.',
                 'expenses': 'One row per expense item. Columns: Month, Date, Expense, Vendor, Amount, Tag.',
                 'annual-summary': 'One row per year. Used for historical years without monthly detail. Download template below.',
-                'caribbean-pdf': 'Upload the PDF statement you download from the Caribbean Resorts owner portal.',
+                'caribbean-pdf': 'Upload one or more monthly PDF statements from the Caribbean Resorts owner portal. Select all months at once to import a full year.',
+                'bromley-pdf': 'Upload a Bromley Mountain invoice (line items) or statement of account (invoice list). Both types are auto-detected.',
                 'evolve-csv': 'Upload the "Bookings Report" CSV from your Evolve owner portal. Imports financials AND adds guests to your contacts.',
             };
             document.getElementById('fin-import-type-hint').textContent = hints[type] || '';
-
-            // Footer note
-            document.getElementById('fin-import-footer-note').textContent = isPdf
-                ? 'HOA and mortgage fields are not in the statement — enter those separately in the month editor.'
+            document.getElementById('fin-import-footer-note').textContent =
+                type === 'bromley-pdf' ? 'Each line item will be saved as a tagged expense record for the Bromley property.'
+                : isPdf ? 'HOA and mortgage fields are not in the statement — enter those separately in the month editor.'
                 : 'Existing records for the same month/year will be overwritten.';
         }
 
         async function handleImportFile() {
-            const file = document.getElementById('fin-import-file').files[0];
-            if (!file) return;
+            const files = document.getElementById('fin-import-file').files;
+            if (!files.length) return;
             const type = document.getElementById('fin-import-type').value;
 
             if (type === 'caribbean-pdf') {
-                await handleCaribbeaPdfFile(file);
+                await handleCaribbeaPdfFiles(Array.from(files));
                 return;
             }
+            if (type === 'bromley-pdf') {
+                await handleBromleyPdf(files[0]);
+                return;
+            }
+            const file = files[0];
 
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -2756,9 +3691,9 @@ Total: $${props.totalAmount}`);
                     else if (type === 'monthly') rows = mapMonthlyRows(rawRows);
                     else rows = mapExpenseRows(rawRows);
 
-                    // Evolve returns { monthlyAggregates, guestContacts } object
+                    // Evolve returns { individualBookings, monthlyPreview, guestContacts } object
                     const isEmpty = type === 'evolve-csv'
-                        ? (rows.monthlyAggregates.length === 0 && rows.guestContacts.length === 0)
+                        ? (rows.individualBookings.length === 0 && rows.guestContacts.length === 0)
                         : rows.length === 0;
                     if (isEmpty) {
                         showImportError('No valid data rows found. Make sure the file has a header row and a Year or Month column.');
@@ -2770,7 +3705,7 @@ Total: $${props.totalAmount}`);
                     document.getElementById('fin-import-error').classList.add('hidden');
                     document.getElementById('fin-import-confirm-btn').disabled = false;
                     const rowCount = type === 'evolve-csv'
-                        ? `${rows.monthlyAggregates.length} month(s) + ${rows.guestContacts.length} guest(s)`
+                        ? `${rows.individualBookings.length} booking(s) across ${rows.monthlyPreview.length} month(s) + ${rows.guestContacts.length} guest(s)`
                         : `${rows.length} row${rows.length !== 1 ? 's' : ''}`;
                     document.getElementById('fin-import-confirm-btn').textContent = `Import ${rowCount}`;
                 } catch (err) {
@@ -2780,56 +3715,179 @@ Total: $${props.totalAmount}`);
             reader.readAsText(file);
         }
 
-        async function handleCaribbeaPdfFile(file) {
-            document.getElementById('fin-import-confirm-btn').disabled = true;
-            document.getElementById('fin-import-confirm-btn').textContent = 'Parsing PDF...';
+        const MONTH_NAMES_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+        async function handleCaribbeaPdfFiles(files) {
+            const btn = document.getElementById('fin-import-confirm-btn');
+            btn.disabled = true;
+            btn.textContent = `Parsing ${files.length} PDF${files.length > 1 ? 's' : ''}...`;
+            document.getElementById('fin-import-error').classList.add('hidden');
+            document.getElementById('fin-import-caribbean-verify').classList.add('hidden');
+
+            const results = [];
+            const errors = [];
+
+            for (let i = 0; i < files.length; i++) {
+                btn.textContent = `Parsing ${i + 1} of ${files.length}...`;
+                const formData = new FormData();
+                formData.append('file', files[i]);
+                try {
+                    const hdrs = authHeaders();
+                    delete hdrs['Content-Type'];
+                    const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/parse-caribbean-statement`, {
+                        method: 'POST', headers: hdrs, body: formData
+                    });
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.message || 'Parse failed');
+                    results.push(data.parsed);
+                } catch (err) {
+                    errors.push(`${files[i].name}: ${err.message}`);
+                }
+            }
+
+            if (errors.length) {
+                showImportError('Failed to parse: ' + errors.join('; '));
+                if (!results.length) { btn.textContent = 'Import'; return; }
+            }
+
+            // Sort by year then month
+            results.sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
+            importState.caribbeanBatch = results;
+
+            // Build batch review table
+            const tbody = document.getElementById('fin-caribbean-batch-body');
+            tbody.innerHTML = results.map((p, idx) => {
+                const breakdown = p.rawExpenses && p.rawExpenses.length
+                    ? p.rawExpenses.map(e => `${e.name}: ${e.amount < 0 ? '(' + finFmt(Math.abs(e.amount)) + ')' : finFmt(e.amount)}`).join('\n')
+                    : '';
+                return `<tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="px-3 py-2 font-medium">${MONTH_NAMES_SHORT[p.month - 1]}</td>
+                    <td class="px-3 py-2">${p.year}</td>
+                    <td class="px-3 py-2 text-right"><input type="number" step="0.01" class="w-24 px-1 py-0.5 border border-gray-200 rounded text-right text-xs" value="${p.grossIncome}" onchange="importState.caribbeanBatch[${idx}].grossIncome=parseFloat(this.value)||0"></td>
+                    <td class="px-3 py-2 text-right"><input type="number" step="0.01" class="w-24 px-1 py-0.5 border border-gray-200 rounded text-right text-xs" value="${p.managementFee}" onchange="importState.caribbeanBatch[${idx}].managementFee=parseFloat(this.value)||0"></td>
+                    <td class="px-3 py-2 text-right"><input type="number" step="0.01" class="w-24 px-1 py-0.5 border border-gray-200 rounded text-right text-xs" value="${p.otherExpenses}" onchange="importState.caribbeanBatch[${idx}].otherExpenses=parseFloat(this.value)||0"></td>
+                    <td class="px-3 py-2 text-right"><input type="number" class="w-16 px-1 py-0.5 border border-gray-200 rounded text-right text-xs" value="${p.nightsBooked}" onchange="importState.caribbeanBatch[${idx}].nightsBooked=parseInt(this.value)||0"></td>
+                    <td class="px-3 py-2 text-right"><input type="number" class="w-12 px-1 py-0.5 border border-gray-200 rounded text-right text-xs" value="${p.numReservations}" onchange="importState.caribbeanBatch[${idx}].numReservations=parseInt(this.value)||0"></td>
+                    <td class="px-3 py-2 text-right text-gray-400 text-xs">${p.netDue != null ? finFmt(p.netDue) : '—'}</td>
+                    <td class="px-3 py-2">${breakdown ? `<span class="text-xs text-teal-600 cursor-pointer hover:underline" title="${breakdown.replace(/"/g,"'")}">View</span>` : '<span class="text-xs text-gray-300">—</span>'}</td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('fin-import-caribbean-verify').classList.remove('hidden');
+            btn.disabled = false;
+            btn.textContent = `Save ${results.length} month${results.length !== 1 ? 's' : ''} to Dashboard`;
+        }
+
+        async function handleBromleyPdf(file) {
+            const btn = document.getElementById('fin-import-confirm-btn');
+            btn.disabled = true;
+            btn.textContent = 'Parsing…';
             document.getElementById('fin-import-error').classList.add('hidden');
 
             const formData = new FormData();
             formData.append('file', file);
-
             try {
-                const token = localStorage.getItem('accessToken');
-                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/parse-caribbean-statement`, {
+                const resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/parse-bromley-pdf`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                     body: formData
                 });
-                const data = await res.json();
-                if (!data.success) throw new Error(data.message || 'Parse failed');
-
-                // Populate verification form
-                const p = data.parsed;
-                document.getElementById('fin-verify-month').value = p.month;
-                document.getElementById('fin-verify-year').value = p.year;
-                document.getElementById('fin-verify-grossIncome').value = p.grossIncome;
-                document.getElementById('fin-verify-managementFee').value = p.managementFee;
-                document.getElementById('fin-verify-platformCharges').value = p.platformCharges;
-                document.getElementById('fin-verify-nightsBooked').value = p.nightsBooked;
-                document.getElementById('fin-verify-numReservations').value = p.numReservations;
-                document.getElementById('fin-verify-netDue').value = p.netDue || '';
-
-                if (p.rawExpenses && p.rawExpenses.length > 0) {
-                    const lines = p.rawExpenses.map(e => {
-                        const amt = e.amount < 0
-                            ? `(${finFmt(Math.abs(e.amount))})`
-                            : finFmt(e.amount);
-                        return `<div class="flex justify-between"><span>${e.name}</span><span class="${e.amount < 0 ? 'text-green-600' : ''}">${amt}</span></div>`;
-                    }).join('');
-                    document.getElementById('fin-verify-expense-lines').innerHTML = lines;
-                    document.getElementById('fin-verify-raw-expenses').classList.remove('hidden');
+                const data = await resp.json();
+                if (!resp.ok || !data.success) {
+                    showImportError(data.message || 'Failed to parse PDF');
+                    btn.textContent = 'Import'; return;
                 }
 
-                document.getElementById('fin-import-caribbean-verify').classList.remove('hidden');
-                document.getElementById('fin-import-confirm-btn').disabled = false;
-                document.getElementById('fin-import-confirm-btn').textContent = 'Save to Dashboard';
-            } catch (err) {
-                showImportError('PDF parse failed: ' + err.message);
-                document.getElementById('fin-import-confirm-btn').textContent = 'Import';
+                importState.bromleyParsed = data;
+                const MONTH_NAMES_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                const tagColors = { utilities:'bg-blue-100 text-blue-700', housekeeping:'bg-green-100 text-green-700', maintenance:'bg-orange-100 text-orange-700', hoa:'bg-purple-100 text-purple-700', other:'bg-gray-100 text-gray-600' };
+
+                // Doc info bar
+                const infoEl = document.getElementById('fin-bromley-doc-info');
+                if (data.docType === 'invoice') {
+                    document.getElementById('fin-bromley-invoice-section').classList.remove('hidden');
+                    document.getElementById('fin-bromley-statement-section').classList.add('hidden');
+
+                    // Hide/show "Apply to" dropdown — not applicable for cleaning invoices (month comes from cleaning date)
+                    const applyModeWrap = document.getElementById('bromley-apply-mode')?.parentElement;
+                    if (applyModeWrap) applyModeWrap.classList.toggle('hidden', data.type === 'cleaning');
+
+                    if (data.type === 'cleaning') {
+                        // Group line items by cleaning date for preview
+                        const cleanGroups = {};
+                        for (const item of (data.lineItems || [])) {
+                            const d = item.cleaningDate || 'unknown';
+                            if (!cleanGroups[d]) cleanGroups[d] = { date: d, items: [], total: 0 };
+                            cleanGroups[d].items.push(item);
+                            cleanGroups[d].total += item.amount;
+                        }
+                        const groupArr = Object.values(cleanGroups).sort((a,b) => a.date.localeCompare(b.date));
+                        infoEl.innerHTML = `<span><strong>Type:</strong> Cleaning Invoice(s)</span><span><strong>Events:</strong> ${groupArr.length}</span><span><strong>Total:</strong> ${finFmt(data.total)}</span>`;
+                        document.getElementById('fin-bromley-items-body').innerHTML = groupArr.map(g =>
+                            `<tr class="border-b border-gray-100">
+                                <td class="px-3 py-2 font-mono text-xs text-gray-500">S/C/M</td>
+                                <td class="px-3 py-2">Cleaning ${g.date} <span class="text-gray-400 text-xs">(${g.items.length} items)</span></td>
+                                <td class="px-3 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">housekeeping</span></td>
+                                <td class="px-3 py-2 text-right font-medium">${finFmt(g.total)}</td>
+                            </tr>`
+                        ).join('');
+                        btn.textContent = `Save ${groupArr.length} cleaning event${groupArr.length !== 1 ? 's' : ''}`;
+                    } else {
+                        const period = data.startMonth && data.endMonth && data.year
+                            ? (data.startMonth === data.endMonth
+                                ? `${MONTH_NAMES_SHORT[data.startMonth-1]} ${data.year}`
+                                : `${MONTH_NAMES_SHORT[data.startMonth-1]}–${MONTH_NAMES_SHORT[data.endMonth-1]} ${data.year}`)
+                            : (data.year || '');
+                        const invoiceLabel = (data.invoiceNumbers && data.invoiceNumbers.length > 1)
+                            ? `${data.invoiceNumbers.length} invoices (${data.invoiceNumbers[0]}…)`
+                            : (data.invoiceNumber || '—');
+                        infoEl.innerHTML = `<span><strong>Type:</strong> Invoice</span><span><strong>Date:</strong> ${data.date || '—'}</span><span><strong>Invoice(s):</strong> ${invoiceLabel}</span><span><strong>Period:</strong> ${period}</span><span><strong>Total:</strong> ${finFmt(data.total || 0)}</span>`;
+                        document.getElementById('fin-bromley-items-body').innerHTML = (data.lineItems || []).map((item, i) =>
+                            `<tr class="border-b border-gray-100">
+                                <td class="px-3 py-2 font-mono text-xs text-gray-500">${item.code}</td>
+                                <td class="px-3 py-2">${item.description}${item.qty && item.qty !== 1 ? ` <span class="text-gray-400 text-xs">×${item.qty}</span>` : ''}</td>
+                                <td class="px-3 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tagColors[item.tag]||tagColors.other}">${item.tag}</span></td>
+                                <td class="px-3 py-2 text-right font-medium"><input type="number" step="0.01" value="${item.amount}" onchange="importState.bromleyParsed.lineItems[${i}].amount=parseFloat(this.value)||0" class="w-24 px-1 py-0.5 border border-gray-200 rounded text-right text-sm"></td>
+                            </tr>`
+                        ).join('');
+                        btn.textContent = `Save ${(data.lineItems||[]).length} expense items`;
+                    }
+
+                } else {
+                    // Statement
+                    infoEl.innerHTML = `<span><strong>Type:</strong> Statement</span><span><strong>Date:</strong> ${data.date || '—'}</span><span><strong>Total Outstanding:</strong> ${finFmt(data.total || 0)}</span>`;
+                    document.getElementById('fin-bromley-statement-section').classList.remove('hidden');
+                    document.getElementById('fin-bromley-invoice-section').classList.add('hidden');
+                    document.getElementById('fin-bromley-stmt-body').innerHTML = (data.lines || []).map((line, i) =>
+                        `<tr class="border-b border-gray-100 text-sm">
+                            <td class="px-3 py-2"><input type="checkbox" class="bromley-stmt-check rounded" data-idx="${i}" checked></td>
+                            <td class="px-3 py-2 font-mono text-xs">${line.documentNumber}</td>
+                            <td class="px-3 py-2 text-gray-500">${line.date}</td>
+                            <td class="px-3 py-2">${line.reference}</td>
+                            <td class="px-3 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tagColors[line.tag||'other']||tagColors.other}">${line.tag||'other'}</span></td>
+                            <td class="px-3 py-2 text-gray-500">${line.dueDate}</td>
+                            <td class="px-3 py-2 text-right font-medium">${finFmt(line.amount)}</td>
+                        </tr>`
+                    ).join('');
+                }
+
+                document.getElementById('fin-import-bromley-verify').classList.remove('hidden');
+                btn.disabled = false;
+                if (data.docType !== 'invoice') btn.textContent = 'Save selected invoices';
+            } catch(e) {
+                showImportError('Parse error: ' + e.message);
+                btn.textContent = 'Import';
             }
         }
 
-        // Map Evolve Booking Report CSV — returns { monthlyAggregates, guestContacts }
+        function toggleAllBromleyLines(checked) {
+            document.querySelectorAll('.bromley-stmt-check').forEach(cb => cb.checked = checked);
+        }
+
+        // Map Evolve Booking Report CSV — returns { individualBookings, monthlyPreview, guestContacts }
+        // individualBookings: one entry per checked-out booking (sent to /booking-transactions for dedup)
+        // monthlyPreview: aggregated for the preview table only
+        // guestContacts: all non-canceled for guest CRM import
         function mapEvolveBookingRows(rawRows) {
             let headerIdx = 0;
             for (let i = 0; i < Math.min(5, rawRows.length); i++) {
@@ -2855,6 +3913,7 @@ Total: $${props.totalAmount}`);
                 bookingSite:  col(['bookingsite','site','channel']),
             };
 
+            const individualBookings = [];
             const monthlyMap = {};
             const guests = [];
 
@@ -2863,16 +3922,34 @@ Total: $${props.totalAmount}`);
                 const get = (k) => cols[k] !== -1 ? row[cols[k]] : '';
                 const status = get('status').trim();
                 const checkInStr = get('checkIn').trim();
+                const checkOutStr = get('checkOut').trim();
                 const payout = parseMoney(get('totalPayout'));
                 const nightsStayed = parseInt(get('nightsStayed')) || 0;
                 const nights = parseInt(get('nights')) || nightsStayed;
+                const bookingSource = (get('bookingSite') || 'evolve').toLowerCase().replace(/[. ]/g, '').replace('bookingcom','booking.com');
+                const externalBookingId = get('bookingId').trim();
 
-                // Financial aggregation: Checked out bookings only, by check-IN month
-                if (status === 'Checked out' && checkInStr) {
+                // Financial: Checked out bookings only, bucketed by check-IN month
+                if (status === 'Checked out' && checkInStr && externalBookingId) {
                     const d = new Date(checkInStr);
                     if (!isNaN(d)) {
-                        const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
-                        if (!monthlyMap[key]) monthlyMap[key] = { year: d.getFullYear(), month: d.getMonth() + 1, grossIncome: 0, nightsBooked: 0, numReservations: 0 };
+                        const year = d.getFullYear();
+                        const month = d.getMonth() + 1;
+                        individualBookings.push({
+                            externalBookingId,
+                            bookingSource,
+                            year,
+                            month,
+                            grossAmount: payout,
+                            nightsBooked: nightsStayed || nights,
+                            checkInDate: checkInStr,
+                            checkOutDate: checkOutStr,
+                            guestName: get('guestName').trim(),
+                            status,
+                        });
+                        // Preview aggregation (display only)
+                        const key = `${year}-${month}`;
+                        if (!monthlyMap[key]) monthlyMap[key] = { year, month, grossIncome: 0, nightsBooked: 0, numReservations: 0 };
                         monthlyMap[key].grossIncome += payout;
                         monthlyMap[key].nightsBooked += nightsStayed || nights;
                         monthlyMap[key].numReservations++;
@@ -2884,9 +3961,9 @@ Total: $${props.totalAmount}`);
                     guests.push({
                         guestName: get('guestName').trim(),
                         status,
-                        externalBookingId: get('bookingId').trim(),
+                        externalBookingId,
                         checkIn: checkInStr,
-                        checkOut: get('checkOut').trim(),
+                        checkOut: checkOutStr,
                         nights,
                         nightsStayed,
                         totalPayout: payout,
@@ -2895,13 +3972,13 @@ Total: $${props.totalAmount}`);
                         email: get('guestEmail').trim() || null,
                         phone: get('guestPhone').trim() || null,
                         listing: get('listing').trim(),
-                        bookingSource: (get('bookingSite') || 'evolve').toLowerCase().replace(/[. ]/g, '').replace('bookingcom','booking.com'),
+                        bookingSource,
                     });
                 }
             }
 
-            const monthlyAggregates = Object.values(monthlyMap).sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
-            return { monthlyAggregates, guestContacts: guests };
+            const monthlyPreview = Object.values(monthlyMap).sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
+            return { individualBookings, monthlyPreview, guestContacts: guests };
         }
 
         // Map CSV rows for annual-summary import (one row per year)
@@ -2932,7 +4009,7 @@ Total: $${props.totalAmount}`);
             };
             return rawRows.slice(headerIdx + 1).filter(r => r.some(c => c)).map(row => {
                 const year = parseInt(cols.year !== -1 ? row[cols.year] : null);
-                if (!year || isNaN(year)) return null;
+                if (!year || isNaN(year) || year < 1990 || year > 2040) return null;
                 const get = (k) => cols[k] !== -1 ? parseMoney(row[cols[k]]) : null;
                 const getInt = (k) => cols[k] !== -1 ? (parseInt(row[cols[k]]) || null) : null;
                 return {
@@ -2977,15 +4054,15 @@ Total: $${props.totalAmount}`);
                 getRow = r => [r.year, finFmt(r.grossIncomeAnnual), finFmt(r.managementFeeAnnual),
                     finFmt(r.platformChargesAnnual), r.nightsBookedAnnual ?? '—', finFmt(r.hoaAnnual), r.notes || ''];
             } else if (type === 'evolve-csv') {
-                const { monthlyAggregates, guestContacts } = rows;
+                const { individualBookings, monthlyPreview, guestContacts } = rows;
                 document.getElementById('fin-import-preview-label').textContent =
-                    `${monthlyAggregates.length} month(s) of financial data + ${guestContacts.length} guest contact(s) detected:`;
-                headers = ['Month/Year','Gross Income (Payout)','Nights','Reservations'];
+                    `${individualBookings.length} booking(s) across ${monthlyPreview.length} month(s) — duplicates from previous imports will be merged automatically:`;
+                headers = ['Month/Year','Gross Income (Payout)','Nights','Bookings in this file'];
                 document.getElementById('fin-import-preview-head').innerHTML =
                     `<tr>${headers.map(h => `<th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 bg-gray-50">${h}</th>`).join('')}</tr>`;
-                document.getElementById('fin-import-preview-body').innerHTML = monthlyAggregates.map(r =>
+                document.getElementById('fin-import-preview-body').innerHTML = monthlyPreview.map(r =>
                     `<tr class="border-t border-gray-100"><td class="px-3 py-1.5 text-xs text-gray-700">${MONTH_NAMES[r.month-1]} ${r.year}</td><td class="px-3 py-1.5 text-xs text-gray-700">${finFmt(r.grossIncome)} <span class="text-gray-400 text-xs">(owner payout)</span></td><td class="px-3 py-1.5 text-xs text-gray-700">${r.nightsBooked}</td><td class="px-3 py-1.5 text-xs text-gray-700">${r.numReservations}</td></tr>`
-                ).join('') + `<tr class="bg-blue-50 border-t border-gray-200"><td colspan="4" class="px-3 py-2 text-xs text-blue-700">+ ${guestContacts.length} guest contact(s) will be added to your Guests list</td></tr>`;
+                ).join('') + `<tr class="bg-blue-50 border-t border-gray-200"><td colspan="4" class="px-3 py-2 text-xs text-blue-700">+ ${guestContacts.length} guest contact(s) will be added / updated in your Guests list</td></tr>`;
                 document.getElementById('fin-import-preview').classList.remove('hidden');
                 return;
             } else {
@@ -3001,64 +4078,237 @@ Total: $${props.totalAmount}`);
             document.getElementById('fin-import-preview').classList.remove('hidden');
         }
 
+        // Undo toast state
+        let undoState = null;
+        let undoTimer = null;
+
+        function showUndoToast(msg, state) {
+            undoState = state;
+            document.getElementById('undo-toast-msg').textContent = msg;
+            const toast = document.getElementById('undo-toast');
+            toast.classList.remove('hidden');
+            clearTimeout(undoTimer);
+            undoTimer = setTimeout(dismissUndoToast, 30000);
+        }
+
+        function dismissUndoToast() {
+            document.getElementById('undo-toast').classList.add('hidden');
+            undoState = null;
+        }
+
+        async function undoImport() {
+            if (!undoState) return;
+            dismissUndoToast();
+            const { type, propertyId } = undoState;
+            try {
+                if (type === 'caribbean-pdf' || type === 'monthly') {
+                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/monthly-batch`, {
+                        method: 'DELETE', headers: authHeaders(),
+                        body: JSON.stringify({ monthlyIds: undoState.monthlyIds })
+                    });
+                } else if (type === 'evolve-csv') {
+                    if (undoState.transactionIds && undoState.transactionIds.length > 0) {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/booking-transactions-undo`, {
+                            method: 'DELETE', headers: authHeaders(),
+                            body: JSON.stringify({ transactionIds: undoState.transactionIds })
+                        });
+                    }
+                } else if (type === 'bromley-pdf') {
+                    if (undoState.expenseIds && undoState.expenseIds.length > 0) {
+                        await Promise.all(undoState.expenseIds.map(id =>
+                            fetch(`${window.CONFIG.API_BASE_URL}/api/financials/expenses/${id}`, {
+                                method: 'DELETE', headers: authHeaders()
+                            })
+                        ));
+                    }
+                }
+                finState.summaryData = null;
+                await loadFinYear(finState.year);
+            } catch(e) {
+                alert('Undo failed: ' + e.message);
+            }
+        }
+
         async function confirmImport() {
             const btn = document.getElementById('fin-import-confirm-btn');
             const type = document.getElementById('fin-import-type').value;
             const year = parseInt(document.getElementById('fin-import-year').value);
+            const propertyId = finState.propertyId;
 
             btn.disabled = true;
             btn.textContent = 'Saving...';
 
             try {
-                if (type === 'caribbean-pdf') {
-                    // Read from verification form
-                    const payload = {
-                        year:            parseInt(document.getElementById('fin-verify-year').value),
-                        month:           parseInt(document.getElementById('fin-verify-month').value),
-                        grossIncome:     parseFloat(document.getElementById('fin-verify-grossIncome').value) || 0,
-                        managementFee:   parseFloat(document.getElementById('fin-verify-managementFee').value) || 0,
-                        platformCharges: parseFloat(document.getElementById('fin-verify-platformCharges').value) || 0,
-                        nightsBooked:    parseInt(document.getElementById('fin-verify-nightsBooked').value) || 0,
-                        numReservations: parseInt(document.getElementById('fin-verify-numReservations').value) || 0,
-                    };
-                    await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
-                        method: 'POST', headers: authHeaders(),
-                        body: JSON.stringify(payload)
-                    });
+                if (type === 'bromley-pdf') {
+                    const parsed = importState.bromleyParsed;
+                    if (!parsed) return;
+                    const applyMode = document.getElementById('bromley-apply-mode')?.value || 'split';
+                    const createdExpenseIds = [];
+
+                    if (parsed.docType === 'invoice') {
+                        if (parsed.type === 'cleaning') {
+                            // Cleaning invoice — batch save with smart dedup (replaces statement summaries)
+                            const batchItems = (parsed.lineItems || [])
+                                .filter(i => (i.cleaningYear || parsed.year) && (i.cleaningMonth || parsed.startMonth))
+                                .map(i => ({
+                                    year: i.cleaningYear || parsed.year,
+                                    month: i.cleaningMonth || parsed.startMonth,
+                                    expenseName: i.description,
+                                    vendor: 'bromley', amount: i.amount, tag: i.tag,
+                                    expenseDate: i.cleaningDate || null,
+                                    qty: i.qty || null,
+                                }));
+                            const batchResp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses/batch`, {
+                                method: 'POST', headers: authHeaders(),
+                                body: JSON.stringify({ items: batchItems })
+                            });
+                            const batchData = await batchResp.json();
+                            (batchData.created || []).forEach(i => { if (i.id) createdExpenseIds.push(i.id); });
+                            closeImportModal();
+                            const importedYears = [...new Set(batchItems.map(i => i.year).filter(Boolean))].sort((a,b) => a-b);
+                            finState.summaryData = null;
+                            await loadFinSummary();
+                            finState.year = importedYears[0] || finState.year;
+                            await setFinView('year');
+                            const dateSet = new Set((parsed.lineItems || []).map(i => i.cleaningDate).filter(Boolean));
+                            const n = dateSet.size;
+                            const replaceNote = batchData.replaced?.length ? ` (filled in detail for ${batchData.replaced.length} statement entries)` : '';
+                            showUndoToast(`${n} cleaning event${n !== 1 ? 's' : ''} saved${replaceNote} — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
+                        } else {
+                            // Regular invoice — line items split across months
+                            let months = [];
+                            if (parsed.startMonth && parsed.endMonth && parsed.year) {
+                                for (let m = parsed.startMonth; m <= parsed.endMonth; m++) months.push({ year: parsed.year, month: m });
+                            } else if (parsed.year) {
+                                const d = parsed.date ? new Date(parsed.date) : null;
+                                const m = d ? d.getMonth() + 1 : 1;
+                                months = [{ year: parsed.year, month: m }];
+                            }
+                            if (applyMode === 'first') months = months.slice(0, 1);
+                            if (applyMode === 'last')  months = months.slice(-1);
+                            const divisor = months.length || 1;
+                            for (const { year: y, month: mo } of months) {
+                                for (const item of (parsed.lineItems || [])) {
+                                    const resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses`, {
+                                        method: 'POST', headers: authHeaders(),
+                                        body: JSON.stringify({
+                                            year: y, month: mo,
+                                            expenseName: item.description,
+                                            vendor: 'bromley',
+                                            amount: parseFloat((item.amount / divisor).toFixed(2)),
+                                            tag: item.tag,
+                                        })
+                                    });
+                                    const d = await resp.json();
+                                    if (d.item?.id) createdExpenseIds.push(d.item.id);
+                                }
+                            }
+                            closeImportModal();
+                            finState.summaryData = null;
+                            await loadFinSummary();
+                            finState.year = months[0]?.year || finState.year;
+                            await setFinView('year');
+                            const n = (parsed.lineItems || []).length * months.length;
+                            showUndoToast(`${n} Bromley expense item${n !== 1 ? 's' : ''} saved — undo?`, { type: 'bromley-pdf', propertyId, expenseIds: createdExpenseIds });
+                        }
+                    } else {
+                        // Statement — detect WTR/SWR quarterly entries, prompt for split mode if found
+                        const checked = Array.from(document.querySelectorAll('.bromley-stmt-check:checked'));
+                        const selected = checked.map(cb => parsed.lines[parseInt(cb.dataset.idx)]);
+                        const hasWtr = selected.some(l => parseWtrRange(l.reference));
+                        if (hasWtr) {
+                            btn.disabled = false; btn.textContent = 'Import Selected';
+                            importState.pendingStmtSelected = selected;
+                            importState.pendingStmtPropertyId = propertyId;
+                            closeImportModal();
+                            renderWtrSplitModal(selected);
+                            return;
+                        }
+                        await performStatementSave(selected, propertyId, finState.summaryData?.wtrSplitMode || 'split');
+                    }
+                    return;
+                } else if (type === 'caribbean-pdf') {
+                    const batch = importState.caribbeanBatch || [];
+                    const monthlyIds = [];
+                    for (let i = 0; i < batch.length; i++) {
+                        btn.textContent = `Saving ${i + 1} of ${batch.length}...`;
+                        const p = batch[i];
+                        const resp = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/monthly`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify({
+                                year: p.year, month: p.month,
+                                grossIncome: p.grossIncome,
+                                managementFee: p.managementFee,
+                                platformCharges: p.otherExpenses,
+                                nightsBooked: p.nightsBooked,
+                                numReservations: p.numReservations,
+                                rawExpenses: p.rawExpenses || [],
+                            })
+                        });
+                        const d = await resp.json();
+                        if (d.record?.id) monthlyIds.push(d.record.id);
+                    }
+                    closeImportModal();
+                    finState.summaryData = null;
+                    await loadFinYear(finState.year);
+                    showUndoToast(`${batch.length} month${batch.length !== 1 ? 's' : ''} imported — undo?`, { type, propertyId, monthlyIds });
+                    return;
                 } else if (type === 'evolve-csv') {
-                    const { monthlyAggregates, guestContacts } = importState.rows;
-                    const year = parseInt(document.getElementById('fin-import-year').value);
-                    // Import financials
-                    for (const row of monthlyAggregates) {
-                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
-                            method: 'POST', headers: authHeaders(),
-                            body: JSON.stringify({ ...row, managementFee: 0, cleaningFee: 0, platformCharges: 0 })
-                        });
-                    }
-                    // Import guest contacts
+                    const { individualBookings, guestContacts } = importState.rows;
+                    const txnRes = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/booking-transactions`, {
+                        method: 'POST', headers: authHeaders(),
+                        body: JSON.stringify({ bookings: individualBookings })
+                    });
+                    const txnData = await txnRes.json();
+                    let guestMsg = '';
                     if (guestContacts.length > 0) {
-                        await fetch(`${window.CONFIG.API_BASE_URL}/api/guests/bulk-import`, {
+                        const gRes = await fetch(`${window.CONFIG.API_BASE_URL}/api/guests/bulk-import`, {
                             method: 'POST', headers: authHeaders(),
-                            body: JSON.stringify({ propertyId: finState.propertyId, bookings: guestContacts })
+                            body: JSON.stringify({ propertyId, bookings: guestContacts })
                         });
+                        const gData = await gRes.json();
+                        guestMsg = (!gRes.ok || !gData.success)
+                            ? `\n\nGuest import failed: ${gData.message || gRes.status}`
+                            : `\n${gData.results.created} guest(s) added, ${gData.results.updated} updated.`;
                     }
+                    closeImportModal();
+                    finState.summaryData = null;
+                    await loadFinYear(finState.year);
+                    const toastMsg = `${txnData.created} new booking(s), ${txnData.updated} updated — undo new?`;
+                    if (txnData.createdIds?.length > 0) {
+                        showUndoToast(toastMsg, { type, propertyId, transactionIds: txnData.createdIds });
+                    }
+                    if (guestMsg) alert(guestMsg.trim());
+                    return;
                 } else if (type === 'annual-summary') {
                     for (const row of importState.rows) {
-                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/year-summary`, {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/year-summary`, {
                             method: 'POST', headers: authHeaders(),
                             body: JSON.stringify(row)
                         });
                     }
                 } else if (type === 'monthly') {
+                    let saved = 0, skipped = 0;
+                    const monthlyIds = [];
                     for (const row of importState.rows) {
-                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/monthly`, {
+                        const r = await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/monthly`, {
                             method: 'POST', headers: authHeaders(),
                             body: JSON.stringify({ year, ...row })
                         });
+                        const d = await r.json();
+                        if (d.skipped) { skipped++; } else { saved++; if (d.record?.id) monthlyIds.push(d.record.id); }
                     }
+                    closeImportModal();
+                    finState.summaryData = null;
+                    await loadFinSummary();
+                    finState.year = year;
+                    await setFinView('year');
+                    const msg = skipped > 0 ? `${saved} month(s) imported, ${skipped} skipped (already had data)` : `${saved} month(s) imported`;
+                    showUndoToast(`${msg} — undo?`, { type, propertyId, monthlyIds });
+                    return;
                 } else {
                     for (const row of importState.rows) {
-                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${finState.propertyId}/expenses`, {
+                        await fetch(`${window.CONFIG.API_BASE_URL}/api/financials/${propertyId}/expenses`, {
                             method: 'POST', headers: authHeaders(),
                             body: JSON.stringify({ year, ...row })
                         });
@@ -3118,15 +4368,14 @@ Total: $${props.totalAmount}`);
             if (search) url += `&search=${encodeURIComponent(search)}`;
             if (marketingOnly) url += `&marketingOptIn=true`;
 
-            const token = localStorage.getItem('accessToken');
             try {
-                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(url, { headers: authHeaders() });
                 const data = await res.json();
                 if (!data.success) throw new Error(data.message);
                 guestState.all = data.guests || [];
                 guestState.selected.clear();
                 renderGuestsTable(guestState.all);
-                populateGuestsPropertyFilter(guestState.all);
+                populateGuestsPropertyFilter(data.properties || []);
                 updateGuestEmailBtn();
             } catch (err) {
                 document.getElementById('guests-table-body').innerHTML =
@@ -3134,18 +4383,12 @@ Total: $${props.totalAmount}`);
             }
         }
 
-        function populateGuestsPropertyFilter(guests) {
+        function populateGuestsPropertyFilter(properties) {
             const sel = document.getElementById('guests-property-filter');
             const cur = sel.value;
-            const propMap = {};
-            for (const g of guests) {
-                for (const stay of (g.stays || [])) {
-                    if (stay.property) propMap[stay.property.id] = stay.property.name;
-                }
-            }
-            const extraOpts = Object.entries(propMap).map(([id, name]) =>
-                `<option value="${id}" ${id === cur ? 'selected' : ''}>${name}</option>`).join('');
-            sel.innerHTML = `<option value="">All properties</option>` + extraOpts;
+            const opts = properties.map(p =>
+                `<option value="${p.id}" ${p.id === cur ? 'selected' : ''}>${p.name}</option>`).join('');
+            sel.innerHTML = `<option value="">All properties</option>` + opts;
         }
 
         function renderGuestsTable(guests) {
@@ -3257,6 +4500,308 @@ Total: $${props.totalAmount}`);
             el.className = `text-sm rounded-lg px-3 py-2 ${success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`;
             el.classList.remove('hidden');
         }
+    </script>
+
+    <!-- ⌘K Command Palette / Intelligent Search -->
+    <script>
+    // ── Feature index ─────────────────────────────────────────────────────────
+    // Each entry: title, description, keywords (for matching), action (fn or url string)
+    const SEARCH_FEATURES = [
+      {
+        icon: '📥', title: 'Import Bromley Invoice or Statement',
+        desc: 'Upload a Bromley Mountain PDF — invoices with line items or statements of account',
+        tags: ['bromley','invoice','statement','import','expenses','cleaning','housekeeping','maintenance','pdf','upload','bills'],
+        action: () => { switchTab('financials'); setTimeout(() => { document.getElementById('fin-import-type').value = 'bromley-pdf'; resetImport(); document.getElementById('fin-import-modal').classList.remove('hidden'); }, 100); }
+      },
+      {
+        icon: '🌴', title: 'Import Caribbean Statement',
+        desc: 'Upload a Caribbean Property Management monthly PDF to record income and expenses',
+        tags: ['caribbean','statement','monthly','income','pdf','import','management','vrbo'],
+        action: () => { switchTab('financials'); setTimeout(() => { document.getElementById('fin-import-type').value = 'caribbean-pdf'; resetImport(); document.getElementById('fin-import-modal').classList.remove('hidden'); }, 100); }
+      },
+      {
+        icon: '📊', title: 'Import Evolve CSV',
+        desc: 'Import booking transactions from an Evolve CSV export',
+        tags: ['evolve','csv','booking','transactions','import','income','airbnb'],
+        action: () => { switchTab('financials'); setTimeout(() => { document.getElementById('fin-import-type').value = 'evolve-csv'; resetImport(); document.getElementById('fin-import-modal').classList.remove('hidden'); }, 100); }
+      },
+      {
+        icon: '📋', title: 'Import Monthly CSV',
+        desc: 'Upload a monthly summary CSV with income, expenses, and occupancy data',
+        tags: ['monthly','csv','import','income','expenses','upload','manual'],
+        action: () => { switchTab('financials'); setTimeout(() => { document.getElementById('fin-import-type').value = 'monthly'; resetImport(); document.getElementById('fin-import-modal').classList.remove('hidden'); }, 100); }
+      },
+      {
+        icon: '✉️', title: 'Email-to-Import',
+        desc: 'Forward any Bromley invoice email to import@aspiretowards.com — it auto-imports the PDF',
+        tags: ['email','forward','import','bromley','automatic','gmail','auto'],
+        action: () => { alert('Forward any Bromley invoice email (with PDF attached) to:\n\nimport@aspiretowards.com\n\nThe system will detect the property and import it automatically, then reply with a summary.'); }
+      },
+      {
+        icon: '📈', title: 'Year Analytics',
+        desc: 'See average cleaning cost, nightly rate, occupancy, best months, and expense breakdown',
+        tags: ['analytics','stats','average','cleaning','cost','nightly','rate','occupancy','insights','breakdown','chart','expenses','revenue'],
+        action: () => { switchTab('financials'); setTimeout(() => document.getElementById('fin-analytics')?.scrollIntoView({ behavior:'smooth' }), 300); }
+      },
+      {
+        icon: '💰', title: 'View Financial Dashboard',
+        desc: 'See income, expenses, occupancy, and net income across all years',
+        tags: ['financials','income','expenses','dashboard','revenue','profit','year','summary'],
+        action: () => switchTab('financials')
+      },
+      {
+        icon: '📅', title: 'Year Detail',
+        desc: 'See month-by-month breakdown of income and expenses for a specific year',
+        tags: ['year','monthly','detail','breakdown','income','expenses','2024','2025','2026'],
+        action: () => { switchTab('financials'); setTimeout(() => document.getElementById('fin-analytics')?.scrollIntoView({ behavior:'smooth' }), 300); }
+      },
+      {
+        icon: '🧾', title: 'Expense Details',
+        desc: 'View, add, or edit individual expense line items (utilities, maintenance, housekeeping, etc.)',
+        tags: ['expenses','line items','utilities','maintenance','housekeeping','hoa','details','itemized','breakdown'],
+        action: () => { switchTab('financials'); setTimeout(() => { const el = document.getElementById('fin-expense-section'); if (el) el.scrollIntoView({ behavior:'smooth' }); }, 300); }
+      },
+      {
+        icon: '🏷️', title: 'Edit Purchase Price',
+        desc: 'Set or update the purchase price of your property (used for NOI and ROI calculations)',
+        tags: ['purchase price','price','noi','roi','value','investment','cost','buy'],
+        action: () => { switchTab('financials'); setTimeout(() => editPurchasePrice?.(), 200); }
+      },
+      {
+        icon: '🏠', title: 'My Properties',
+        desc: 'View and manage all your listed properties',
+        tags: ['properties','listings','manage','property','add','edit','view'],
+        action: '/properties.html'
+      },
+      {
+        icon: '➕', title: 'Add a New Property',
+        desc: 'List a new rental property on the platform',
+        tags: ['add','new','property','create','listing','rental'],
+        action: '/create-property.html'
+      },
+      {
+        icon: '👥', title: 'View Guests',
+        desc: 'See all guests, search by name or email, and manage bookings',
+        tags: ['guests','bookings','reservations','search','name','email','stays'],
+        action: () => switchTab('guests')
+      },
+      {
+        icon: '⚙️', title: 'Account Settings',
+        desc: 'Update your name or change your password',
+        tags: ['account','settings','name','password','profile','change','update','email'],
+        action: '/dashboard/account-settings.html'
+      },
+      {
+        icon: '🔑', title: 'Change Password',
+        desc: 'Update your account password',
+        tags: ['password','change','update','security','login','credentials'],
+        action: '/dashboard/account-settings.html'
+      },
+      {
+        icon: '🐛', title: 'Report a Bug',
+        desc: 'Something not working right? Let us know',
+        tags: ['bug','report','broken','issue','error','problem','not working','crash'],
+        action: '/dashboard/support.html?type=bug'
+      },
+      {
+        icon: '💡', title: 'Request a Feature',
+        desc: 'Have an idea? Submit a feature request',
+        tags: ['feature','request','idea','suggest','new','wish','want','add'],
+        action: '/dashboard/support.html?type=feature'
+      },
+      {
+        icon: '💳', title: 'Billing Support',
+        desc: 'Questions about your subscription or payments',
+        tags: ['billing','payment','subscription','charge','invoice','plan','pricing'],
+        action: '/dashboard/support.html?type=billing'
+      },
+      {
+        icon: '💬', title: 'Contact Support',
+        desc: 'Get help with anything — general questions or anything else',
+        tags: ['support','contact','help','question','general','message'],
+        action: '/dashboard/support.html'
+      },
+      {
+        icon: '↩️', title: 'Undo Last Import',
+        desc: 'Reverse the most recent CSV or PDF import',
+        tags: ['undo','reverse','import','mistake','delete','remove','last'],
+        action: () => { if (typeof undoState !== 'undefined' && undoState) undoImport(); else alert('No recent import to undo. The undo window appears for 30 seconds after each import.'); }
+      },
+      {
+        icon: '📤', title: 'Sign Out',
+        desc: 'Log out of your account',
+        tags: ['sign out','logout','exit','leave','log off'],
+        action: () => logout()
+      },
+    ];
+
+    // ── Search algorithm ──────────────────────────────────────────────────────
+    let searchSelectedIdx = -1;
+
+    function normalizeQuery(q) {
+      return q.toLowerCase()
+        .replace(/^(how (do i|can i|to)|where (is|can i find)|i want to|show me|find|take me to)\s+/i, '')
+        .trim();
+    }
+
+    function scoreFeature(feature, q) {
+      if (!q) return 0;
+      const tokens = q.split(/\s+/).filter(Boolean);
+      const titleL = feature.title.toLowerCase();
+      const descL = feature.desc.toLowerCase();
+      let score = 0;
+
+      for (const tok of tokens) {
+        if (titleL.startsWith(tok))          score += 10;
+        else if (titleL.includes(tok))       score += 6;
+        else if (feature.tags.some(t => t.startsWith(tok))) score += 8;
+        else if (feature.tags.some(t => t.includes(tok)))   score += 5;
+        else if (descL.includes(tok))        score += 3;
+        else {
+          // Fuzzy: allow 1 character off for tokens ≥4 chars
+          if (tok.length >= 4) {
+            const fuzzy = feature.tags.some(t => levenshtein(tok, t) <= 1) || levenshtein(tok, titleL.split(' ')[0]) <= 1;
+            if (fuzzy) score += 2;
+          }
+        }
+      }
+      return score;
+    }
+
+    function levenshtein(a, b) {
+      if (Math.abs(a.length - b.length) > 3) return 99;
+      const dp = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+      for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+      for (let i = 1; i <= a.length; i++)
+        for (let j = 1; j <= b.length; j++)
+          dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+      return dp[a.length][b.length];
+    }
+
+    function runSearch(raw) {
+      const q = normalizeQuery(raw);
+      const resultsEl = document.getElementById('search-results');
+      const emptyEl = document.getElementById('search-empty');
+      const hintEl = document.getElementById('search-hint');
+      searchSelectedIdx = -1;
+
+      if (!q) {
+        resultsEl.innerHTML = renderDefaultResults();
+        emptyEl.classList.add('hidden');
+        hintEl.classList.remove('hidden');
+        return;
+      }
+
+      const scored = SEARCH_FEATURES
+        .map(f => ({ f, score: scoreFeature(f, q) }))
+        .filter(x => x.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 7);
+
+      if (scored.length === 0) {
+        resultsEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        hintEl.classList.add('hidden');
+      } else {
+        resultsEl.innerHTML = scored.map((x, i) => renderResult(x.f, i)).join('');
+        emptyEl.classList.add('hidden');
+        hintEl.classList.remove('hidden');
+      }
+    }
+
+    function renderDefaultResults() {
+      const defaults = ['Import Bromley Invoice or Statement','Import Caribbean Statement','View Financial Dashboard','Account Settings','Contact Support'];
+      const items = SEARCH_FEATURES.filter(f => defaults.includes(f.title));
+      return `<div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">Quick Actions</div>` +
+        items.map((f, i) => renderResult(f, i)).join('');
+    }
+
+    function renderResult(f, idx) {
+      return `<div class="search-result flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors" data-idx="${idx}" onmouseenter="searchHighlight(${idx})" onclick="executeSearchResult(${idx})">
+        <span class="text-xl shrink-0 w-7 text-center">${f.icon}</span>
+        <div class="min-w-0">
+          <div class="text-sm font-medium text-gray-900 truncate">${f.title}</div>
+          <div class="text-xs text-gray-500 truncate">${f.desc}</div>
+        </div>
+      </div>`;
+    }
+
+    function searchHighlight(idx) {
+      searchSelectedIdx = idx;
+      document.querySelectorAll('.search-result').forEach((el, i) => {
+        el.classList.toggle('bg-gray-50', i === idx);
+      });
+    }
+
+    function searchKeydown(e) {
+      const items = document.querySelectorAll('.search-result');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        searchSelectedIdx = Math.min(searchSelectedIdx + 1, items.length - 1);
+        items.forEach((el, i) => el.classList.toggle('bg-gray-50', i === searchSelectedIdx));
+        items[searchSelectedIdx]?.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        searchSelectedIdx = Math.max(searchSelectedIdx - 1, 0);
+        items.forEach((el, i) => el.classList.toggle('bg-gray-50', i === searchSelectedIdx));
+        items[searchSelectedIdx]?.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter') {
+        if (searchSelectedIdx >= 0) executeSearchResult(searchSelectedIdx);
+        else if (items.length === 1) executeSearchResult(0);
+      } else if (e.key === 'Escape') {
+        closeSearch();
+      }
+    }
+
+    function getVisibleResults() {
+      const q = normalizeQuery(document.getElementById('search-input').value);
+      if (!q) {
+        const defaults = ['Import Bromley Invoice or Statement','Import Caribbean Statement','View Financial Dashboard','Account Settings','Contact Support'];
+        return SEARCH_FEATURES.filter(f => defaults.includes(f.title));
+      }
+      return SEARCH_FEATURES
+        .map(f => ({ f, score: scoreFeature(f, q) }))
+        .filter(x => x.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 7)
+        .map(x => x.f);
+    }
+
+    function executeSearchResult(idx) {
+      const results = getVisibleResults();
+      const feature = results[idx];
+      if (!feature) return;
+      closeSearch();
+      if (typeof feature.action === 'string') {
+        window.location.href = feature.action;
+      } else {
+        setTimeout(() => feature.action(), 50);
+      }
+    }
+
+    function openSearch() {
+      const overlay = document.getElementById('search-overlay');
+      const input = document.getElementById('search-input');
+      overlay.classList.remove('hidden');
+      input.value = '';
+      runSearch('');
+      setTimeout(() => input.focus(), 50);
+    }
+
+    function closeSearch() {
+      document.getElementById('search-overlay').classList.add('hidden');
+    }
+
+    // ⌘K / Ctrl+K shortcut
+    document.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('search-overlay').classList.contains('hidden') ? openSearch() : closeSearch();
+      }
+      if (e.key === 'Escape' && !document.getElementById('search-overlay').classList.contains('hidden')) {
+        closeSearch();
+      }
+    });
     </script>
 </body>
 </html>

@@ -72,11 +72,25 @@ const getPropertyById = async (req, res) => {
   }
 }
 
+function generateSlug(name) {
+  const base = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 50)
+  const suffix = Math.random().toString(36).substring(2, 7)
+  return `${base}-${suffix}`
+}
+
 const createProperty = async (req, res) => {
   try {
     const propertyData = {
       ...req.body,
-      userId: req.user.id
+      userId: req.user.id,
+      slug: generateSlug(req.body.name || 'property'),
+      status: 'active',
     }
 
     const property = await Property.create(propertyData)
@@ -112,7 +126,12 @@ const updateProperty = async (req, res) => {
       })
     }
 
-    await property.update(req.body)
+    const updateData = { ...req.body }
+    // Backfill slug and status for properties that were created without them
+    if (!property.slug) updateData.slug = generateSlug(property.name || 'property')
+    if (!property.status || property.status === 'pending') updateData.status = 'active'
+
+    await property.update(updateData)
 
     res.json({
       success: true,

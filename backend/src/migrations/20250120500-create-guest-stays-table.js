@@ -30,13 +30,13 @@ module.exports = {
       },
       bookingId: {
         type: Sequelize.UUID,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: 'bookings',
           key: 'id'
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'SET NULL'
       },
       checkIn: {
         type: Sequelize.DATEONLY,

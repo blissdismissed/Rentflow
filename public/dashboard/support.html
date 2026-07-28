@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support - AspireTowards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <a href="/dashboard.html" class="text-xl font-display font-bold text-gray-900">AspireTowards</a>
+                    <span class="text-gray-400">|</span>
+                    <span class="text-gray-600">Support</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard.html" class="text-gray-600 hover:text-teal-600 transition">← Dashboard</a>
+                    <button id="logout-btn" class="text-red-600 hover:text-red-700 transition">Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-display font-bold text-gray-900">Support</h1>
+            <p class="text-gray-600 mt-1">Report a bug, request a feature, or get help with anything</p>
+        </div>
+
+        <!-- Status message -->
+        <div id="status-msg" class="hidden mb-6 px-4 py-3 rounded-lg text-sm font-medium"></div>
+
+        <!-- Success state (hidden until submitted) -->
+        <div id="success-view" class="hidden bg-white rounded-xl shadow-sm p-8 text-center">
+            <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">Message sent!</h2>
+            <p class="text-gray-500 mb-6">We've received your message and will get back to you at <span id="success-email" class="font-medium text-gray-700"></span>.</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="resetForm()" class="px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm">Send another</button>
+                <a href="/dashboard.html" class="px-5 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition text-sm">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div id="form-view">
+            <!-- Category cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                <button type="button" onclick="selectCategory('bug')" data-cat="bug"
+                    class="category-btn flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-teal-400 transition text-sm font-medium text-gray-700">
+                    <span class="text-2xl">🐛</span> Bug Report
+                </button>
+                <button type="button" onclick="selectCategory('feature')" data-cat="feature"
+                    class="category-btn flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-teal-400 transition text-sm font-medium text-gray-700">
+                    <span class="text-2xl">💡</span> Feature Request
+                </button>
+                <button type="button" onclick="selectCategory('billing')" data-cat="billing"
+                    class="category-btn flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-teal-400 transition text-sm font-medium text-gray-700">
+                    <span class="text-2xl">💳</span> Billing
+                </button>
+                <button type="button" onclick="selectCategory('general')" data-cat="general"
+                    class="category-btn flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-teal-400 transition text-sm font-medium text-gray-700">
+                    <span class="text-2xl">💬</span> General
+                </button>
+            </div>
+
+            <form id="support-form" onsubmit="submitForm(event)" class="bg-white rounded-xl shadow-sm p-6 space-y-5">
+                <input type="hidden" id="category" value="">
+
+                <div id="category-hint" class="hidden px-3 py-2 bg-teal-50 border border-teal-200 rounded-lg text-sm text-teal-700"></div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Subject <span class="text-red-500">*</span></label>
+                    <input type="text" id="subject" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        placeholder="Brief summary of your request">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Message <span class="text-red-500">*</span></label>
+                    <textarea id="message" required rows="6"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                        placeholder="Describe the issue or request in as much detail as you can..."></textarea>
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                    <p class="text-xs text-gray-400">We'll reply to your account email</p>
+                    <button type="submit" id="submit-btn"
+                        class="px-6 py-2.5 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition disabled:opacity-50">
+                        Send Message
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-16 border-t border-gray-200 py-8">
+        <p class="text-center text-sm text-gray-400">© 2026 AspireTowards. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api'
+            : '/api';
+
+        function authHeaders() {
+            return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` };
+        }
+
+        const categoryHints = {
+            bug: 'Please describe what you were doing, what you expected to happen, and what actually happened.',
+            feature: 'Tell us what problem you\'re trying to solve and how you\'d like the feature to work.',
+            billing: 'Include any relevant transaction details or account information.',
+            general: 'Ask us anything — we\'re happy to help.'
+        };
+
+        function selectCategory(cat) {
+            document.getElementById('category').value = cat;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                const active = btn.dataset.cat === cat;
+                btn.classList.toggle('border-teal-500', active);
+                btn.classList.toggle('bg-teal-50', active);
+                btn.classList.toggle('border-gray-200', !active);
+            });
+            const hint = document.getElementById('category-hint');
+            hint.textContent = categoryHints[cat] || '';
+            hint.classList.remove('hidden');
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+            const category = document.getElementById('category').value;
+            const subject = document.getElementById('subject').value.trim();
+            const message = document.getElementById('message').value.trim();
+
+            if (!category) {
+                document.querySelector('.category-btn').closest('div').scrollIntoView({ behavior: 'smooth' });
+                showStatus('Please select a category above first', true);
+                alert('Please select a category (Bug Report, Feature Request, Billing, or General) before sending.');
+                return;
+            }
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+
+            try {
+                const resp = await fetch(`${API_URL}/support/contact`, {
+                    method: 'POST', headers: authHeaders(),
+                    body: JSON.stringify({ category, subject, message })
+                });
+                const data = await resp.json();
+                if (resp.ok && data.success) {
+                    const stored = JSON.parse(localStorage.getItem('user') || '{}');
+                    document.getElementById('success-email').textContent = stored.email || 'your email';
+                    document.getElementById('form-view').classList.add('hidden');
+                    document.getElementById('success-view').classList.remove('hidden');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    if (data.emailError) {
+                        console.warn('Email delivery issue:', data.emailError);
+                    }
+                } else {
+                    const errMsg = data.message || 'Something went wrong. Please try again.';
+                    alert(errMsg);
+                    showStatus(errMsg, true);
+                    btn.disabled = false;
+                    btn.textContent = 'Send Message';
+                }
+            } catch(err) {
+                alert('Network error — please check your connection and try again.');
+                btn.disabled = false;
+                btn.textContent = 'Send Message';
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('support-form').reset();
+            document.getElementById('category').value = '';
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('border-teal-500', 'bg-teal-50');
+                btn.classList.add('border-gray-200');
+            });
+            document.getElementById('category-hint').classList.add('hidden');
+            document.getElementById('submit-btn').disabled = false;
+            document.getElementById('submit-btn').textContent = 'Send Message';
+            document.getElementById('success-view').classList.add('hidden');
+            document.getElementById('form-view').classList.remove('hidden');
+        }
+
+        function showStatus(msg, isError = false) {
+            const el = document.getElementById('status-msg');
+            el.textContent = msg;
+            el.className = `mb-6 px-4 py-3 rounded-lg text-sm font-medium ${isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 5000);
+        }
+
+        // Auth check
+        const token = localStorage.getItem('token');
+        if (!token) { window.location.href = '/auth/login.html'; }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            window.location.href = '/auth/login.html';
+        });
+
+        // Pre-select "bug" if ?type=bug in URL
+        const urlType = new URLSearchParams(window.location.search).get('type');
+        if (urlType && categoryHints[urlType]) selectCategory(urlType);
+    </script>
+</body>
+</html>

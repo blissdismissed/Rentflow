@@ -19,8 +19,12 @@
         .font-display { font-family: 'Playfair Display', serif; }
         .form-section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); }
         .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem; }
+        .form-label .req { color: #DC2626; margin-left: 2px; }
         .form-input { width: 100%; padding: 0.625rem 0.875rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; }
-        .form-input:focus { outline: none; border-color: #0F766E; ring: 2px; ring-color: #0F766E; }
+        .form-input:focus { outline: none; border-color: #0F766E; }
+        .form-input.invalid { border-color: #DC2626; background-color: #FFF5F5; }
+        .field-error { color: #DC2626; font-size: 0.75rem; margin-top: 0.25rem; display: none; }
+        .field-error.visible { display: block; }
         .image-preview { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
     </style>
 </head>
@@ -56,8 +60,9 @@
                 <h3 class="text-xl font-semibold text-gray-900 mb-4">Basic Information</h3>
 
                 <div class="mb-4">
-                    <label for="name" class="form-label">Property Name</label>
+                    <label for="name" class="form-label">Property Name<span class="req">*</span></label>
                     <input type="text" id="name" name="name" class="form-input" required>
+                    <p class="field-error" id="err-name">Property name is required.</p>
                 </div>
 
                 <div class="mb-4">
@@ -85,23 +90,27 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label for="address" class="form-label">Street Address</label>
+                        <label for="address" class="form-label">Street Address<span class="req">*</span></label>
                         <input type="text" id="address" name="address" class="form-input" required>
+                        <p class="field-error" id="err-address">Street address is required.</p>
                     </div>
                     <div>
-                        <label for="city" class="form-label">City</label>
+                        <label for="city" class="form-label">City<span class="req">*</span></label>
                         <input type="text" id="city" name="city" class="form-input" required>
+                        <p class="field-error" id="err-city">City is required.</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label for="state" class="form-label">State</label>
+                        <label for="state" class="form-label">State<span class="req">*</span></label>
                         <input type="text" id="state" name="state" class="form-input" required>
+                        <p class="field-error" id="err-state">State is required.</p>
                     </div>
                     <div>
-                        <label for="zipCode" class="form-label">Zip Code</label>
+                        <label for="zipCode" class="form-label">Zip Code<span class="req">*</span></label>
                         <input type="text" id="zipCode" name="zipCode" class="form-input" required>
+                        <p class="field-error" id="err-zipCode">Zip code is required.</p>
                     </div>
                     <div>
                         <label for="country" class="form-label">Country</label>
@@ -116,15 +125,15 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label for="bedrooms" class="form-label">Bedrooms</label>
+                        <label for="bedrooms" class="form-label">Bedrooms<span class="req">*</span></label>
                         <input type="number" id="bedrooms" name="bedrooms" min="1" class="form-input" required>
                     </div>
                     <div>
-                        <label for="bathrooms" class="form-label">Bathrooms</label>
+                        <label for="bathrooms" class="form-label">Bathrooms<span class="req">*</span></label>
                         <input type="number" id="bathrooms" name="bathrooms" min="0.5" step="0.5" class="form-input" required>
                     </div>
                     <div>
-                        <label for="maxGuests" class="form-label">Max Guests</label>
+                        <label for="maxGuests" class="form-label">Max Guests<span class="req">*</span></label>
                         <input type="number" id="maxGuests" name="maxGuests" min="1" class="form-input" required>
                     </div>
                     <div>
@@ -140,8 +149,9 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label for="basePrice" class="form-label">Base Price per Night ($)</label>
+                        <label for="basePrice" class="form-label">Base Price per Night ($)<span class="req">*</span></label>
                         <input type="number" id="basePrice" name="basePrice" min="0" step="0.01" class="form-input" required>
+                        <p class="field-error" id="err-basePrice">Base price is required.</p>
                     </div>
                     <div>
                         <label for="cleaningFee" class="form-label">Cleaning Fee ($)</label>
@@ -233,9 +243,12 @@
                 </div>
             </div>
 
+            <!-- Form-level error banner -->
+            <div id="form-error-banner" class="hidden mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"></div>
+
             <!-- Submit Buttons -->
             <div class="flex space-x-4">
-                <button type="submit" class="flex-1 bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-700 transition">
+                <button type="submit" id="submit-btn" class="flex-1 bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-700 transition">
                     Create Property
                 </button>
                 <a href="/dashboard.html" class="flex-1 text-center bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition">
@@ -248,26 +261,34 @@
     <script>
         const API_URL = `${window.CONFIG.API_BASE_URL}/api`;
 
-        // Common amenities
         const commonAmenities = [
             'WiFi', 'TV', 'Kitchen', 'Washer', 'Dryer', 'Free Parking', 'Air Conditioning',
             'Heating', 'Workspace', 'Pool', 'Hot Tub', 'Gym', 'BBQ Grill', 'Fireplace',
             'Coffee Maker', 'Dishwasher', 'Microwave', 'Hair Dryer', 'Iron', 'Linens & Towels'
         ];
 
-        // Check authentication
+        // Required fields: [inputId, errorId]
+        const REQUIRED_FIELDS = [
+            { id: 'name',      errId: 'err-name',      label: 'Property Name' },
+            { id: 'address',   errId: 'err-address',   label: 'Street Address' },
+            { id: 'city',      errId: 'err-city',      label: 'City' },
+            { id: 'state',     errId: 'err-state',     label: 'State' },
+            { id: 'zipCode',   errId: 'err-zipCode',   label: 'Zip Code' },
+            { id: 'bedrooms',  errId: null,             label: 'Bedrooms' },
+            { id: 'bathrooms', errId: null,             label: 'Bathrooms' },
+            { id: 'maxGuests', errId: null,             label: 'Max Guests' },
+            { id: 'basePrice', errId: 'err-basePrice', label: 'Base Price' },
+            { id: 'minNights', errId: null,             label: 'Minimum Nights' },
+            { id: 'maxNights', errId: null,             label: 'Maximum Nights' },
+        ];
+
         function checkAuth() {
             const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = '/auth/login.html';
-                return false;
-            }
+            if (!token) { window.location.href = '/auth/login.html'; return false; }
             return true;
         }
 
-        // Initialize form with defaults
         function initializeForm() {
-            // Set default values
             document.getElementById('country').value = 'USA';
             document.getElementById('bedrooms').value = 2;
             document.getElementById('bathrooms').value = 1;
@@ -279,16 +300,17 @@
             document.getElementById('cancellationPolicy').value = 'moderate';
             document.getElementById('publiclyVisible').checked = true;
             document.getElementById('isActive').checked = true;
-
-            // Load amenities checkboxes
             loadAmenities();
+
+            // Clear validation state when user types
+            REQUIRED_FIELDS.forEach(f => {
+                const el = document.getElementById(f.id);
+                if (el) el.addEventListener('input', () => clearFieldError(f.id, f.errId));
+            });
         }
 
-        // Load amenities checkboxes
         function loadAmenities() {
-            const container = document.getElementById('amenities-container');
-
-            container.innerHTML = commonAmenities.map(amenity => `
+            document.getElementById('amenities-container').innerHTML = commonAmenities.map(amenity => `
                 <label class="flex items-center cursor-pointer">
                     <input type="checkbox" name="amenity" value="${amenity}" class="mr-2">
                     <span class="text-sm">${amenity}</span>
@@ -296,36 +318,64 @@
             `).join('');
         }
 
-        // Add custom amenity
         function addCustomAmenity() {
             const input = document.getElementById('new-amenity');
             const amenity = input.value.trim();
-
             if (!amenity) return;
-
             const container = document.getElementById('amenities-container');
             const newCheckbox = document.createElement('label');
             newCheckbox.className = 'flex items-center cursor-pointer';
-            newCheckbox.innerHTML = `
-                <input type="checkbox" name="amenity" value="${amenity}" checked class="mr-2">
-                <span class="text-sm">${amenity}</span>
-            `;
+            newCheckbox.innerHTML = `<input type="checkbox" name="amenity" value="${amenity}" checked class="mr-2"><span class="text-sm">${amenity}</span>`;
             container.appendChild(newCheckbox);
             input.value = '';
         }
 
-        // Handle form submission
+        function clearFieldError(inputId, errId) {
+            const el = document.getElementById(inputId);
+            if (el) el.classList.remove('invalid');
+            if (errId) {
+                const errEl = document.getElementById(errId);
+                if (errEl) errEl.classList.remove('visible');
+            }
+        }
+
+        function validateForm() {
+            let valid = true;
+            const missing = [];
+
+            REQUIRED_FIELDS.forEach(f => {
+                const el = document.getElementById(f.id);
+                const val = el ? el.value.trim() : '';
+                if (!val) {
+                    valid = false;
+                    missing.push(f.label);
+                    if (el) el.classList.add('invalid');
+                    if (f.errId) {
+                        const errEl = document.getElementById(f.errId);
+                        if (errEl) errEl.classList.add('visible');
+                    }
+                }
+            });
+
+            const banner = document.getElementById('form-error-banner');
+            if (!valid) {
+                banner.textContent = `Please fill in the required fields: ${missing.join(', ')}.`;
+                banner.classList.remove('hidden');
+                banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                banner.classList.add('hidden');
+            }
+            return valid;
+        }
+
         document.getElementById('edit-property-form').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if (!validateForm()) return;
 
             const formData = new FormData(this);
+            const amenities = Array.from(document.querySelectorAll('input[name="amenity"]:checked')).map(cb => cb.value);
 
-            // Collect amenities
-            const amenities = Array.from(document.querySelectorAll('input[name="amenity"]:checked'))
-                .map(cb => cb.value);
-
-            // Build update object
-            const updateData = {
+            const payload = {
                 name: formData.get('name'),
                 type: formData.get('type'),
                 description: formData.get('description'),
@@ -348,36 +398,50 @@
                 cancellationPolicy: formData.get('cancellationPolicy'),
                 publiclyVisible: document.getElementById('publiclyVisible').checked,
                 isActive: document.getElementById('isActive').checked,
-                amenities: amenities
+                amenities,
             };
 
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+
             try {
-                const response = await fetch(`${API_URL}/properties/${propertyId}`, {
-                    method: 'PUT',
+                const response = await fetch(`${API_URL}/properties`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
-                    body: JSON.stringify(updateData)
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    alert('Property updated successfully!');
                     window.location.href = '/dashboard.html';
                 } else {
-                    alert(data.message || 'Failed to update property');
+                    const banner = document.getElementById('form-error-banner');
+                    // Server may return an array of validation errors
+                    const msg = Array.isArray(data.errors)
+                        ? data.errors.map(e => e.msg || e.message).join(', ')
+                        : (data.message || 'Failed to create property. Please check your inputs and try again.');
+                    banner.textContent = msg;
+                    banner.classList.remove('hidden');
+                    banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             } catch (error) {
-                console.error('Error updating property:', error);
-                alert('Failed to update property. Please try again.');
+                console.error('Error creating property:', error);
+                const banner = document.getElementById('form-error-banner');
+                banner.textContent = 'Could not reach the server. Please check your connection and try again.';
+                banner.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Property';
             }
         });
 
-        // Initialize
         if (checkAuth()) {
-            loadProperty();
+            initializeForm();
         }
     </script>
 </body>

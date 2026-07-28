@@ -85,6 +85,14 @@ __pycache__/         # if Python backend
 *.pyo
 
 # ────────────
+# Claude Code
+# ────────────
+# Commit: .claude/agents/, .claude/settings.json, CLAUDE.md
+.claude/settings.local.json
+.claude/agent-memory-local/
+.claude/todos/
+
+# ────────────
 # Other
 # ────────────
 *.local

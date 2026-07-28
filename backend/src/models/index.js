@@ -17,6 +17,7 @@ const PropertyFinancialSettings = require('./PropertyFinancialSettings')
 const FinancialAnnualConfig = require('./FinancialAnnualConfig')
 const FinancialMonthly = require('./FinancialMonthly')
 const FinancialExpenseItem = require('./FinancialExpenseItem')
+const FinancialBookingTransaction = require('./FinancialBookingTransaction')
 
 // Define associations
 User.hasMany(Property, { foreignKey: 'userId', as: 'properties' })
@@ -109,6 +110,9 @@ FinancialMonthly.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' 
 Property.hasMany(FinancialExpenseItem, { foreignKey: 'propertyId', as: 'expenseItems' })
 FinancialExpenseItem.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' })
 
+Property.hasMany(FinancialBookingTransaction, { foreignKey: 'propertyId', as: 'bookingTransactions' })
+FinancialBookingTransaction.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' })
+
 module.exports = {
   User,
   Property,
@@ -128,5 +132,6 @@ module.exports = {
   PropertyFinancialSettings,
   FinancialAnnualConfig,
   FinancialMonthly,
-  FinancialExpenseItem
+  FinancialExpenseItem,
+  FinancialBookingTransaction,
 }
