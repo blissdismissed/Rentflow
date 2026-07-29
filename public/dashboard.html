@@ -15,7 +15,6 @@
     <!-- Theme (must load before Tailwind and body to prevent FOUC) -->
     <script src="/js/theme.js"></script>
     <!-- Critical logo-swap rules inlined so they fire before CSS file downloads -->
-    <style>html:not(.dark) .logo-dark{display:none}html.dark .logo-light{display:none}</style>
 
     <script src="/js/config.js"></script>
     <script>window.tailwind = { config: { darkMode: 'class' } }</script>
@@ -135,15 +134,16 @@
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center gap-3">
                     <a href="/dashboard.html" class="flex items-center">
-                        <img class="logo-light h-8 hidden sm:block" src="/assets/resources/logo-single-line.png" alt="AspireTowards">
-                        <img class="logo-dark  h-8 hidden sm:block" src="/assets/resources/logo-dark-bg.png"     alt="AspireTowards">
+                        <img class="h-8 hidden sm:block" src="/assets/resources/logo-single-line.png" alt="AspireTowards">
                         <img class="h-8 sm:hidden" src="/assets/resources/icon-mark-color.png" alt="AspireTowards">
                     </a>
                     <div class="h-5 w-px bg-gray-200 hidden sm:block"></div>
                     <span class="text-gray-500 text-sm font-medium hidden sm:inline">RentFlow</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span id="user-name" class="text-gray-700 font-medium text-sm hidden sm:block"></span>
+                    <a href="/dashboard/account-settings.html" class="text-gray-500 hover:text-gray-700 transition" title="Account Settings">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </a>
                     <button onclick="logout()" class="text-gray-600 hover:text-gray-900 font-medium text-sm">
                         Sign Out
                     </button>
@@ -1376,7 +1376,8 @@
                     const user = JSON.parse(userStr);
                     const firstName = user.name ? user.name.split(' ')[0] : user.email.split('@')[0];
                     document.getElementById('user-greeting').textContent = firstName;
-                    document.getElementById('user-name').textContent = user.name || user.email;
+                    const userNameEl = document.getElementById('user-name');
+                    if (userNameEl) userNameEl.textContent = user.name || user.email;
                 } catch (e) {
                     console.error('Error parsing user data:', e);
                 }
@@ -2888,6 +2889,65 @@ Total: $${props.totalAmount}`);
             </div>
 
             ${(() => {
+                // Revenue by Channel — from booking transactions (Evolve CSV imports)
+                const channels = data.channelBreakdown || [];
+                if (!channels.length) return '';
+
+                const totalChannelRev = channels.reduce((s, c) => s + c.grossIncome, 0);
+                const channelColors = {
+                    'airbnb': '#FF5A5F', 'vrbo': '#3D5A80', 'booking.com': '#003580',
+                    'evolve': '#14b8a6', 'direct': '#f97316', 'website': '#8b5cf6'
+                };
+                const channelLabel = src => {
+                    const map = { 'airbnb': 'Airbnb', 'vrbo': 'Vrbo', 'booking.com': 'Booking.com', 'evolve': 'Evolve Direct', 'direct': 'Direct', 'website': 'Website' };
+                    return map[src] || src.charAt(0).toUpperCase() + src.slice(1);
+                };
+
+                const rows = channels.map(c => {
+                    const pct = totalChannelRev > 0 ? (c.grossIncome / totalChannelRev * 100).toFixed(1) : 0;
+                    const color = channelColors[c.bookingSource] || '#6b7280';
+                    return `<tr>
+                        <td class="py-2 pr-4">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-sm shrink-0" style="background:${color}"></span>
+                                <span class="text-sm font-medium text-gray-800">${channelLabel(c.bookingSource)}</span>
+                            </div>
+                        </td>
+                        <td class="py-2 pr-4 text-sm text-gray-600 text-right">${c.count} booking${c.count !== 1 ? 's' : ''}</td>
+                        <td class="py-2 pr-4 text-sm text-gray-600 text-right">${c.nightsBooked} nights</td>
+                        <td class="py-2 pr-4 text-sm font-semibold text-gray-900 text-right">${finFmt(c.grossIncome)}</td>
+                        <td class="py-2 text-right">
+                            <div class="flex items-center gap-2 justify-end">
+                                <div class="w-16 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="h-full rounded-full" style="width:${pct}%;background:${color}"></div>
+                                </div>
+                                <span class="text-xs text-gray-500 w-8 text-right">${pct}%</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+
+                return `<div class="mt-4 bg-white rounded-xl shadow-sm p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Revenue by Channel</p>
+                        <span class="text-xs text-gray-400">${finFmt(totalChannelRev)} gross from ${channels.reduce((s,c) => s+c.count, 0)} bookings</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead><tr class="border-b border-gray-100">
+                                <th class="text-left text-xs font-medium text-gray-400 pb-2 pr-4">Channel</th>
+                                <th class="text-right text-xs font-medium text-gray-400 pb-2 pr-4">Bookings</th>
+                                <th class="text-right text-xs font-medium text-gray-400 pb-2 pr-4">Nights</th>
+                                <th class="text-right text-xs font-medium text-gray-400 pb-2 pr-4">Gross Revenue</th>
+                                <th class="text-right text-xs font-medium text-gray-400 pb-2">Share</th>
+                            </tr></thead>
+                            <tbody class="divide-y divide-gray-50">${rows}</tbody>
+                        </table>
+                    </div>
+                </div>`;
+            })()}
+
+            ${(() => {
                 // Cleanings Analytics — Bromley only, requires housekeeping items with expenseDate
                 // Exclude zeroed scaffold markers (statement summaries superseded by invoice detail)
                 const cleanItems = (data.expenseItems || []).filter(i => i.vendor === 'bromley' && i.tag === 'housekeeping' && i.expenseDate
@@ -3951,7 +4011,9 @@ Total: $${props.totalAmount}`);
                 const status = get('status').trim();
                 const checkInStr = get('checkIn').trim();
                 const checkOutStr = get('checkOut').trim();
-                const payout = parseMoney(get('totalPayout'));
+                const netPayout = parseMoney(get('totalPayout')); // what owner receives after Evolve's 10% cut
+                const grossAmount = parseFloat((netPayout / 0.9).toFixed(2));   // back-calculate gross revenue
+                const managementFee = parseFloat((grossAmount - netPayout).toFixed(2)); // Evolve's 10% fee
                 const nightsStayed = parseInt(get('nightsStayed')) || 0;
                 const nights = parseInt(get('nights')) || nightsStayed;
                 const bookingSource = (get('bookingSite') || 'evolve').toLowerCase().replace(/[. ]/g, '').replace('bookingcom','booking.com');
@@ -3968,7 +4030,8 @@ Total: $${props.totalAmount}`);
                             bookingSource,
                             year,
                             month,
-                            grossAmount: payout,
+                            grossAmount,
+                            managementFee,
                             nightsBooked: nightsStayed || nights,
                             checkInDate: checkInStr,
                             checkOutDate: checkOutStr,
@@ -3978,7 +4041,7 @@ Total: $${props.totalAmount}`);
                         // Preview aggregation (display only)
                         const key = `${year}-${month}`;
                         if (!monthlyMap[key]) monthlyMap[key] = { year, month, grossIncome: 0, nightsBooked: 0, numReservations: 0 };
-                        monthlyMap[key].grossIncome += payout;
+                        monthlyMap[key].grossIncome += grossAmount;
                         monthlyMap[key].nightsBooked += nightsStayed || nights;
                         monthlyMap[key].numReservations++;
                     }
@@ -3994,7 +4057,7 @@ Total: $${props.totalAmount}`);
                         checkOut: checkOutStr,
                         nights,
                         nightsStayed,
-                        totalPayout: payout,
+                        totalPayout: grossAmount,
                         adults: parseInt(get('adults')) || 1,
                         children: parseInt(get('children')) || 0,
                         email: get('guestEmail').trim() || null,

@@ -4,10 +4,6 @@
   Scoped to owner backend pages: dashboard.html, deals.html, dashboard/*.html, auth/*.html
 */
 
-/* ── Logo switching (critical — also inlined in <head> to prevent FOUC) ─── */
-html:not(.dark) .logo-dark { display: none; }
-html.dark        .logo-light { display: none; }
-
 /* ── Base ──────────────────────────────────────────────────────────────── */
 html.dark body {
   background-color: #111827;

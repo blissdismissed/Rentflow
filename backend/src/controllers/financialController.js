@@ -250,9 +250,10 @@ const getYearDetail = async (req, res) => {
 
     const annualConfig = await FinancialAnnualConfig.findOne({ where: { propertyId, year } })
 
-    const [monthlyRows, expenseItems] = await Promise.all([
+    const [monthlyRows, expenseItems, bookingTxns] = await Promise.all([
       FinancialMonthly.findAll({ where: { propertyId, year }, order: [['month', 'ASC']] }),
-      FinancialExpenseItem.findAll({ where: { propertyId, year }, order: [['month', 'ASC'], ['expenseDate', 'ASC']] })
+      FinancialExpenseItem.findAll({ where: { propertyId, year }, order: [['month', 'ASC'], ['expenseDate', 'ASC']] }),
+      FinancialBookingTransaction.findAll({ where: { propertyId, year }, attributes: ['bookingSource', 'grossAmount', 'nightsBooked'] })
     ])
 
     const monthlyMap = Object.fromEntries(monthlyRows.map(r => [r.month, r]))
@@ -294,6 +295,17 @@ const getYearDetail = async (req, res) => {
 
     const annualTotals = computeAnnualMetrics(months, annualConfig, purchasePrice)
 
+    // Channel breakdown from booking transactions
+    const channelMap = {}
+    for (const t of bookingTxns) {
+      const src = t.bookingSource || 'evolve'
+      if (!channelMap[src]) channelMap[src] = { bookingSource: src, grossIncome: 0, nightsBooked: 0, count: 0 }
+      channelMap[src].grossIncome += parseFloat(t.grossAmount || 0)
+      channelMap[src].nightsBooked += parseInt(t.nightsBooked || 0)
+      channelMap[src].count++
+    }
+    const channelBreakdown = Object.values(channelMap).sort((a, b) => b.grossIncome - a.grossIncome)
+
     res.json({
       success: true,
       property: { id: property.id, name: property.name },
@@ -304,7 +316,8 @@ const getYearDetail = async (req, res) => {
       annualConfig: annualConfig || null,
       months,
       annualTotals,
-      expenseItems
+      expenseItems,
+      channelBreakdown
     })
   } catch (err) {
     console.error('getYearDetail error:', err)
@@ -919,6 +932,7 @@ const importBookingTransactions = async (req, res) => {
         year: b.year,
         month: b.month,
         grossAmount: parseFloat(b.grossAmount || 0),
+        managementFee: parseFloat(b.managementFee || 0),
         nightsBooked: b.nightsBooked || null,
         checkInDate: b.checkInDate || null,
         checkOutDate: b.checkOutDate || null,
@@ -947,16 +961,17 @@ const importBookingTransactions = async (req, res) => {
 
       const txns = await FinancialBookingTransaction.findAll({ where: { propertyId, year, month } })
       const grossIncome = txns.reduce((s, t) => s + parseFloat(t.grossAmount || 0), 0)
+      const managementFee = txns.reduce((s, t) => s + parseFloat(t.managementFee || 0), 0)
       const nightsBooked = txns.reduce((s, t) => s + parseInt(t.nightsBooked || 0), 0)
       const numReservations = txns.length
 
       const [record, wasCreated] = await FinancialMonthly.findOrCreate({
         where: { propertyId, year, month },
-        defaults: { propertyId, year, month, grossIncome, nightsBooked, numReservations, syncSource: 'evolve' },
+        defaults: { propertyId, year, month, grossIncome, managementFee, nightsBooked, numReservations, syncSource: 'evolve' },
       })
       if (!wasCreated) {
         // Only update the Evolve-sourced fields; preserve manually entered fees/expenses
-        await record.update({ grossIncome, nightsBooked, numReservations, syncSource: 'evolve' })
+        await record.update({ grossIncome, managementFee, nightsBooked, numReservations, syncSource: 'evolve' })
       }
     }
 

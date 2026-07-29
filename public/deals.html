@@ -11,7 +11,6 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/resources/apple-touch-icon.png">
     <!-- Theme: load before Tailwind, inline critical logo-swap to prevent FOUC -->
     <script src="/js/theme.js"></script>
-    <style>html:not(.dark) .logo-dark{display:none}html.dark .logo-light{display:none}</style>
     <script>window.tailwind = { config: { darkMode: 'class' } }</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/owner-dark.css">
@@ -30,8 +29,7 @@
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center gap-3">
                     <a href="/dashboard.html" class="flex items-center">
-                        <img class="logo-light h-8 hidden sm:block" src="/assets/resources/logo-single-line.png" alt="AspireTowards">
-                        <img class="logo-dark  h-8 hidden sm:block" src="/assets/resources/logo-dark-bg.png"     alt="AspireTowards">
+                        <img class="h-8 hidden sm:block" src="/assets/resources/logo-single-line.png" alt="AspireTowards">
                         <img class="h-8 sm:hidden" src="/assets/resources/icon-mark-color.png" alt="AspireTowards">
                     </a>
                     <div class="h-5 w-px bg-gray-200 hidden sm:block"></div>

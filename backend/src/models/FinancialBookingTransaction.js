@@ -16,6 +16,7 @@ FinancialBookingTransaction.init(
     year: { type: DataTypes.INTEGER, allowNull: false },
     month: { type: DataTypes.INTEGER, allowNull: false },
     grossAmount: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0 },
+    managementFee: { type: DataTypes.DECIMAL(10, 2), allowNull: true, defaultValue: 0 },
     nightsBooked: { type: DataTypes.INTEGER, allowNull: true },
     checkInDate: { type: DataTypes.DATEONLY, allowNull: true },
     checkOutDate: { type: DataTypes.DATEONLY, allowNull: true },
