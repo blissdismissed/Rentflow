@@ -4,7 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Property Settings - RentFlow</title>
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/resources/favicon.ico">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/resources/favicon-48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/resources/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/resources/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/resources/apple-touch-icon.png">
+
+    <!-- Theme -->
+    <script src="/js/theme.js"></script>
+    <style>html:not(.dark) #logo-dark{display:none}html.dark #logo-light{display:none}</style>
+    <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/owner-dark.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -21,11 +33,21 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-3">
-                    <a href="/dashboard.html" class="text-xl font-display font-bold text-gray-900">AspireTowards</a>
+                                        <a href="/dashboard.html">
+                        <img id="logo-light" src="/assets/resources/logo-single-line.png" alt="AspireTowards" class="h-8">
+                        <img id="logo-dark"  src="/assets/resources/logo-dark-bg.png"     alt="AspireTowards" class="h-8">
+                    </a>
                     <span class="text-gray-400">|</span>
                     <span class="text-gray-600">Property Settings</span>
                 </div>
                 <div class="flex items-center space-x-4">
+
+                    <!-- Dark mode toggle -->
+                    <button onclick="toggleTheme()" title="Toggle dark mode"
+                        class="p-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition">
+                        <svg id="theme-icon-moon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        <svg id="theme-icon-sun"  class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    </button>
                     <a href="/dashboard.html" class="text-gray-600 hover:text-teal-600 transition">Dashboard</a>
                     <button id="logout-btn" class="text-red-600 hover:text-red-700 transition">Logout</button>
                 </div>
