@@ -393,6 +393,7 @@ class GuestController {
         const checkIn = b.checkIn ? new Date(b.checkIn) : null
         const checkOut = b.checkOut ? new Date(b.checkOut) : null
 
+        let guestJustCreated = false
         if (!guest) {
           guest = await Guest.create({
             email: safeEmail,
@@ -404,18 +405,15 @@ class GuestController {
             lastStayDate: b.status === 'Checked out' ? checkOut : null,
             marketingOptIn: true,
           })
+          guestJustCreated = true
           results.created++
         } else {
-          // Update aggregates for completed stays
+          // Update profile fields only — aggregates are updated below, gated on stayCreated
           if (b.status === 'Checked out') {
             await guest.update({
               name: guest.name || b.guestName,
               phoneNumber: guest.phoneNumber || b.phone || null,
               email: guest.email || safeEmail,
-              totalStays: (guest.totalStays || 0) + 1,
-              totalSpent: parseFloat(guest.totalSpent || 0) + payout,
-              firstStayDate: guest.firstStayDate && checkOut && new Date(guest.firstStayDate) < checkOut ? guest.firstStayDate : checkOut,
-              lastStayDate: !guest.lastStayDate || (checkOut && new Date(guest.lastStayDate) < checkOut) ? checkOut : guest.lastStayDate,
             })
           }
           results.updated++
@@ -439,11 +437,20 @@ class GuestController {
             }
           })
           if (!stayCreated) {
-            // Update if already exists
+            // Re-import: update stay fields but do NOT touch guest aggregates
             await GuestStay.update(
               { propertyId, bookingSource: b.bookingSource || 'manual', checkIn: checkIn.toISOString().split('T')[0], checkOut: checkOut.toISOString().split('T')[0], totalAmount: payout },
               { where: { guestId: guest.id, externalBookingId: b.externalBookingId } }
             )
+          } else if (!guestJustCreated && b.status === 'Checked out') {
+            // Genuinely new stay for an existing guest — update aggregates now
+            await guest.reload()
+            await guest.update({
+              totalStays: (guest.totalStays || 0) + 1,
+              totalSpent: parseFloat(guest.totalSpent || 0) + payout,
+              firstStayDate: guest.firstStayDate && checkOut && new Date(guest.firstStayDate) < checkOut ? guest.firstStayDate : checkOut,
+              lastStayDate: !guest.lastStayDate || (checkOut && new Date(guest.lastStayDate) < checkOut) ? checkOut : guest.lastStayDate,
+            })
           }
         }
       }
