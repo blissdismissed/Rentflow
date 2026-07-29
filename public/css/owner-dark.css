@@ -5,8 +5,8 @@
 */
 
 /* ── Logo switching (critical — also inlined in <head> to prevent FOUC) ─── */
-html:not(.dark) #logo-dark { display: none; }
-html.dark        #logo-light { display: none; }
+html:not(.dark) .logo-dark { display: none; }
+html.dark        .logo-light { display: none; }
 
 /* ── Base ──────────────────────────────────────────────────────────────── */
 html.dark body {
