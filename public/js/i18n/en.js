@@ -1,13 +1,13 @@
 window.TRANSLATIONS = window.TRANSLATIONS || {}
 window.TRANSLATIONS.en = {
   // Nav / global
-  nav_deals: 'Deal Tracker',
+  nav_deals: 'DealFlow',
   nav_dashboard: 'Dashboard',
   nav_logout: 'Log out',
   language: 'Language',
 
   // Page title
-  page_title: 'Deal Tracker',
+  page_title: 'DealFlow',
   page_subtitle: 'Real estate due diligence',
 
   // Actions

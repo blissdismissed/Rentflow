@@ -1,13 +1,13 @@
 window.TRANSLATIONS = window.TRANSLATIONS || {}
 window.TRANSLATIONS.es = {
   // Nav / global
-  nav_deals: 'Rastreador de Deals',
+  nav_deals: 'DealFlow',
   nav_dashboard: 'Panel',
   nav_logout: 'Cerrar sesión',
   language: 'Idioma',
 
   // Page title
-  page_title: 'Rastreador de Deals',
+  page_title: 'DealFlow',
   page_subtitle: 'Diligencia debida inmobiliaria',
 
   // Actions
