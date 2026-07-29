@@ -2898,55 +2898,35 @@ Total: $${props.totalAmount}`);
                 if (!channels.length) return '';
 
                 const totalChannelRev = channels.reduce((s, c) => s + c.grossIncome, 0);
-                const channelColors = {
-                    'airbnb': '#f43f5e', 'vrbo': '#3b82f6', 'booking.com': '#6366f1',
-                    'evolve': '#14b8a6', 'direct': '#f97316', 'website': '#f97316'
-                };
-                const channelLabel = src => {
-                    const map = { 'airbnb': 'Airbnb', 'vrbo': 'Vrbo', 'booking.com': 'Booking.com', 'evolve': 'Evolve Direct', 'direct': 'AspireTowards', 'website': 'AspireTowards' };
-                    return map[src] || (src ? src.charAt(0).toUpperCase() + src.slice(1) : 'Other');
-                };
+                const donutSegments = channels.map(c => ({ value: c.grossIncome, color: channelColor(c.bookingSource) }));
+                const totalBookings = channels.reduce((s, c) => s + c.count, 0);
 
-                const rows = channels.map(c => {
+                const detailRows = channels.map(c => {
                     const pct = totalChannelRev > 0 ? (c.grossIncome / totalChannelRev * 100).toFixed(1) : 0;
-                    const color = channelColors[c.bookingSource] || '#6b7280';
-                    return `<tr>
-                        <td class="py-2 pr-4">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-sm shrink-0" style="background:${color}"></span>
-                                <span class="text-sm font-medium text-gray-800">${channelLabel(c.bookingSource)}</span>
+                    const color = channelColor(c.bookingSource);
+                    const label = channelInfo(c.bookingSource).label;
+                    return `<div class="flex items-center gap-3 py-1.5 border-b border-gray-50 last:border-0">
+                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${color}"></span>
+                        <span class="text-sm font-medium text-gray-800 flex-1 min-w-0 truncate">${label}</span>
+                        <span class="text-xs text-gray-400 whitespace-nowrap">${c.count} booking${c.count !== 1 ? 's' : ''} · ${c.nightsBooked} nights</span>
+                        <span class="text-sm font-semibold text-gray-900 whitespace-nowrap w-20 text-right">${finFmt(c.grossIncome)}</span>
+                        <div class="flex items-center gap-1.5 w-14 shrink-0">
+                            <div class="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                                <div class="h-full rounded-full" style="width:${pct}%;background:${color}"></div>
                             </div>
-                        </td>
-                        <td class="py-2 pr-4 text-sm text-gray-600 text-right">${c.count} booking${c.count !== 1 ? 's' : ''}</td>
-                        <td class="py-2 pr-4 text-sm text-gray-600 text-right">${c.nightsBooked} nights</td>
-                        <td class="py-2 pr-4 text-sm font-semibold text-gray-900 text-right">${finFmt(c.grossIncome)}</td>
-                        <td class="py-2 text-right">
-                            <div class="flex items-center gap-2 justify-end">
-                                <div class="w-16 bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                                    <div class="h-full rounded-full" style="width:${pct}%;background:${color}"></div>
-                                </div>
-                                <span class="text-xs text-gray-500 w-8 text-right">${pct}%</span>
-                            </div>
-                        </td>
-                    </tr>`;
+                            <span class="text-xs text-gray-400 w-7 text-right">${pct}%</span>
+                        </div>
+                    </div>`;
                 }).join('');
 
                 return `<div class="mt-4 bg-white rounded-xl shadow-sm p-4">
-                    <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center justify-between mb-4">
                         <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Revenue by Channel</p>
-                        <span class="text-xs text-gray-400">${finFmt(totalChannelRev)} gross from ${channels.reduce((s,c) => s+c.count, 0)} bookings</span>
+                        <span class="text-xs text-gray-400">${finFmt(totalChannelRev)} gross · ${totalBookings} booking${totalBookings !== 1 ? 's' : ''}</span>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead><tr class="border-b border-gray-100">
-                                <th class="text-left text-xs font-medium text-gray-400 pb-2 pr-4">Channel</th>
-                                <th class="text-right text-xs font-medium text-gray-400 pb-2 pr-4">Bookings</th>
-                                <th class="text-right text-xs font-medium text-gray-400 pb-2 pr-4">Nights</th>
-                                <th class="text-right text-xs font-medium text-gray-400 pb-2 pr-4">Gross Revenue</th>
-                                <th class="text-right text-xs font-medium text-gray-400 pb-2">Share</th>
-                            </tr></thead>
-                            <tbody class="divide-y divide-gray-50">${rows}</tbody>
-                        </table>
+                    <div class="flex items-center gap-6">
+                        ${svgDonut(donutSegments, { size: 140, strokeW: 34 })}
+                        <div class="flex-1 min-w-0">${detailRows}</div>
                     </div>
                 </div>`;
             })()}
@@ -4486,7 +4466,7 @@ Total: $${props.totalAmount}`);
             sel.innerHTML = `<option value="">All properties</option>` + opts;
         }
 
-        // Shared booking-source → display info
+        // ── Shared booking-source utilities ─────────────────────────────────────
         function channelInfo(src) {
             const map = {
                 'airbnb':      { label: 'Airbnb',        bg: 'bg-rose-100',   text: 'text-rose-700'   },
@@ -4498,6 +4478,36 @@ Total: $${props.totalAmount}`);
             };
             const key = (src || '').toLowerCase();
             return map[key] || { label: src ? src.charAt(0).toUpperCase() + src.slice(1) : 'Unknown', bg: 'bg-gray-100', text: 'text-gray-600' };
+        }
+
+        function channelColor(src) {
+            const map = {
+                'airbnb': '#f43f5e', 'vrbo': '#3b82f6', 'booking.com': '#6366f1',
+                'evolve': '#14b8a6', 'direct': '#f97316', 'website': '#f97316',
+            };
+            return map[(src || '').toLowerCase()] || '#9ca3af';
+        }
+
+        // SVG donut chart — segments: [{value, color}], returns HTML string
+        function svgDonut(segments, { size = 120, strokeW = 28 } = {}) {
+            const cx = size / 2, cy = size / 2;
+            const r = cx - strokeW / 2;
+            const C = 2 * Math.PI * r;
+            const total = segments.reduce((s, seg) => s + seg.value, 0);
+            if (!total) return '';
+            let cumLen = 0;
+            const circles = segments.map(seg => {
+                const arcLen = (seg.value / total) * C;
+                const dashOffset = C - cumLen;
+                cumLen += arcLen;
+                return `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(2)}"
+                    fill="none" stroke="${seg.color}" stroke-width="${strokeW}"
+                    stroke-dasharray="${arcLen.toFixed(2)} ${(C - arcLen).toFixed(2)}"
+                    stroke-dashoffset="${dashOffset.toFixed(2)}" />`;
+            }).join('');
+            return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="shrink-0">
+                <g transform="rotate(-90 ${cx} ${cy})">${circles}</g>
+            </svg>`;
         }
 
         function renderGuestsTable(guests) {
@@ -4549,6 +4559,12 @@ Total: $${props.totalAmount}`);
             }).join('');
         }
 
+        let guestChannelExpanded = false;
+        function toggleGuestChannel() {
+            guestChannelExpanded = !guestChannelExpanded;
+            renderGuestChannelSummary(guestState.all);
+        }
+
         function renderGuestChannelSummary(guests) {
             const el = document.getElementById('guest-channel-summary');
             if (!el) return;
@@ -4559,7 +4575,7 @@ Total: $${props.totalAmount}`);
             for (const g of guests) {
                 const gSources = new Set();
                 for (const s of (g.stays || [])) {
-                    const src = s.bookingSource || 'unknown';
+                    const src = s.bookingSource || 'other';
                     if (!map[src]) map[src] = { stays: 0, guests: 0 };
                     map[src].stays++;
                     if (!gSources.has(src)) { map[src].guests++; gSources.add(src); }
@@ -4570,18 +4586,38 @@ Total: $${props.totalAmount}`);
             if (!sorted.length) { el.classList.add('hidden'); return; }
 
             const total = sorted.reduce((s, [, v]) => s + v.stays, 0);
+            const segments = sorted.map(([src, v]) => ({ value: v.stays, color: channelColor(src) }));
+
+            const chevronSvg = guestChannelExpanded
+                ? `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>`
+                : `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>`;
+
             el.classList.remove('hidden');
-            el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
-                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Bookings by channel</span>
-                ${sorted.map(([src, v]) => {
-                    const c = channelInfo(src);
-                    const pct = total > 0 ? Math.round(v.stays / total * 100) : 0;
-                    return `<span class="flex items-center gap-1.5">
-                        <span class="${c.bg} ${c.text} text-xs px-2 py-0.5 rounded-full font-medium">${c.label}</span>
-                        <span class="text-xs text-gray-500">${v.stays} stay${v.stays !== 1 ? 's' : ''} · ${v.guests} guest${v.guests !== 1 ? 's' : ''} · ${pct}%</span>
-                    </span>`;
-                }).join('<span class="text-gray-200 text-xs">|</span>')}
-            </div>`;
+            el.innerHTML = `
+                <button onclick="toggleGuestChannel()" class="w-full flex items-center justify-between text-left py-0.5 group">
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Bookings by Channel</span>
+                    <span class="flex items-center gap-1.5 text-xs text-gray-400 group-hover:text-gray-600 transition">
+                        ${sorted.length} source${sorted.length !== 1 ? 's' : ''} · ${total} stay${total !== 1 ? 's' : ''}
+                        ${chevronSvg}
+                    </span>
+                </button>
+                ${guestChannelExpanded ? `
+                <div class="flex items-start gap-5 pt-4">
+                    ${svgDonut(segments, { size: 100, strokeW: 26 })}
+                    <div class="flex-1 space-y-2 pt-1">
+                        ${sorted.map(([src, v]) => {
+                            const c = channelInfo(src);
+                            const color = channelColor(src);
+                            const pct = total > 0 ? Math.round(v.stays / total * 100) : 0;
+                            return `<div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${color}"></span>
+                                <span class="text-xs font-medium text-gray-700 flex-1">${c.label}</span>
+                                <span class="text-xs text-gray-500">${v.stays} stay${v.stays !== 1 ? 's' : ''} · ${v.guests} guest${v.guests !== 1 ? 's' : ''}</span>
+                                <span class="text-xs text-gray-400 w-7 text-right">${pct}%</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>` : ''}`;
         }
 
         function toggleGuestSelect(guestId, checked) {
