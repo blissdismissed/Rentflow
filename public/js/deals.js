@@ -124,7 +124,7 @@ function applyI18n() {
     el.placeholder = t(el.dataset.i18nPlaceholder)
   })
   document.getElementById('lang-btn').textContent = lang.toUpperCase()
-  document.getElementById('html-root').lang = lang
+  document.documentElement.lang = lang
 }
 
 function toggleLang() {

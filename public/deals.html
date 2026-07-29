@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +12,7 @@
     <!-- Theme: load before Tailwind, inline critical logo-swap to prevent FOUC -->
     <script src="/js/theme.js"></script>
     <style>html:not(.dark) #logo-dark{display:none}html.dark #logo-light{display:none}</style>
-    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script>window.tailwind = { config: { darkMode: 'class' } }</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/owner-dark.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">

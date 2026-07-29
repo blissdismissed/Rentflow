@@ -14,7 +14,7 @@
     <!-- Theme -->
     <script src="/js/theme.js"></script>
     <style>html:not(.dark) #logo-dark{display:none}html.dark #logo-light{display:none}</style>
-    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script>window.tailwind = { config: { darkMode: 'class' } }</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/owner-dark.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -33,7 +33,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-3">
-                                        <a href="/dashboard.html">
+                    <a href="/dashboard.html">
                         <img id="logo-light" src="/assets/resources/logo-single-line.png" alt="AspireTowards" class="h-8">
                         <img id="logo-dark"  src="/assets/resources/logo-dark-bg.png"     alt="AspireTowards" class="h-8">
                     </a>
