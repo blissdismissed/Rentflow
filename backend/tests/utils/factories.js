@@ -203,6 +203,32 @@ async function createAnnualConfig(propertyId, year, overrides = {}) {
   })
 }
 
+/**
+ * Create a test Deal record
+ */
+async function createDeal(userId, overrides = {}) {
+  const Deal = require('../../src/models/Deal')
+  return await Deal.create({
+    userId,
+    nombre: 'Test Deal',
+    estadoSeguimiento: 'not_contacted',
+    ...overrides
+  })
+}
+
+/**
+ * Create a test DealNote record
+ */
+async function createDealNote(dealId, userId, overrides = {}) {
+  const DealNote = require('../../src/models/DealNote')
+  return await DealNote.create({
+    dealId,
+    userId,
+    text: 'Test note',
+    ...overrides
+  })
+}
+
 module.exports = {
   createUser,
   createProperty,
@@ -213,5 +239,7 @@ module.exports = {
   createFinancialSettings,
   createFinancialMonthly,
   createExpenseItem,
-  createAnnualConfig
+  createAnnualConfig,
+  createDeal,
+  createDealNote
 }
