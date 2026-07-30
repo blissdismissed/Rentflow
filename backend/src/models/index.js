@@ -18,6 +18,7 @@ const FinancialAnnualConfig = require('./FinancialAnnualConfig')
 const FinancialMonthly = require('./FinancialMonthly')
 const FinancialExpenseItem = require('./FinancialExpenseItem')
 const FinancialBookingTransaction = require('./FinancialBookingTransaction')
+const PropertyIcalSource = require('./PropertyIcalSource')
 
 // Define associations
 User.hasMany(Property, { foreignKey: 'userId', as: 'properties' })
@@ -113,6 +114,10 @@ FinancialExpenseItem.belongsTo(Property, { foreignKey: 'propertyId', as: 'proper
 Property.hasMany(FinancialBookingTransaction, { foreignKey: 'propertyId', as: 'bookingTransactions' })
 FinancialBookingTransaction.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' })
 
+// iCal source associations
+Property.hasMany(PropertyIcalSource, { foreignKey: 'propertyId', as: 'icalSources' })
+PropertyIcalSource.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' })
+
 module.exports = {
   User,
   Property,
@@ -134,4 +139,5 @@ module.exports = {
   FinancialMonthly,
   FinancialExpenseItem,
   FinancialBookingTransaction,
+  PropertyIcalSource,
 }

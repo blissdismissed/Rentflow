@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const publicPropertyController = require('../controllers/publicPropertyController')
 const publicBookingController = require('../controllers/publicBookingController')
+const icalController = require('../controllers/icalController')
 
 /**
  * Public API Routes
@@ -30,5 +31,9 @@ router.post('/bookings/request', publicBookingController.createBookingRequest)
 
 // Get booking by confirmation code
 router.get('/bookings/:confirmationCode', publicBookingController.getBookingByConfirmationCode)
+
+// iCal export — public feed for OTAs to import (property UUID is the access token)
+// OTAs paste: https://aspiretowards.com/api/public/ical/<propertyId>.ics
+router.get('/ical/:propertyId', icalController.exportIcal)
 
 module.exports = router

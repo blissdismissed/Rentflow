@@ -26,7 +26,9 @@ const reviewRoutes = require('./routes/reviewRoutes')
 const supportRoutes = require('./routes/supportRoutes')
 const emailImportRoutes = require('./routes/emailImportRoutes')
 const dealRoutes = require('./routes/dealRoutes')
+const icalRoutes = require('./routes/icalRoutes')
 const emailScheduler = require('./jobs/emailScheduler')
+const icalSyncJob = require('./jobs/icalSyncJob')
 
 const app = express()
 app.set('trust proxy', 1) // Nginx reverse proxy forwards real client IPs
@@ -123,6 +125,7 @@ app.use('/api/support', supportRoutes)
 // Email import webhook (SendGrid Inbound Parse)
 app.use('/api/import', emailImportRoutes)
 app.use('/api/deals', dealRoutes)
+app.use('/api/properties/:id', icalRoutes)
 
 // Public routes (no authentication required)
 app.use('/api/public', publicRoutes)
@@ -166,6 +169,9 @@ const startServer = async () => {
     // Start email scheduler for automated pre-stay emails
     emailScheduler.start()
 
+    // Start iCal sync job (every 20 minutes)
+    icalSyncJob.start()
+
     // Start listening - bind to localhost only for security (use Nginx reverse proxy)
     const host = process.env.NODE_ENV === 'production' ? '127.0.0.1' : '0.0.0.0'
     const server = app.listen(PORT, host, () => {
@@ -181,6 +187,7 @@ const startServer = async () => {
     process.on('SIGTERM', () => {
       console.log('SIGTERM received, shutting down gracefully...')
       emailScheduler.stop()
+      icalSyncJob.stop()
       server.close(() => {
         console.log('✅ Server closed')
         process.exit(0)
@@ -190,6 +197,7 @@ const startServer = async () => {
     process.on('SIGINT', () => {
       console.log('SIGINT received, shutting down gracefully...')
       emailScheduler.stop()
+      icalSyncJob.stop()
       server.close(() => {
         console.log('✅ Server closed')
         process.exit(0)

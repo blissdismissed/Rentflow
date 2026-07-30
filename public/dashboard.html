@@ -604,6 +604,84 @@
 
         <!-- Bookings Content -->
         <div id="bookings-content" class="tab-content hidden">
+
+            <!-- Channel Sync ─────────────────────────────────────────────── -->
+            <div class="bg-white rounded-xl shadow-sm mb-6">
+                <button onclick="toggleChannelSync()" class="w-full flex justify-between items-center px-6 py-4 text-left">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                        <h3 class="text-lg font-semibold text-gray-900">Channel Sync</h3>
+                        <span id="channel-sync-badge" class="hidden text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-medium"></span>
+                    </div>
+                    <svg id="channel-sync-chevron" class="w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+
+                <div id="channel-sync-body" class="hidden px-6 pb-6">
+                    <!-- Property selector -->
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Property</label>
+                        <select id="cs-property-select" onchange="loadChannelSources()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-full max-w-xs">
+                            <option value="">Select property…</option>
+                        </select>
+                    </div>
+
+                    <!-- Your iCal export URL (paste into OTAs) -->
+                    <div id="cs-export-section" class="hidden mb-5 p-4 bg-teal-50 rounded-lg border border-teal-200">
+                        <p class="text-sm font-medium text-teal-800 mb-1">Your iCal export URL</p>
+                        <p class="text-xs text-teal-600 mb-2">Paste this into each OTA (Airbnb → Calendar → Connect external calendar). They'll refresh it automatically to block your direct-booking dates.</p>
+                        <div class="flex gap-2 items-center">
+                            <input id="cs-export-url" type="text" readonly class="flex-1 text-xs font-mono bg-white border border-teal-300 rounded px-2 py-1.5 text-gray-700 select-all" />
+                            <button onclick="copyIcalUrl()" class="px-3 py-1.5 bg-teal-600 text-white text-xs rounded hover:bg-teal-700 whitespace-nowrap">Copy URL</button>
+                        </div>
+                    </div>
+
+                    <!-- Connected channels table -->
+                    <div id="cs-sources-section" class="hidden mb-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <p class="text-sm font-medium text-gray-700">Connected OTA Calendars</p>
+                            <button onclick="showAddChannelForm()" class="text-sm text-teal-600 hover:text-teal-800 font-medium">+ Add Channel</button>
+                        </div>
+                        <div id="cs-sources-list" class="space-y-2"></div>
+                    </div>
+
+                    <!-- Add channel form (hidden by default) -->
+                    <div id="cs-add-form" class="hidden p-4 bg-gray-50 rounded-lg border border-gray-200 mt-4">
+                        <p class="text-sm font-semibold text-gray-800 mb-3">Add OTA Calendar</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Channel</label>
+                                <select id="cs-new-channel" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                                    <option value="airbnb">Airbnb</option>
+                                    <option value="vrbo">VRBO</option>
+                                    <option value="booking_com">Booking.com</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Display Name (optional)</label>
+                                <input id="cs-new-name" type="text" placeholder="e.g. Airbnb Listing #1" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">iCal URL from OTA</label>
+                            <input id="cs-new-url" type="url" placeholder="https://www.airbnb.com/calendar/ical/…" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono" />
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="addChannelSource()" class="px-4 py-2 bg-teal-600 text-white text-sm rounded hover:bg-teal-700">Connect</button>
+                            <button onclick="hideAddChannelForm()" class="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Empty state (no sources yet) -->
+                    <div id="cs-empty" class="hidden text-center py-6 text-gray-500">
+                        <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                        <p class="text-sm">No channels connected yet.</p>
+                        <button onclick="showAddChannelForm()" class="mt-2 text-sm text-teal-600 hover:text-teal-800 font-medium">+ Add your first OTA calendar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings list ──────────────────────────────────────────────── -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl font-semibold text-gray-900">All Bookings</h3>
@@ -2005,7 +2083,195 @@ Status: ${props.status}
 Total: $${props.totalAmount}`);
         }
 
-        // Load bookings list
+        // ── Channel Sync ──────────────────────────────────────────────────────
+
+        var csPropertyId = null;
+
+        function toggleChannelSync() {
+            var body = document.getElementById('channel-sync-body');
+            var chevron = document.getElementById('channel-sync-chevron');
+            var open = !body.classList.contains('hidden');
+            body.classList.toggle('hidden', open);
+            chevron.style.transform = open ? '' : 'rotate(180deg)';
+            if (!open && !csPropertyId) populateCsPropertySelect();
+        }
+
+        function populateCsPropertySelect() {
+            var sel = document.getElementById('cs-property-select');
+            sel.innerHTML = '<option value="">Select property…</option>';
+            (userProperties || []).forEach(function(p) {
+                var opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.name;
+                sel.appendChild(opt);
+            });
+            if (userProperties && userProperties.length === 1) {
+                sel.value = userProperties[0].id;
+                loadChannelSources();
+            }
+        }
+
+        async function loadChannelSources() {
+            var sel = document.getElementById('cs-property-select');
+            csPropertyId = sel.value;
+            if (!csPropertyId) return;
+
+            var token = localStorage.getItem('token');
+            try {
+                var res = await fetch(window.CONFIG.API_BASE_URL + '/api/properties/' + csPropertyId + '/ical-sources', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                var data = await res.json();
+                renderChannelSources(data.sources || []);
+
+                // Show export URL
+                var exportSection = document.getElementById('cs-export-section');
+                var exportInput = document.getElementById('cs-export-url');
+                exportSection.classList.remove('hidden');
+                exportInput.value = window.CONFIG.API_BASE_URL + '/api/public/ical/' + csPropertyId;
+
+                // Update badge
+                var badge = document.getElementById('channel-sync-badge');
+                if (data.sources && data.sources.length > 0) {
+                    badge.textContent = data.sources.length + ' channel' + (data.sources.length > 1 ? 's' : '');
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            } catch (e) {
+                console.error('Failed to load channel sources', e);
+            }
+        }
+
+        var CHANNEL_LABELS = { airbnb: 'Airbnb', vrbo: 'VRBO', booking_com: 'Booking.com', other: 'Other' };
+        var CHANNEL_COLORS = { airbnb: 'bg-red-100 text-red-700', vrbo: 'bg-blue-100 text-blue-700', booking_com: 'bg-indigo-100 text-indigo-700', other: 'bg-gray-100 text-gray-700' };
+
+        function renderChannelSources(sources) {
+            var sourcesSection = document.getElementById('cs-sources-section');
+            var emptyDiv = document.getElementById('cs-empty');
+            var list = document.getElementById('cs-sources-list');
+
+            if (sources.length === 0) {
+                sourcesSection.classList.add('hidden');
+                emptyDiv.classList.remove('hidden');
+                return;
+            }
+
+            sourcesSection.classList.remove('hidden');
+            emptyDiv.classList.add('hidden');
+
+            list.innerHTML = sources.map(function(s) {
+                var label = s.channelName || CHANNEL_LABELS[s.channel] || s.channel;
+                var colorClass = CHANNEL_COLORS[s.channel] || CHANNEL_COLORS.other;
+                var syncTime = s.lastSyncedAt ? new Date(s.lastSyncedAt).toLocaleString() : 'Never';
+                var statusDot = s.lastSyncStatus === 'success'
+                    ? '<span class="w-2 h-2 rounded-full bg-green-400 inline-block mr-1"></span>'
+                    : s.lastSyncStatus === 'error'
+                    ? '<span class="w-2 h-2 rounded-full bg-red-400 inline-block mr-1" title="' + (s.lastSyncError || '') + '"></span>'
+                    : '<span class="w-2 h-2 rounded-full bg-gray-300 inline-block mr-1"></span>';
+                return '<div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">' +
+                    '<div class="flex items-center gap-3 min-w-0">' +
+                        '<span class="text-xs font-semibold px-2 py-0.5 rounded-full ' + colorClass + ' shrink-0">' + label + '</span>' +
+                        '<div class="min-w-0">' +
+                            '<p class="text-xs text-gray-500 truncate font-mono">' + s.icalUrl.substring(0, 60) + (s.icalUrl.length > 60 ? '…' : '') + '</p>' +
+                            '<p class="text-xs text-gray-400 mt-0.5">' + statusDot + 'Last sync: ' + syncTime + (s.bookingCount ? ' · ' + s.bookingCount + ' blocks' : '') + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="flex gap-2 shrink-0">' +
+                        '<button onclick="syncChannel(\'' + s.id + '\')" class="text-xs text-teal-600 hover:text-teal-800 font-medium px-2 py-1 rounded hover:bg-teal-50">Sync</button>' +
+                        '<button onclick="deleteChannel(\'' + s.id + '\')" class="text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded hover:bg-red-50">Remove</button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        function showAddChannelForm() {
+            document.getElementById('cs-add-form').classList.remove('hidden');
+            document.getElementById('cs-new-url').focus();
+        }
+
+        function hideAddChannelForm() {
+            document.getElementById('cs-add-form').classList.add('hidden');
+            document.getElementById('cs-new-channel').value = 'airbnb';
+            document.getElementById('cs-new-name').value = '';
+            document.getElementById('cs-new-url').value = '';
+        }
+
+        async function addChannelSource() {
+            var channel = document.getElementById('cs-new-channel').value;
+            var channelName = document.getElementById('cs-new-name').value.trim();
+            var icalUrl = document.getElementById('cs-new-url').value.trim();
+            if (!icalUrl) { alert('Please paste the iCal URL from the OTA.'); return; }
+
+            var token = localStorage.getItem('token');
+            try {
+                var res = await fetch(window.CONFIG.API_BASE_URL + '/api/properties/' + csPropertyId + '/ical-sources', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ channel: channel, channelName: channelName || null, icalUrl: icalUrl })
+                });
+                var data = await res.json();
+                if (!data.success) { alert(data.message || 'Failed to add channel'); return; }
+                hideAddChannelForm();
+                loadChannelSources();
+            } catch (e) {
+                alert('Failed to add channel');
+            }
+        }
+
+        async function syncChannel(sourceId) {
+            var token = localStorage.getItem('token');
+            var btn = event.target;
+            btn.textContent = 'Syncing…';
+            btn.disabled = true;
+            try {
+                var res = await fetch(window.CONFIG.API_BASE_URL + '/api/properties/' + csPropertyId + '/ical-sources/' + sourceId + '/sync', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                var data = await res.json();
+                if (data.success) {
+                    loadChannelSources();
+                    loadBookings();
+                } else {
+                    alert(data.message || 'Sync failed');
+                    btn.textContent = 'Sync';
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                alert('Sync failed');
+                btn.textContent = 'Sync';
+                btn.disabled = false;
+            }
+        }
+
+        async function deleteChannel(sourceId) {
+            if (!confirm('Remove this channel? Future OTA blocks from it will be cancelled.')) return;
+            var token = localStorage.getItem('token');
+            try {
+                var res = await fetch(window.CONFIG.API_BASE_URL + '/api/properties/' + csPropertyId + '/ical-sources/' + sourceId, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                var data = await res.json();
+                if (data.success) loadChannelSources();
+                else alert(data.message || 'Failed to remove channel');
+            } catch (e) {
+                alert('Failed to remove channel');
+            }
+        }
+
+        function copyIcalUrl() {
+            var input = document.getElementById('cs-export-url');
+            navigator.clipboard.writeText(input.value).then(function() {
+                var btn = event.target;
+                var orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(function() { btn.textContent = orig; }, 2000);
+            });
+        }
+
+        // ── Load bookings list ────────────────────────────────────────────────
         async function loadBookings() {
             const bookingsList = document.getElementById('bookings-list');
             try {
