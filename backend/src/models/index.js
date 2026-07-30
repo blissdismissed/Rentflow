@@ -69,9 +69,10 @@ GuestStay.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' })
 Booking.hasOne(GuestStay, { foreignKey: 'bookingId', as: 'guestStay' })
 GuestStay.belongsTo(Booking, { foreignKey: 'bookingId', as: 'booking' })
 
-// Many-to-many through GuestStay
-Guest.belongsToMany(Property, { through: GuestStay, foreignKey: 'guestId', as: 'propertiesStayed' })
-Property.belongsToMany(Guest, { through: GuestStay, foreignKey: 'propertyId', as: 'guests' })
+// Many-to-many through GuestStay — unique:false prevents Sequelize from adding a
+// composite unique constraint that would block returning guests at the same property
+Guest.belongsToMany(Property, { through: { model: GuestStay, unique: false }, foreignKey: 'guestId', as: 'propertiesStayed' })
+Property.belongsToMany(Guest, { through: { model: GuestStay, unique: false }, foreignKey: 'propertyId', as: 'guests' })
 
 // Property Settings associations
 Property.hasOne(PropertySettings, { foreignKey: 'propertyId', as: 'settings' })

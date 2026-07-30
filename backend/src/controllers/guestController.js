@@ -615,8 +615,8 @@ class GuestController {
       await guest.update(guestUpdates)
 
       // Record in financial ledger — same pattern as Evolve CSV import
-      const year = checkInDate.getFullYear()
-      const month = checkInDate.getMonth() + 1
+      const year = checkInDate.getUTCFullYear()
+      const month = checkInDate.getUTCMonth() + 1
       const externalBookingId = `direct-${stay.id}`
 
       await FinancialBookingTransaction.create({

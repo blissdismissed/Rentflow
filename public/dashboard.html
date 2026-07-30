@@ -578,13 +578,7 @@
         <div id="calendar-content" class="tab-content hidden">
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center gap-3">
-                        <h3 class="text-xl font-semibold text-gray-900">Booking Calendar</h3>
-                        <button onclick="openDirectBookingModal()" class="px-3 py-1.5 bg-violet-600 text-white text-sm rounded-lg hover:bg-violet-700 flex items-center gap-1.5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            Direct Booking
-                        </button>
-                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900">Booking Calendar</h3>
                     <div class="flex gap-4 text-sm">
                         <div class="flex items-center gap-2">
                             <div class="w-4 h-4 rounded" style="background-color: #FEF3C7; border: 1px solid #F59E0B;"></div>
@@ -601,6 +595,12 @@
                     </div>
                 </div>
                 <div id="calendar"></div>
+                <div class="flex justify-end mt-4">
+                    <button onclick="openDirectBookingModal()" class="px-4 py-2 bg-violet-600 text-white text-sm rounded-lg hover:bg-violet-700 flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        + Direct Booking
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -5148,7 +5148,7 @@ Total: $${props.totalAmount}`);
                     body: JSON.stringify(body)
                 });
                 const data = await res.json();
-                if (!data.success) throw new Error(data.message || 'Save failed');
+                if (!data.success) throw new Error(data.error || data.message || 'Save failed');
                 closeDirectBookingModal();
                 await loadGuests();
             } catch (err) {

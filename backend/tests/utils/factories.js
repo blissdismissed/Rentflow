@@ -204,6 +204,20 @@ async function createAnnualConfig(propertyId, year, overrides = {}) {
 }
 
 /**
+ * Create a test Guest record
+ */
+async function createGuest(overrides = {}) {
+  const Guest = require('../../src/models/Guest')
+  return await Guest.create({
+    name: 'Test Guest',
+    email: null,
+    totalStays: 0,
+    totalSpent: 0,
+    ...overrides
+  })
+}
+
+/**
  * Create a test Deal record
  */
 async function createDeal(userId, overrides = {}) {
@@ -240,6 +254,7 @@ module.exports = {
   createFinancialMonthly,
   createExpenseItem,
   createAnnualConfig,
+  createGuest,
   createDeal,
   createDealNote
 }
