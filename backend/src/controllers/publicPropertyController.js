@@ -20,7 +20,8 @@ class PublicPropertyController {
       const filters = {
         publiclyVisible: true,
         isActive: true,
-        status: 'active'
+        status: 'active',
+        slug: { [Op.ne]: null }
       }
 
       // Apply optional filters

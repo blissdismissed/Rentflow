@@ -695,6 +695,20 @@
         </div>
     </div>
 
+    <!-- Not Found State -->
+    <div id="property-not-found" class="hidden flex justify-center items-center min-h-screen px-4">
+        <div class="text-center max-w-md">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-3">Property Not Available</h1>
+            <p class="text-gray-500 mb-8">This property isn't available for online booking. It may have been removed or the link may be outdated.</p>
+            <a href="/properties.html" class="inline-block px-6 py-3 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition">Browse All Properties</a>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <div id="property-content" class="hidden">
         <!-- Owner Preview Banner -->
@@ -1387,8 +1401,12 @@
                 }
             } catch (error) {
                 console.error('Error loading property:', error)
-                alert('Property not found')
-                window.location.href = fromDashboard ? 'dashboard.html' : 'properties.html'
+                document.getElementById('loading').classList.add('hidden')
+                if (fromDashboard) {
+                    window.location.href = 'dashboard.html'
+                } else {
+                    document.getElementById('property-not-found').classList.remove('hidden')
+                }
             }
         }
 
