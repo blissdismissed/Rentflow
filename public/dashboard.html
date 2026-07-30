@@ -2380,8 +2380,8 @@ Total: $${props.totalAmount}`);
                             </div>
                         </div>
                         ${booking.guestMessage ? `
-                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                                <p class="text-sm text-gray-700"><strong>Guest Message:</strong> ${booking.guestMessage}</p>
+                            <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-3 mb-4">
+                                <p class="text-sm text-gray-700 dark:text-blue-100"><strong>Guest Message:</strong> ${booking.guestMessage}</p>
                             </div>
                         ` : ''}
                         ${booking.bookingStatus === 'requested' ? `
