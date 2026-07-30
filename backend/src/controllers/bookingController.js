@@ -699,6 +699,23 @@ class BookingController {
       });
     }
   }
+
+  async resolveConflict(req, res) {
+    try {
+      const booking = await Booking.findOne({
+        where: { id: req.params.id },
+        include: [{ model: Property, as: 'property' }]
+      })
+      if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' })
+      if (booking.property?.userId !== req.user.id) {
+        return res.status(403).json({ success: false, message: 'Not authorized' })
+      }
+      await booking.update({ hasConflict: false, conflictNote: null })
+      res.json({ success: true })
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message })
+    }
+  }
 }
 
 module.exports = new BookingController();

@@ -1055,6 +1055,64 @@ Questions? Contact us at ${FROM_EMAIL}
    * @param {string} htmlContent - HTML email content
    * @param {string} plainTextContent - Optional plain text content
    */
+  async sendConflictAlert(ownerEmail, propertyName, newBooking, existingBooking) {
+    try {
+      if (!RESEND_API_KEY) {
+        console.warn('⚠️ Resend not configured. Conflict alert not sent.')
+        return
+      }
+      const fmt = d => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+      const channelLabel = ch => ({ airbnb: 'Airbnb', vrbo: 'VRBO', booking_com: 'Booking.com', evolve: 'Evolve', direct: 'AspireTowards Direct', other: 'Other' }[ch] || ch)
+      await sendEmail({
+        to: ownerEmail,
+        from: { email: FROM_EMAIL, name: FROM_NAME },
+        replyTo: REPLY_TO_EMAIL,
+        subject: `⚠️ Calendar Conflict Detected — ${propertyName}`,
+        html: `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+            <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:20px;margin-bottom:24px">
+              <h2 style="color:#dc2626;margin:0 0 8px">⚠️ Calendar Conflict Detected</h2>
+              <p style="color:#7f1d1d;margin:0">Two bookings overlap for <strong>${propertyName}</strong>. One of them needs to be resolved immediately.</p>
+            </div>
+
+            <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
+              <thead>
+                <tr style="background:#f3f4f6">
+                  <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;text-transform:uppercase">Booking</th>
+                  <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;text-transform:uppercase">Channel</th>
+                  <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;text-transform:uppercase">Check-in</th>
+                  <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;text-transform:uppercase">Check-out</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-top:1px solid #e5e7eb">
+                  <td style="padding:12px">${newBooking.confirmationCode || 'OTA Block'}</td>
+                  <td style="padding:12px"><span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:9999px;font-size:13px">${channelLabel(newBooking.channel)} (new)</span></td>
+                  <td style="padding:12px">${fmt(newBooking.checkIn)}</td>
+                  <td style="padding:12px">${fmt(newBooking.checkOut)}</td>
+                </tr>
+                <tr style="border-top:1px solid #e5e7eb;background:#fef2f2">
+                  <td style="padding:12px">${existingBooking.confirmationCode || existingBooking.id}</td>
+                  <td style="padding:12px"><span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:9999px;font-size:13px">${channelLabel(existingBooking.channel)} (existing)</span></td>
+                  <td style="padding:12px">${fmt(existingBooking.checkIn)}</td>
+                  <td style="padding:12px">${fmt(existingBooking.checkOut)}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p style="color:#374151;margin-bottom:16px">Please log into your dashboard, review both bookings, and cancel or reschedule the one that should not proceed. Both bookings have been flagged with a conflict alert in the Bookings tab.</p>
+
+            <a href="${FRONTEND_URL}/dashboard.html" style="display:inline-block;background:#0d9488;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600">Go to Dashboard →</a>
+          </div>
+        `,
+        text: `CALENDAR CONFLICT — ${propertyName}\n\nNew: ${newBooking.confirmationCode || 'OTA Block'} (${channelLabel(newBooking.channel)}) ${fmt(newBooking.checkIn)} → ${fmt(newBooking.checkOut)}\nExisting: ${existingBooking.confirmationCode || existingBooking.id} (${channelLabel(existingBooking.channel)}) ${fmt(existingBooking.checkIn)} → ${fmt(existingBooking.checkOut)}\n\nLog in to resolve: ${FRONTEND_URL}/dashboard.html`
+      })
+      console.log(`⚠️ Conflict alert sent to ${ownerEmail} for ${propertyName}`)
+    } catch (err) {
+      console.error('❌ Failed to send conflict alert:', err)
+    }
+  }
+
   async sendCustomEmail(to, subject, htmlContent, plainTextContent = null) {
     try {
       if (!RESEND_API_KEY) {

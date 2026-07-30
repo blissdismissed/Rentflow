@@ -16,7 +16,7 @@ PropertyIcalSource.init(
       references: { model: 'properties', key: 'id' }
     },
     channel: {
-      type: DataTypes.ENUM('airbnb', 'vrbo', 'booking_com', 'other'),
+      type: DataTypes.ENUM('airbnb', 'vrbo', 'booking_com', 'evolve', 'other'),
       allowNull: false
     },
     channelName: {

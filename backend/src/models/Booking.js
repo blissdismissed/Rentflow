@@ -74,7 +74,7 @@ Booking.init(
       defaultValue: 0
     },
     channel: {
-      type: DataTypes.ENUM('direct', 'airbnb', 'vrbo', 'booking_com', 'other'),
+      type: DataTypes.ENUM('direct', 'airbnb', 'vrbo', 'booking_com', 'evolve', 'other'),
       defaultValue: 'direct'
     },
     channelBookingId: {
@@ -180,6 +180,16 @@ Booking.init(
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'Message from guest with booking request'
+    },
+    hasConflict: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Set when iCal sync detects an overlapping booking from another channel'
+    },
+    conflictNote: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'Description of what conflicted and with which booking'
     }
   },
   {

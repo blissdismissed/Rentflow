@@ -654,6 +654,7 @@
                                     <option value="airbnb">Airbnb</option>
                                     <option value="vrbo">VRBO</option>
                                     <option value="booking_com">Booking.com</option>
+                                    <option value="evolve">Evolve</option>
                                     <option value="other">Other</option>
                                 </select>
                             </div>
@@ -2143,8 +2144,8 @@ Total: $${props.totalAmount}`);
             }
         }
 
-        var CHANNEL_LABELS = { airbnb: 'Airbnb', vrbo: 'VRBO', booking_com: 'Booking.com', other: 'Other' };
-        var CHANNEL_COLORS = { airbnb: 'bg-red-100 text-red-700', vrbo: 'bg-blue-100 text-blue-700', booking_com: 'bg-indigo-100 text-indigo-700', other: 'bg-gray-100 text-gray-700' };
+        var CHANNEL_LABELS = { airbnb: 'Airbnb', vrbo: 'VRBO', booking_com: 'Booking.com', evolve: 'Evolve', other: 'Other' };
+        var CHANNEL_COLORS = { airbnb: 'bg-red-100 text-red-700', vrbo: 'bg-blue-100 text-blue-700', booking_com: 'bg-indigo-100 text-indigo-700', evolve: 'bg-orange-100 text-orange-700', other: 'bg-gray-100 text-gray-700' };
 
         function renderChannelSources(sources) {
             var sourcesSection = document.getElementById('cs-sources-section');
@@ -2306,7 +2307,19 @@ Total: $${props.totalAmount}`);
             bookingsList.innerHTML = filtered.length === 0 ?
                 '<p class="text-gray-600 text-center py-8">No bookings found</p>' :
                 filtered.map(booking => `
-                    <div class="border border-gray-200 rounded-lg p-6 hover:border-teal-500 transition">
+                    <div class="border ${booking.hasConflict ? 'border-red-400 bg-red-50' : 'border-gray-200'} rounded-lg p-6 hover:border-teal-500 transition">
+                        ${booking.hasConflict ? `
+                        <div class="flex items-start justify-between mb-4 p-3 bg-red-100 border border-red-300 rounded-lg">
+                            <div class="flex items-start gap-2">
+                                <svg class="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <div>
+                                    <p class="text-sm font-semibold text-red-800">Calendar Conflict</p>
+                                    ${booking.conflictNote ? `<p class="text-xs text-red-700 mt-0.5">${booking.conflictNote}</p>` : ''}
+                                </div>
+                            </div>
+                            <button onclick="resolveConflict('${booking.id}')" class="text-xs text-red-600 hover:text-red-800 font-medium px-2 py-1 rounded hover:bg-red-200 whitespace-nowrap ml-2">Dismiss flag</button>
+                        </div>
+                        ` : ''}
                         <div class="flex justify-between items-start mb-4">
                             <div>
                                 <h4 class="font-semibold text-lg text-gray-900">${booking.confirmationCode || 'N/A'}</h4>
@@ -2364,6 +2377,22 @@ Total: $${props.totalAmount}`);
                         ` : ''}
                     </div>
                 `).join('');
+        }
+
+        // Dismiss conflict flag
+        async function resolveConflict(bookingId) {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings/${bookingId}/resolve-conflict`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) loadBookings();
+                else alert(data.message || 'Failed to dismiss conflict flag');
+            } catch (e) {
+                alert('Failed to dismiss conflict flag');
+            }
         }
 
         // Approve booking

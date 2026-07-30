@@ -4,6 +4,9 @@ const crypto = require('crypto')
 const { Op } = require('sequelize')
 const Booking = require('../models/Booking')
 const PropertyIcalSource = require('../models/PropertyIcalSource')
+const Property = require('../models/Property')
+const User = require('../models/User')
+const emailService = require('./emailService')
 
 // ── Export ────────────────────────────────────────────────────────────────────
 
@@ -110,7 +113,7 @@ async function syncIcalSource(source) {
       }
     } else {
       const confirmationCode = 'OTA-' + crypto.randomBytes(4).toString('hex').toUpperCase()
-      await Booking.create({
+      const newBooking = await Booking.create({
         propertyId: source.propertyId,
         channel: source.channel,
         channelBookingId: uid,
@@ -128,6 +131,37 @@ async function syncIcalSource(source) {
         confirmationCode
       })
       added++
+
+      // Check for conflicts with existing bookings from other channels
+      const conflicting = await Booking.findOne({
+        where: {
+          propertyId: source.propertyId,
+          id: { [Op.ne]: newBooking.id },
+          channel: { [Op.ne]: source.channel },
+          bookingStatus: { [Op.in]: ['requested', 'approved', 'confirmed', 'checked_in'] },
+          checkIn: { [Op.lt]: checkOut },
+          checkOut: { [Op.gt]: checkIn }
+        }
+      })
+      if (conflicting) {
+        const note = `Overlaps with ${source.channel} block ${confirmationCode} (${checkIn} → ${checkOut})`
+        const selfNote = `Overlaps with ${conflicting.channel} booking ${conflicting.confirmationCode || conflicting.id} (${conflicting.checkIn} → ${conflicting.checkOut})`
+        await newBooking.update({ hasConflict: true, conflictNote: note })
+        await conflicting.update({ hasConflict: true, conflictNote: selfNote })
+
+        // Send email alert to property owner
+        try {
+          const property = await Property.findByPk(source.propertyId)
+          if (property) {
+            const owner = await User.findByPk(property.userId)
+            if (owner?.email) {
+              await emailService.sendConflictAlert(owner.email, property.name, newBooking, conflicting)
+            }
+          }
+        } catch (emailErr) {
+          console.error('Failed to send conflict alert email:', emailErr)
+        }
+      }
     }
   }
 

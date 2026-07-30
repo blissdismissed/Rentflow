@@ -432,4 +432,70 @@ describe('Booking Controller', () => {
       expect(response.body.message).toContain('cancel this booking on the original platform')
     })
   })
+
+  describe('PATCH /api/bookings/:id/resolve-conflict', () => {
+    let conflictBooking
+
+    beforeEach(async () => {
+      conflictBooking = await createBooking(testProperty.id, {
+        hasConflict: true,
+        conflictNote: 'Overlaps with Airbnb booking AB-123'
+      })
+    })
+
+    it('should clear hasConflict and conflictNote on own booking', async () => {
+      const response = await request(app)
+        .patch(`/api/bookings/${conflictBooking.id}/resolve-conflict`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200)
+
+      expect(response.body.success).toBe(true)
+
+      // Re-fetch from DB and confirm fields were cleared
+      const { Booking } = require('../../src/models')
+      const reloaded = await Booking.findByPk(conflictBooking.id)
+      expect(reloaded.hasConflict).toBe(false)
+      expect(reloaded.conflictNote).toBeNull()
+    })
+
+    it('should return 404 for a non-existent booking UUID', async () => {
+      const nonExistentId = '00000000-0000-0000-0000-000000000000'
+
+      const response = await request(app)
+        .patch(`/api/bookings/${nonExistentId}/resolve-conflict`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(404)
+
+      expect(response.body.success).toBe(false)
+      expect(response.body.message).toBe('Booking not found')
+    })
+
+    it('should return 401 when called without an auth token', async () => {
+      const response = await request(app)
+        .patch(`/api/bookings/${conflictBooking.id}/resolve-conflict`)
+        .expect(401)
+
+      expect(response.body.success).toBe(false)
+    })
+
+    it('should return 403 when booking belongs to another user', async () => {
+      const otherUser = await createUser({
+        email: 'other@example.com',
+        role: 'owner'
+      })
+      const otherProperty = await createProperty(otherUser.id)
+      const otherBooking = await createBooking(otherProperty.id, {
+        hasConflict: true,
+        conflictNote: 'Some conflict'
+      })
+
+      const response = await request(app)
+        .patch(`/api/bookings/${otherBooking.id}/resolve-conflict`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(403)
+
+      expect(response.body.success).toBe(false)
+      expect(response.body.message).toBe('Not authorized')
+    })
+  })
 })

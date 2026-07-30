@@ -46,5 +46,6 @@ router.post('/:id/decline', bookingController.declineBooking);
 
 // Mark balance as paid (host)
 router.post('/:id/mark-balance-paid', bookingController.markBalancePaid);
+router.patch('/:id/resolve-conflict', bookingController.resolveConflict);
 
 module.exports = router;
