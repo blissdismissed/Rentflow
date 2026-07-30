@@ -163,16 +163,16 @@
         <!-- Tab Navigation -->
         <div class="mb-8 bg-white rounded-xl shadow-sm overflow-hidden">
             <nav class="flex space-x-8 px-4 sm:px-6 border-b border-gray-200">
-                <button onclick="switchTab('overview')" id="tab-overview" class="dashboard-tab active whitespace-nowrap py-4 px-1 border-b-2 border-teal-600 font-medium text-sm text-teal-600">
+                <button onclick="switchTab('overview')" id="tab-overview" class="dashboard-tab active whitespace-nowrap py-4 px-1 border-b-2 border-teal-600 font-medium text-sm text-teal-600 focus:outline-none">
                     Overview
                 </button>
-                <button onclick="switchTab('calendar')" id="tab-calendar" class="dashboard-tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                <button onclick="switchTab('calendar')" id="tab-calendar" class="dashboard-tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none">
                     Calendar
                 </button>
-                <button onclick="switchTab('bookings')" id="tab-bookings" class="dashboard-tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                <button onclick="switchTab('bookings')" id="tab-bookings" class="dashboard-tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none">
                     Bookings
                 </button>
-                <button onclick="switchTab('finances')" id="tab-finances" class="dashboard-tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                <button onclick="switchTab('finances')" id="tab-finances" class="dashboard-tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none">
                     Finances
                 </button>
             </nav>
@@ -309,18 +309,18 @@
                     <table class="min-w-full">
                         <thead>
                             <tr class="border-b border-gray-200 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                <th class="pb-3 pr-3 w-8">
+                                <th class="py-3 pr-3 w-8">
                                     <input type="checkbox" id="guests-select-all" onchange="toggleSelectAllGuests()" class="rounded">
                                 </th>
-                                <th class="pb-3 px-2">Name</th>
-                                <th class="pb-3 px-2">Email</th>
-                                <th class="pb-3 px-2">Phone</th>
-                                <th class="pb-3 px-2">Properties</th>
-                                <th class="pb-3 px-2 text-center">Stays</th>
-                                <th class="pb-3 px-2">Last Stay</th>
-                                <th class="pb-3 px-2">Source</th>
-                                <th class="pb-3 px-2">Tags</th>
-                                <th class="pb-3 px-2 w-8"></th>
+                                <th class="py-3 px-2">Name</th>
+                                <th class="py-3 px-2">Email</th>
+                                <th class="py-3 px-2">Phone</th>
+                                <th class="py-3 px-2">Properties</th>
+                                <th class="py-3 px-2 text-center">Stays</th>
+                                <th class="py-3 px-2">Last Stay</th>
+                                <th class="py-3 px-2">Source</th>
+                                <th class="py-3 px-2">Tags</th>
+                                <th class="py-3 px-2 w-8"></th>
                             </tr>
                         </thead>
                         <tbody id="guests-table-body">
@@ -5150,7 +5150,8 @@ Total: $${props.totalAmount}`);
                 const data = await res.json();
                 if (!data.success) throw new Error(data.error || data.message || 'Save failed');
                 closeDirectBookingModal();
-                await loadGuests();
+                await Promise.all([loadGuests(), loadBookings()]);
+                if (typeof loadCalendarView === 'function') loadCalendarView();
             } catch (err) {
                 alert('Error recording stay: ' + err.message);
             } finally {

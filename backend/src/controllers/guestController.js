@@ -591,15 +591,38 @@ class GuestController {
       }
 
       const paidAmount = parseFloat(amount) || 0
+      const guestCount = Math.max(1, parseInt(numberOfGuests) || 1)
 
-      // Create the guest stay record
-      const stay = await GuestStay.create({
-        guestId: guest.id,
+      // Create a Booking record so this appears in the Calendar and Bookings tab
+      const confirmationCode = `RFD-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+      const booking = await Booking.create({
         propertyId,
+        channel: 'direct',
+        guestName: guest.name,
+        guestEmail: guest.email || 'noreply@direct.internal',
         checkIn,
         checkOut,
         nights,
-        numberOfGuests: Math.max(1, parseInt(numberOfGuests) || 1),
+        numberOfGuests: guestCount,
+        baseAmount: paidAmount,
+        totalAmount: paidAmount,
+        taxes: 0,
+        bookingStatus: 'confirmed',
+        status: 'confirmed',
+        paymentStatus: 'paid',
+        confirmationCode,
+        specialRequests: notes || null
+      })
+
+      // Create the guest stay record, linked to the booking
+      const stay = await GuestStay.create({
+        guestId: guest.id,
+        propertyId,
+        bookingId: booking.id,
+        checkIn,
+        checkOut,
+        nights,
+        numberOfGuests: guestCount,
         totalAmount: paidAmount,
         bookingSource: 'direct',
         review: notes || null
