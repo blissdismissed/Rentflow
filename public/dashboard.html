@@ -2579,6 +2579,13 @@
                 bookings :
                 bookings.filter(b => b.bookingStatus === filter || b.status === filter);
 
+            // Parse DATEONLY strings as local dates to avoid UTC midnight timezone shift
+            const fmtBookingDate = d => {
+                if (!d) return '—';
+                const [y, m, day] = String(d).split('T')[0].split('-').map(Number);
+                return new Date(y, m - 1, day).toLocaleDateString();
+            };
+
             bookingsList.innerHTML = filtered.length === 0 ?
                 '<p class="text-gray-600 text-center py-8">No bookings found</p>' :
                 filtered.map(booking => `
@@ -2614,11 +2621,11 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
                             <div>
                                 <p class="text-gray-500">Check-in</p>
-                                <p class="font-medium">${new Date(booking.checkIn).toLocaleDateString()}</p>
+                                <p class="font-medium">${fmtBookingDate(booking.checkIn)}</p>
                             </div>
                             <div>
                                 <p class="text-gray-500">Check-out</p>
-                                <p class="font-medium">${new Date(booking.checkOut).toLocaleDateString()}</p>
+                                <p class="font-medium">${fmtBookingDate(booking.checkOut)}</p>
                             </div>
                             <div>
                                 <p class="text-gray-500">Nights</p>
