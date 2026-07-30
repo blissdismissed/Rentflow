@@ -206,6 +206,7 @@ async function syncAllSources() {
   const results = []
 
   for (const source of sources) {
+    const wasHealthy = source.lastSyncStatus !== 'error'
     try {
       const result = await syncIcalSource(source)
       results.push({ sourceId: source.id, channel: source.channel, ...result, status: 'success' })
@@ -216,6 +217,21 @@ async function syncAllSources() {
         lastSyncError: err.message
       })
       results.push({ sourceId: source.id, channel: source.channel, status: 'error', error: err.message })
+
+      // Email owner only on first failure (don't spam every 20-min cycle)
+      if (wasHealthy) {
+        try {
+          const property = await Property.findByPk(source.propertyId)
+          if (property) {
+            const owner = await User.findByPk(property.userId)
+            if (owner?.email) {
+              await emailService.sendSyncFailureAlert(owner.email, property.name, source, err.message)
+            }
+          }
+        } catch (emailErr) {
+          console.error('Failed to send sync failure alert:', emailErr)
+        }
+      }
     }
   }
 

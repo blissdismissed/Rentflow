@@ -1055,6 +1055,35 @@ Questions? Contact us at ${FROM_EMAIL}
    * @param {string} htmlContent - HTML email content
    * @param {string} plainTextContent - Optional plain text content
    */
+  async sendSyncFailureAlert(ownerEmail, propertyName, source, errorMessage) {
+    try {
+      if (!RESEND_API_KEY) return
+      const channelLabel = { airbnb: 'Airbnb', vrbo: 'VRBO', booking_com: 'Booking.com', evolve: 'Evolve', other: 'Other' }[source.channel] || source.channel
+      const displayName = source.channelName || channelLabel
+      await sendEmail({
+        to: ownerEmail,
+        from: { email: FROM_EMAIL, name: FROM_NAME },
+        replyTo: REPLY_TO_EMAIL,
+        subject: `⚠️ Channel Sync Failed — ${displayName} · ${propertyName}`,
+        html: `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+            <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:20px;margin-bottom:24px">
+              <h2 style="color:#92400e;margin:0 0 8px">⚠️ Calendar Sync Failed</h2>
+              <p style="color:#78350f;margin:0">The <strong>${displayName}</strong> calendar for <strong>${propertyName}</strong> could not be synced. This may mean your iCal token has expired.</p>
+            </div>
+            <p style="color:#374151;margin-bottom:8px"><strong>Error:</strong> ${errorMessage}</p>
+            <p style="color:#374151;margin-bottom:24px">To fix this, go to your Evolve (or OTA) account, regenerate the iCal URL, and update it in the Channel Sync settings in your dashboard.</p>
+            <a href="${FRONTEND_URL}/dashboard.html" style="display:inline-block;background:#0d9488;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600">Update Channel URL →</a>
+          </div>
+        `,
+        text: `Channel Sync Failed — ${displayName} · ${propertyName}\n\nError: ${errorMessage}\n\nGo to your dashboard to update the iCal URL: ${FRONTEND_URL}/dashboard.html`
+      })
+      console.log(`⚠️ Sync failure alert sent to ${ownerEmail} for ${displayName}`)
+    } catch (err) {
+      console.error('❌ Failed to send sync failure alert:', err)
+    }
+  }
+
   async sendConflictAlert(ownerEmail, propertyName, newBooking, existingBooking) {
     try {
       if (!RESEND_API_KEY) {

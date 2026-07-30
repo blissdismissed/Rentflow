@@ -297,10 +297,6 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                             Send Email
                         </button>
-                        <button onclick="openDirectBookingModal()" class="px-3 py-2 bg-violet-600 text-white text-sm rounded-lg hover:bg-violet-700 flex items-center gap-1.5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            Direct Booking
-                        </button>
                         <button onclick="loadGuests()" class="px-3 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50">Refresh</button>
                     </div>
                 </div>
@@ -582,7 +578,13 @@
         <div id="calendar-content" class="tab-content hidden">
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-semibold text-gray-900">Booking Calendar</h3>
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-xl font-semibold text-gray-900">Booking Calendar</h3>
+                        <button onclick="openDirectBookingModal()" class="px-3 py-1.5 bg-violet-600 text-white text-sm rounded-lg hover:bg-violet-700 flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Direct Booking
+                        </button>
+                    </div>
                     <div class="flex gap-4 text-sm">
                         <div class="flex items-center gap-2">
                             <div class="w-4 h-4 rounded" style="background-color: #FEF3C7; border: 1px solid #F59E0B;"></div>
@@ -2012,11 +2014,16 @@
                         },
                         events: events,
                         height: 'auto',
+                        selectable: true,
+                        selectMirror: true,
+                        select: function(info) {
+                            openDirectBookingModal(null, { checkIn: info.startStr, checkOut: info.endStr });
+                            calendar.unselect();
+                        },
                         eventClick: function(info) {
                             showBookingDetails(info.event);
                         },
                         eventDidMount: function(info) {
-                            // Add tooltip on hover
                             info.el.title = `${info.event.extendedProps.guestName}\n${info.event.extendedProps.confirmationCode}\nStatus: ${info.event.extendedProps.status}`;
                         }
                     });
@@ -2147,6 +2154,17 @@ Total: $${props.totalAmount}`);
         var CHANNEL_LABELS = { airbnb: 'Airbnb', vrbo: 'VRBO', booking_com: 'Booking.com', evolve: 'Evolve', other: 'Other' };
         var CHANNEL_COLORS = { airbnb: 'bg-red-100 text-red-700', vrbo: 'bg-blue-100 text-blue-700', booking_com: 'bg-indigo-100 text-indigo-700', evolve: 'bg-orange-100 text-orange-700', other: 'bg-gray-100 text-gray-700' };
 
+        function tokenAgeBadge(createdAt) {
+            var days = Math.floor((Date.now() - new Date(createdAt)) / (1000 * 60 * 60 * 24));
+            if (days > 90) {
+                return '<span class="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700" title="Token likely expired — regenerate the iCal URL in your OTA account">🔴 ' + days + 'd old · may be expired</span>';
+            } else if (days > 60) {
+                return '<span class="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700" title="Token approaching typical expiry window — consider refreshing soon">⚠️ ' + days + 'd old</span>';
+            } else {
+                return '<span class="ml-2 text-xs text-gray-400">' + days + 'd old</span>';
+            }
+        }
+
         function renderChannelSources(sources) {
             var sourcesSection = document.getElementById('cs-sources-section');
             var emptyDiv = document.getElementById('cs-empty');
@@ -2165,17 +2183,24 @@ Total: $${props.totalAmount}`);
                 var label = s.channelName || CHANNEL_LABELS[s.channel] || s.channel;
                 var colorClass = CHANNEL_COLORS[s.channel] || CHANNEL_COLORS.other;
                 var syncTime = s.lastSyncedAt ? new Date(s.lastSyncedAt).toLocaleString() : 'Never';
+                var isError = s.lastSyncStatus === 'error';
                 var statusDot = s.lastSyncStatus === 'success'
                     ? '<span class="w-2 h-2 rounded-full bg-green-400 inline-block mr-1"></span>'
-                    : s.lastSyncStatus === 'error'
+                    : isError
                     ? '<span class="w-2 h-2 rounded-full bg-red-400 inline-block mr-1" title="' + (s.lastSyncError || '') + '"></span>'
                     : '<span class="w-2 h-2 rounded-full bg-gray-300 inline-block mr-1"></span>';
-                return '<div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">' +
+                var errorNote = isError ? '<p class="text-xs text-red-600 mt-1 truncate" title="' + (s.lastSyncError || '') + '">Error: ' + (s.lastSyncError || '').substring(0, 80) + '</p>' : '';
+                var border = isError ? 'border-red-300 bg-red-50' : 'border-gray-200';
+                return '<div class="flex items-center justify-between p-3 border ' + border + ' rounded-lg">' +
                     '<div class="flex items-center gap-3 min-w-0">' +
                         '<span class="text-xs font-semibold px-2 py-0.5 rounded-full ' + colorClass + ' shrink-0">' + label + '</span>' +
                         '<div class="min-w-0">' +
-                            '<p class="text-xs text-gray-500 truncate font-mono">' + s.icalUrl.substring(0, 60) + (s.icalUrl.length > 60 ? '…' : '') + '</p>' +
+                            '<div class="flex items-center flex-wrap gap-1">' +
+                                '<p class="text-xs text-gray-500 truncate font-mono">' + s.icalUrl.substring(0, 55) + (s.icalUrl.length > 55 ? '…' : '') + '</p>' +
+                                tokenAgeBadge(s.createdAt) +
+                            '</div>' +
                             '<p class="text-xs text-gray-400 mt-0.5">' + statusDot + 'Last sync: ' + syncTime + (s.bookingCount ? ' · ' + s.bookingCount + ' blocks' : '') + '</p>' +
+                            errorNote +
                         '</div>' +
                     '</div>' +
                     '<div class="flex gap-2 shrink-0">' +
@@ -5016,7 +5041,7 @@ Total: $${props.totalAmount}`);
         let dbGuestMode = 'existing'; // 'existing' | 'new'
         let dbAllGuests = []; // snapshot for filtering
 
-        function openDirectBookingModal(preselectedGuestId) {
+        function openDirectBookingModal(preselectedGuestId, prefillDates) {
             dbGuestMode = 'existing';
             dbAllGuests = [...guestState.all].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -5041,8 +5066,8 @@ Total: $${props.totalAmount}`);
             document.getElementById('db-new-name').value = '';
             document.getElementById('db-new-email').value = '';
             document.getElementById('db-new-phone').value = '';
-            document.getElementById('db-checkin').value = '';
-            document.getElementById('db-checkout').value = '';
+            document.getElementById('db-checkin').value = (prefillDates && prefillDates.checkIn) || '';
+            document.getElementById('db-checkout').value = (prefillDates && prefillDates.checkOut) || '';
             document.getElementById('db-amount').value = '';
             document.getElementById('db-num-guests').value = '1';
             document.getElementById('db-notes').value = '';
