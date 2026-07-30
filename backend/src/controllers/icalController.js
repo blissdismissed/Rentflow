@@ -61,7 +61,7 @@ class IcalController {
       if (!channel || !icalUrl) {
         return res.status(400).json({ success: false, message: 'channel and icalUrl are required' })
       }
-      const validChannels = ['airbnb', 'vrbo', 'booking_com', 'other']
+      const validChannels = ['airbnb', 'vrbo', 'booking_com', 'evolve', 'other']
       if (!validChannels.includes(channel)) {
         return res.status(400).json({ success: false, message: `channel must be one of: ${validChannels.join(', ')}` })
       }
