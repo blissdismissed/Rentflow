@@ -1054,6 +1054,66 @@
             </div>
         </div>
 
+        <!-- Calendar Booking Detail / Edit Modal -->
+        <div id="cal-booking-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4" onclick="if(event.target===this)closeCalBookingModal()">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+                <div class="flex justify-between items-center p-5 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900">Booking Details</h3>
+                    <button onclick="closeCalBookingModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <!-- Status badge -->
+                    <div class="flex items-center justify-between">
+                        <span id="cbm-code" class="text-sm font-mono text-gray-500"></span>
+                        <span id="cbm-status-badge" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"></span>
+                    </div>
+                    <!-- Guest + Property -->
+                    <div>
+                        <p id="cbm-guest" class="font-semibold text-gray-900 text-base"></p>
+                        <p id="cbm-email" class="text-sm text-gray-500 mt-0.5"></p>
+                        <p id="cbm-property" class="text-sm text-gray-500 mt-0.5"></p>
+                    </div>
+                    <!-- Dates + Nights + Amount -->
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-gray-500 text-xs mb-0.5">Check-in</p>
+                            <p id="cbm-checkin" class="font-medium text-gray-900"></p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-gray-500 text-xs mb-0.5">Check-out</p>
+                            <p id="cbm-checkout" class="font-medium text-gray-900"></p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-gray-500 text-xs mb-0.5">Nights</p>
+                            <p id="cbm-nights" class="font-medium text-gray-900"></p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-gray-500 text-xs mb-0.5">Total</p>
+                            <p id="cbm-amount" class="font-medium text-gray-900"></p>
+                        </div>
+                    </div>
+                    <!-- Status change (direct bookings only) -->
+                    <div id="cbm-status-row" class="hidden pt-1">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Change Status</p>
+                        <div class="flex gap-2">
+                            <select id="cbm-status-sel" class="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-teal-500">
+                                <option value="">— select —</option>
+                            </select>
+                            <button onclick="applyCalBookingStatus()" class="text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition font-medium">Update</button>
+                        </div>
+                    </div>
+                    <!-- External platform note -->
+                    <p id="cbm-external-note" class="hidden text-xs text-gray-400 italic">This booking is from an external platform. Manage status changes there.</p>
+                </div>
+                <div class="flex gap-3 px-5 pb-5">
+                    <button onclick="goToBookingInList()" class="flex-1 text-sm border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition font-medium">View in Bookings</button>
+                    <button onclick="closeCalBookingModal()" class="flex-1 text-sm bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium">Close</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Direct Booking Modal -->
         <div id="direct-booking-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4" onclick="if(event.target===this)closeDirectBookingModal()">
             <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -1976,27 +2036,32 @@
                 const events = bookings.map(booking => {
                     const propertyName = booking.property?.name || 'Property';
                     // FullCalendar uses exclusive end dates — add 1 day so the checkout
-                    // day is visually included in the block (e.g. 7/1–7/2 shows both days)
+                    // day is visually included in the block (e.g. 7/1–7/4 spans all 4 cells)
                     const displayEnd = booking.checkOut
                         ? new Date(new Date(booking.checkOut).getTime() + 86400000).toISOString().split('T')[0]
                         : booking.checkOut;
                     return {
                         id: booking.id,
-                        title: `${booking.guestName} - ${propertyName}`,
+                        title: `${booking.guestName} — ${propertyName}`,
                         start: booking.checkIn,
                         end: displayEnd,
+                        display: 'block',
                         backgroundColor: getEventColor(booking.bookingStatus),
                         borderColor: getEventBorderColor(booking.bookingStatus),
                         textColor: getEventTextColor(booking.bookingStatus),
                         classNames: [`status-${booking.bookingStatus}`],
                         extendedProps: {
+                            bookingId: booking.id,
                             guestName: booking.guestName,
                             guestEmail: booking.guestEmail,
                             confirmationCode: booking.confirmationCode,
                             status: booking.bookingStatus,
                             totalAmount: booking.totalAmount,
                             nights: booking.nights,
-                            property: propertyName
+                            property: propertyName,
+                            checkIn: booking.checkIn,
+                            checkOut: booking.checkOut,
+                            channel: booking.channel || 'direct'
                         }
                     };
                 });
@@ -2026,7 +2091,7 @@
                             calendar.unselect();
                         },
                         eventClick: function(info) {
-                            showBookingDetails(info.event);
+                            openCalBookingModal(info.event);
                         },
                         eventDidMount: function(info) {
                             info.el.title = `${info.event.extendedProps.guestName}\n${info.event.extendedProps.confirmationCode}\nStatus: ${info.event.extendedProps.status}`;
@@ -2072,28 +2137,95 @@
             return colors[status] || '#1F2937';
         }
 
-        function showBookingDetails(event) {
-            const props = event.extendedProps;
-            const startDate = new Date(event.start).toLocaleDateString('en-US', {
-                weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
-            });
-            const endDate = new Date(event.end).toLocaleDateString('en-US', {
-                weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
-            });
+        let calModalBookingId = null;
 
-            alert(`📅 Booking Details
+        function openCalBookingModal(event) {
+            const p = event.extendedProps;
+            calModalBookingId = p.bookingId;
 
-Guest: ${props.guestName}
-Email: ${props.guestEmail}
-Property: ${props.property}
-Confirmation: ${props.confirmationCode}
+            const fmt = d => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
 
-Check-in: ${startDate}
-Check-out: ${endDate}
-Nights: ${props.nights}
+            document.getElementById('cbm-code').textContent = p.confirmationCode || '';
+            document.getElementById('cbm-guest').textContent = p.guestName || '';
+            document.getElementById('cbm-email').textContent = p.guestEmail || '';
+            document.getElementById('cbm-property').textContent = p.property ? '📍 ' + p.property : '';
+            document.getElementById('cbm-checkin').textContent = fmt(p.checkIn);
+            document.getElementById('cbm-checkout').textContent = fmt(p.checkOut);
+            document.getElementById('cbm-nights').textContent = p.nights + ' night' + (p.nights !== 1 ? 's' : '');
+            document.getElementById('cbm-amount').textContent = '$' + (p.totalAmount || 0);
 
-Status: ${props.status}
-Total: $${props.totalAmount}`);
+            // Status badge
+            const badge = document.getElementById('cbm-status-badge');
+            const badgeClasses = {
+                confirmed: 'bg-green-100 text-green-800',
+                requested: 'bg-yellow-100 text-yellow-800',
+                approved: 'bg-blue-100 text-blue-800',
+                declined: 'bg-red-100 text-red-800',
+                cancelled: 'bg-gray-100 text-gray-500',
+                completed: 'bg-purple-100 text-purple-800'
+            };
+            badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ' + (badgeClasses[p.status] || 'bg-gray-100 text-gray-800');
+            badge.textContent = p.status;
+
+            // Status change row
+            const isExternal = p.channel && p.channel !== 'direct';
+            const isTerminal = ['cancelled','declined','completed'].includes(p.status);
+            const statusRow = document.getElementById('cbm-status-row');
+            const extNote = document.getElementById('cbm-external-note');
+
+            if (isExternal) {
+                statusRow.classList.add('hidden');
+                extNote.classList.remove('hidden');
+            } else if (!isTerminal) {
+                extNote.classList.add('hidden');
+                statusRow.classList.remove('hidden');
+                const opts = {
+                    requested: [['confirmed','Confirm'],['cancelled','Cancel']],
+                    approved:  [['confirmed','Confirm'],['cancelled','Cancel']],
+                    confirmed: [['completed','Mark Complete'],['cancelled','Cancel']],
+                };
+                const sel = document.getElementById('cbm-status-sel');
+                sel.innerHTML = '<option value="">— select —</option>'
+                    + (opts[p.status] || []).map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
+            } else {
+                statusRow.classList.add('hidden');
+                extNote.classList.add('hidden');
+            }
+
+            document.getElementById('cal-booking-modal').classList.remove('hidden');
+        }
+
+        function closeCalBookingModal() {
+            document.getElementById('cal-booking-modal').classList.add('hidden');
+            calModalBookingId = null;
+        }
+
+        async function applyCalBookingStatus() {
+            const sel = document.getElementById('cbm-status-sel');
+            const newStatus = sel.value;
+            if (!newStatus) { alert('Please select a status.'); return; }
+
+            const label = sel.options[sel.selectedIndex].text;
+            if (!confirm(`Change this booking to "${label}"?`)) return;
+
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings/${calModalBookingId}`, {
+                    method: 'PUT',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ bookingStatus: newStatus })
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Update failed');
+                closeCalBookingModal();
+                await Promise.all([loadBookings(), loadCalendarView()]);
+            } catch (err) {
+                alert('Failed to update status: ' + err.message);
+            }
+        }
+
+        function goToBookingInList() {
+            closeCalBookingModal();
+            switchTab('bookings');
         }
 
         // ── Channel Sync ──────────────────────────────────────────────────────
