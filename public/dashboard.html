@@ -14,7 +14,7 @@
 
     <!-- Theme (must load before Tailwind and body to prevent FOUC) -->
     <script src="/js/theme.js"></script>
-    <!-- Critical logo-swap rules inlined so they fire before CSS file downloads -->
+    <script src="/js/owner-partials.js"></script>
 
     <script src="/js/config.js"></script>
     <script>window.tailwind = { config: { darkMode: 'class' } }</script>
@@ -129,28 +129,8 @@
 </head>
 <body class="bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center gap-3">
-                    <a href="/dashboard.html" class="flex items-center">
-                        <img class="h-8 hidden sm:block" src="/assets/resources/logo-single-line.png" alt="AspireTowards">
-                        <img class="h-8 sm:hidden" src="/assets/resources/icon-mark-color.png" alt="AspireTowards">
-                    </a>
-                    <div class="h-5 w-px bg-gray-200 hidden sm:block"></div>
-                    <span class="text-gray-500 text-sm font-medium hidden sm:inline">RentFlow</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <a href="/dashboard/account-settings.html" class="text-gray-500 hover:text-gray-700 transition" title="Account Settings">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    </a>
-                    <button onclick="logout()" class="text-gray-600 hover:text-gray-900 font-medium text-sm">
-                        Sign Out
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <div id="owner-nav"></div>
+    <script>renderOwnerNav('RentFlow', 'main')</script>
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -1272,53 +1252,7 @@
 
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-300 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- About -->
-                <div class="col-span-1 md:col-span-2">
-                    <div class="flex items-center space-x-3 mb-4">
-                        <h3 class="text-xl font-display font-bold text-white">RentFlow</h3>
-                    </div>
-                    <p class="text-gray-400 mb-4">
-                        Manage your vacation rental properties with ease. Direct booking platform with no hidden fees.
-                    </p>
-                </div>
-
-                <!-- Quick Links -->
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
-                    <ul class="space-y-2">
-                        <li><a href="/index.html" class="hover:text-white transition">View Homepage</a></li>
-                        <li><a href="/properties.html" class="hover:text-white transition">Browse Properties</a></li>
-                        <li><a href="/dashboard.html" class="hover:text-white transition">Dashboard</a></li>
-                    </ul>
-                </div>
-
-                <!-- Account -->
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Account</h4>
-                    <ul class="space-y-2">
-                        <li><a href="/dashboard/account-settings.html" class="hover:text-white transition">Account Settings</a></li>
-                        <li><a href="/dashboard/support.html" class="hover:text-white transition">Support</a></li>
-                        <li><a href="#" onclick="logout(); return false;" class="hover:text-white transition">Sign Out</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Bottom Bar -->
-            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-sm text-gray-500">
-                    © 2026 RentFlow. All rights reserved.
-                </p>
-                <div class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="#" class="text-sm hover:text-white transition">Privacy Policy</a>
-                    <a href="#" class="text-sm hover:text-white transition">Terms of Service</a>
-                    <a href="/dashboard/support.html" class="text-sm hover:text-white transition">Contact</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <div id="owner-footer"></div>
 
     <!-- Search overlay (⌘K command palette) -->
     <div id="search-overlay" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-start justify-center pt-16 px-4" onclick="if(event.target===this)closeSearch()">
@@ -1362,14 +1296,6 @@
                 return false;
             }
             return true;
-        }
-
-        // Logout function
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
-            window.location.href = '/auth/login.html';
         }
 
         // Load user data
@@ -1742,6 +1668,7 @@
         async function initDashboard() {
             if (!checkAuth()) return;
 
+            renderOwnerFooter();
             loadUserData();
             animateStats();
             await loadProperties();
@@ -4825,7 +4752,7 @@ Total: $${props.totalAmount}`);
         icon: '📤', title: 'Sign Out',
         desc: 'Log out of your account',
         tags: ['sign out','logout','exit','leave','log off'],
-        action: () => logout()
+        action: () => ownerLogout()
       },
     ];
 

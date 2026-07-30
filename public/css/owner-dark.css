@@ -41,6 +41,12 @@ html.dark .divide-gray-200 > * + * { border-color: #374151; }
 /* ── Nav ─────────────────────────────────────────────────────────────── */
 html.dark nav { background-color: #1f2937 !important; border-color: #374151 !important; }
 
+/* Logo: invert to white so dark-text logo is visible on dark nav */
+html.dark .logo-wordmark { filter: brightness(0) invert(1); }
+
+/* Module/page label (e.g. "RentFlow", "Account Settings") — match Sign Out brightness */
+html.dark .nav-section-label { color: #e5e7eb !important; }
+
 /* ── Custom components ───────────────────────────────────────────────── */
 html.dark .stat-card {
   background: #1f2937;
