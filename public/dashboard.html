@@ -4471,7 +4471,7 @@ Total: $${props.totalAmount}`);
             const map = {
                 'airbnb':      { label: 'Airbnb',        bg: 'bg-rose-100',   text: 'text-rose-700'   },
                 'vrbo':        { label: 'Vrbo',           bg: 'bg-blue-100',   text: 'text-blue-700'   },
-                'booking.com': { label: 'Booking.com',   bg: 'bg-indigo-100', text: 'text-indigo-700' },
+                'booking.com': { label: 'Booking.com',   bg: 'bg-amber-100',  text: 'text-amber-700'  },
                 'evolve':      { label: 'Evolve',         bg: 'bg-teal-100',   text: 'text-teal-700'   },
                 'direct':      { label: 'AspireTowards',  bg: 'bg-orange-100', text: 'text-orange-700' },
                 'website':     { label: 'AspireTowards',  bg: 'bg-orange-100', text: 'text-orange-700' },
@@ -4482,8 +4482,8 @@ Total: $${props.totalAmount}`);
 
         function channelColor(src) {
             const map = {
-                'airbnb': '#f43f5e', 'vrbo': '#3b82f6', 'booking.com': '#6366f1',
-                'evolve': '#14b8a6', 'direct': '#f97316', 'website': '#f97316',
+                'airbnb': '#f43f5e', 'vrbo': '#3b82f6', 'booking.com': '#f59e0b',
+                'evolve': '#14b8a6', 'direct': '#a855f7', 'website': '#a855f7',
             };
             return map[(src || '').toLowerCase()] || '#9ca3af';
         }
