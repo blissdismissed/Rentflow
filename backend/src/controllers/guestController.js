@@ -599,7 +599,7 @@ class GuestController {
         propertyId,
         channel: 'direct',
         guestName: guest.name,
-        guestEmail: guest.email || 'noreply@direct.internal',
+        guestEmail: guest.email || 'noreply@aspiretowards.com',
         checkIn,
         checkOut,
         nights,

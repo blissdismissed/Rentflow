@@ -1975,11 +1975,16 @@
                 // Convert bookings to FullCalendar events
                 const events = bookings.map(booking => {
                     const propertyName = booking.property?.name || 'Property';
+                    // FullCalendar uses exclusive end dates — add 1 day so the checkout
+                    // day is visually included in the block (e.g. 7/1–7/2 shows both days)
+                    const displayEnd = booking.checkOut
+                        ? new Date(new Date(booking.checkOut).getTime() + 86400000).toISOString().split('T')[0]
+                        : booking.checkOut;
                     return {
                         id: booking.id,
                         title: `${booking.guestName} - ${propertyName}`,
                         start: booking.checkIn,
-                        end: booking.checkOut,
+                        end: displayEnd,
                         backgroundColor: getEventColor(booking.bookingStatus),
                         borderColor: getEventBorderColor(booking.bookingStatus),
                         textColor: getEventTextColor(booking.bookingStatus),
@@ -5136,9 +5141,13 @@ Total: $${props.totalAmount}`);
             } else {
                 const name = document.getElementById('db-new-name').value.trim();
                 if (!name) { alert('Guest name is required.'); btn.disabled = false; btn.textContent = 'Record Stay'; return; }
+                const rawPhone = document.getElementById('db-new-phone').value.trim();
+                if (rawPhone && !/^[+\d][\d\s\-().]{6,}$/.test(rawPhone)) {
+                    alert('Please enter a valid phone number.'); btn.disabled = false; btn.textContent = 'Record Stay'; return;
+                }
                 body.name = name;
                 body.email = document.getElementById('db-new-email').value.trim() || null;
-                body.phoneNumber = document.getElementById('db-new-phone').value.trim() || null;
+                body.phoneNumber = rawPhone || null;
             }
 
             try {
@@ -5149,6 +5158,11 @@ Total: $${props.totalAmount}`);
                 });
                 const data = await res.json();
                 if (!data.success) throw new Error(data.error || data.message || 'Save failed');
+                // If a new guest was created, add them to guestState immediately
+                // so they appear in the dropdown next time without requiring a page reload
+                if (data.guest && dbGuestMode === 'new' && !guestState.all.find(g => g.id === data.guest.id)) {
+                    guestState.all.push(data.guest);
+                }
                 closeDirectBookingModal();
                 await Promise.all([loadGuests(), loadBookings()]);
                 if (typeof loadCalendarView === 'function') loadCalendarView();

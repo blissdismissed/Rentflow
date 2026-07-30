@@ -918,7 +918,7 @@
                             </div>
 
                             <div id="seasonal-message" class="text-sm font-medium mb-3 p-2 rounded-lg text-center" style="display: none;"></div>
-                            <div class="flex items-baseline">
+                            <div id="price-display" class="flex items-baseline" style="display: none !important;">
                                 <span class="text-3xl font-bold text-gray-900">$<span id="booking-price">0</span></span>
                                 <span class="text-gray-600 ml-2">/ night</span>
                             </div>
@@ -1761,6 +1761,10 @@
 
                 if (data.success && data.available) {
                     const pricing = data.pricing
+
+                    // Reveal the per-night price header now that we have date-specific pricing
+                    document.getElementById('price-display').style.removeProperty('display')
+                    document.getElementById('booking-price').textContent = pricing.pricePerNight
 
                     // Show breakdown (desktop)
                     document.getElementById('price-breakdown').classList.remove('hidden')
