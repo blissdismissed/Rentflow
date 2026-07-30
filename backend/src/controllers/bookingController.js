@@ -269,6 +269,7 @@ class BookingController {
         numberOfGuests,
         totalAmount,
         status,
+        bookingStatus,
         paymentStatus,
         specialRequests
       } = req.body;
@@ -298,6 +299,8 @@ class BookingController {
         });
       }
 
+      const VALID_BOOKING_STATUSES = ['requested', 'approved', 'confirmed', 'completed', 'cancelled', 'declined'];
+
       const updateData = {};
       if (guestName) updateData.guestName = guestName;
       if (guestEmail) updateData.guestEmail = guestEmail;
@@ -308,7 +311,20 @@ class BookingController {
       if (paymentStatus) updateData.paymentStatus = paymentStatus;
       if (specialRequests !== undefined) updateData.specialRequests = specialRequests;
 
-      // If cancelling, set cancellation timestamp
+      if (bookingStatus && VALID_BOOKING_STATUSES.includes(bookingStatus)) {
+        updateData.bookingStatus = bookingStatus;
+        // Keep the simple status field in sync
+        if (bookingStatus === 'cancelled' || bookingStatus === 'declined') {
+          updateData.status = 'cancelled';
+          updateData.cancelledAt = new Date();
+        } else if (bookingStatus === 'confirmed') {
+          updateData.status = 'confirmed';
+        } else if (bookingStatus === 'completed') {
+          updateData.status = 'confirmed'; // no checked_out in our flow yet
+        }
+      }
+
+      // If cancelling via status field, set cancellation timestamp
       if (status === 'cancelled' && booking.status !== 'cancelled') {
         updateData.cancelledAt = new Date();
       }
@@ -371,6 +387,7 @@ class BookingController {
 
       await booking.update({
         status: 'cancelled',
+        bookingStatus: 'cancelled',
         cancelledAt: new Date(),
         cancellationReason: cancellationReason || 'Cancelled by host'
       });

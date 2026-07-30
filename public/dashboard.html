@@ -2405,6 +2405,26 @@ Total: $${props.totalAmount}`);
                                 </button>
                             </div>
                         ` : ''}
+                        ${(() => {
+                            const isExternal = booking.channel && booking.channel !== 'direct';
+                            const isTerminal = ['cancelled','declined','completed'].includes(booking.bookingStatus);
+                            if (isExternal || isTerminal) return '';
+                            const opts = {
+                                requested: [['confirmed','Confirm'],['cancelled','Cancel']],
+                                approved:  [['confirmed','Confirm'],['cancelled','Cancel']],
+                                confirmed: [['completed','Mark Complete'],['cancelled','Cancel']],
+                            };
+                            const choices = (opts[booking.bookingStatus] || []).filter(([v]) => v !== booking.bookingStatus);
+                            if (!choices.length) return '';
+                            return `<div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                                <span class="text-sm text-gray-500 shrink-0">Change status:</span>
+                                <select id="status-sel-${booking.id}" class="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:border-teal-500">
+                                    <option value="">— select —</option>
+                                    ${choices.map(([v,l]) => `<option value="${v}">${l}</option>`).join('')}
+                                </select>
+                                <button onclick="changeBookingStatus('${booking.id}')" class="text-sm bg-teal-600 text-white px-4 py-1.5 rounded-lg hover:bg-teal-700 transition font-medium">Update</button>
+                            </div>`;
+                        })()}
                     </div>
                 `).join('');
         }
@@ -2453,6 +2473,29 @@ Total: $${props.totalAmount}`);
             } catch (error) {
                 console.error('Error approving booking:', error);
                 alert('❌ Failed to approve booking. Please try again.');
+            }
+        }
+
+        async function changeBookingStatus(bookingId) {
+            const sel = document.getElementById(`status-sel-${bookingId}`);
+            const newStatus = sel ? sel.value : '';
+            if (!newStatus) { alert('Please select a status.'); return; }
+
+            const label = sel.options[sel.selectedIndex].text;
+            if (!confirm(`Change this booking to "${label}"?`)) return;
+
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/bookings/${bookingId}`, {
+                    method: 'PUT',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ bookingStatus: newStatus })
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Update failed');
+                await loadBookings();
+                if (typeof loadCalendarView === 'function') loadCalendarView();
+            } catch (err) {
+                alert('Failed to update status: ' + err.message);
             }
         }
 
