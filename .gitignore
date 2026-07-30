@@ -104,3 +104,5 @@ __pycache__/         # if Python backend
 *.seed
 *.tgz
 docs/
+
+todo.md
