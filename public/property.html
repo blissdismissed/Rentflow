@@ -1486,10 +1486,7 @@
             // Booking card (desktop and mobile)
             document.getElementById('booking-price').textContent = property.basePrice
             document.getElementById('mobile-booking-price').textContent = property.basePrice
-            if (property.cleaningFee > 0) {
-                document.getElementById('cleaning-fee-display').textContent = `+ $${property.cleaningFee} cleaning fee`
-                document.getElementById('cleaning-fee-display').classList.remove('hidden')
-            }
+            // cleaning-fee-display is revealed after availability check, not at page load
 
             // Guests dropdown (desktop and mobile)
             const guestsSelect = document.getElementById('num-guests')
@@ -1765,6 +1762,10 @@
                     // Reveal the per-night price header now that we have date-specific pricing
                     document.getElementById('price-display').style.removeProperty('display')
                     document.getElementById('booking-price').textContent = pricing.pricePerNight
+                    if (pricing.cleaningFee > 0) {
+                        document.getElementById('cleaning-fee-display').textContent = `+ $${pricing.cleaningFee} cleaning fee`
+                        document.getElementById('cleaning-fee-display').classList.remove('hidden')
+                    }
 
                     // Show breakdown (desktop)
                     document.getElementById('price-breakdown').classList.remove('hidden')

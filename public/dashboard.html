@@ -1077,8 +1077,8 @@
                         <div id="db-existing-section">
                             <input type="text" id="db-guest-search" placeholder="Filter by name or email…" oninput="filterDirectBookingGuests()"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-t-lg text-sm border-b-0">
-                            <select id="db-guest-select" size="4"
-                                class="w-full px-3 py-1 border border-gray-300 rounded-b-lg text-sm bg-white focus:outline-none focus:border-teal-400">
+                            <select id="db-guest-select" size="7"
+                                class="w-full px-3 py-1 border border-gray-300 rounded-b-lg text-sm bg-white focus:outline-none focus:border-teal-400 overflow-y-auto">
                                 <option value="">— choose a guest —</option>
                             </select>
                         </div>
@@ -5046,12 +5046,21 @@ Total: $${props.totalAmount}`);
         let dbGuestMode = 'existing'; // 'existing' | 'new'
         let dbAllGuests = []; // snapshot for filtering
 
-        function openDirectBookingModal(preselectedGuestId, prefillDates) {
+        async function openDirectBookingModal(preselectedGuestId, prefillDates) {
             dbGuestMode = 'existing';
-            dbAllGuests = [...guestState.all].sort((a, b) => a.name.localeCompare(b.name));
+
+            // Fetch fresh unfiltered guest list so new guests always appear
+            const sel = document.getElementById('db-guest-select');
+            sel.innerHTML = '<option value="" disabled>Loading guests…</option>';
+            try {
+                const res = await fetch(`${window.CONFIG.API_BASE_URL}/api/guests?sortBy=name&order=ASC`, { headers: authHeaders() });
+                const data = await res.json();
+                dbAllGuests = (data.guests || []).sort((a, b) => a.name.localeCompare(b.name));
+            } catch (_) {
+                dbAllGuests = [...guestState.all].sort((a, b) => a.name.localeCompare(b.name));
+            }
 
             // Populate guest select
-            const sel = document.getElementById('db-guest-select');
             sel.innerHTML = '<option value="">— choose a guest —</option>'
                 + dbAllGuests.map(g =>
                     `<option value="${g.id}">${g.name}${g.email ? ' — ' + g.email : ''}</option>`
@@ -5141,12 +5150,16 @@ Total: $${props.totalAmount}`);
             } else {
                 const name = document.getElementById('db-new-name').value.trim();
                 if (!name) { alert('Guest name is required.'); btn.disabled = false; btn.textContent = 'Record Stay'; return; }
+                const rawEmail = document.getElementById('db-new-email').value.trim();
+                if (rawEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(rawEmail)) {
+                    alert('Please enter a valid email address (e.g. guest@example.com).'); btn.disabled = false; btn.textContent = 'Record Stay'; return;
+                }
                 const rawPhone = document.getElementById('db-new-phone').value.trim();
                 if (rawPhone && !/^[+\d][\d\s\-().]{6,}$/.test(rawPhone)) {
-                    alert('Please enter a valid phone number.'); btn.disabled = false; btn.textContent = 'Record Stay'; return;
+                    alert('Please enter a valid phone number (e.g. +1 555-123-4567).'); btn.disabled = false; btn.textContent = 'Record Stay'; return;
                 }
                 body.name = name;
-                body.email = document.getElementById('db-new-email').value.trim() || null;
+                body.email = rawEmail || null;
                 body.phoneNumber = rawPhone || null;
             }
 
@@ -5158,11 +5171,6 @@ Total: $${props.totalAmount}`);
                 });
                 const data = await res.json();
                 if (!data.success) throw new Error(data.error || data.message || 'Save failed');
-                // If a new guest was created, add them to guestState immediately
-                // so they appear in the dropdown next time without requiring a page reload
-                if (data.guest && dbGuestMode === 'new' && !guestState.all.find(g => g.id === data.guest.id)) {
-                    guestState.all.push(data.guest);
-                }
                 closeDirectBookingModal();
                 await Promise.all([loadGuests(), loadBookings()]);
                 if (typeof loadCalendarView === 'function') loadCalendarView();
