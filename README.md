@@ -3,7 +3,7 @@
 [![Tests](https://github.com/blissdismissed/Rentflow/actions/workflows/ci.yml/badge.svg)](https://github.com/blissdismissed/Rentflow/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/blissdismissed/Rentflow/graph/badge.svg)](https://codecov.io/gh/blissdismissed/Rentflow)
 
-Property management and vacation rental platform for managing short-term rental properties.
+Property management and vacation rental platform for managing rental properties.
 
 ## Architecture
 
