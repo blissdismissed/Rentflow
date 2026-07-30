@@ -36,6 +36,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/resources/favicon-16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/resources/apple-touch-icon.png">
 
+    <script src="/js/public-partials.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -1023,59 +1024,8 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-300 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- About -->
-                <div class="col-span-1 md:col-span-2">
-                    <div class="flex items-center space-x-3 mb-4">
-                        <h3 class="text-xl font-display font-bold text-white">AspireTowards</h3>
-                    </div>
-                    <p class="text-gray-400 mb-4">
-                        Book directly and save. No platform fees, just great properties at better prices.
-                    </p>
-                    <p class="text-sm text-gray-500">
-                        Book direct • Save 15% • Crypto payments accepted
-                    </p>
-                </div>
-
-                <!-- Quick Links -->
-                <div>
-                    <h4 class="text-white font-semibold mb-4">For Guests</h4>
-                    <ul class="space-y-2">
-                        <li><a href="/index.html" class="hover:text-white transition">Home</a></li>
-                        <li><a href="/properties.html" class="hover:text-white transition">Browse Properties</a></li>
-                        <li><a href="#" class="hover:text-white transition">How It Works</a></li>
-                        <li><a href="#" class="hover:text-white transition">FAQs</a></li>
-                    </ul>
-                </div>
-
-                <!-- Property Owners -->
-                <div>
-                    <h4 class="text-white font-semibold mb-4">For Property Owners</h4>
-                    <ul class="space-y-2">
-                        <li><a href="/auth/login.html" id="footer-auth-link" class="hover:text-teal-400 transition">Host Login</a></li>
-                        <li><a href="/auth/signup.html" class="hover:text-white transition">List Your Property</a></li>
-                        <li><a href="#" class="hover:text-white transition">Pricing</a></li>
-                        <li><a href="#" class="hover:text-white transition">Resources</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Bottom Bar -->
-            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-sm text-gray-500">
-                    © 2026 AspireTowards. All rights reserved.
-                </p>
-                <div class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="#" class="text-sm hover:text-white transition">Privacy Policy</a>
-                    <a href="#" class="text-sm hover:text-white transition">Terms of Service</a>
-                    <a href="#" class="text-sm hover:text-white transition">Contact</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <div id="public-footer"></div>
+    <script>renderPublicFooter()</script>
 
     <script src="/js/config.js"></script>
     <script>

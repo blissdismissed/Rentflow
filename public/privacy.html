@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - A&A RentFlow</title>
+    <title>Privacy Policy - AspireTowards</title>
+    <script src="/js/public-partials.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -11,21 +12,8 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="/index.html" class="text-2xl font-bold text-teal-600">A&A RentFlow</a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="/index.html" class="text-gray-600 hover:text-gray-900">Home</a>
-                    <a href="/terms.html" class="text-gray-600 hover:text-gray-900">Terms</a>
-                    <a href="/auth/login.html" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">Login</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <div id="public-nav"></div>
+    <script>renderPublicNav()</script>
 
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -37,10 +25,10 @@
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">1. Introduction</h2>
                     <p class="text-gray-700 mb-4">
-                        Welcome to A&A RentFlow ("we," "our," or "us"). We are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our vacation rental management platform.
+                        Welcome to AspireTowards ("we," "our," or "us"). We are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our vacation rental management platform.
                     </p>
                     <p class="text-gray-700">
-                        By accessing or using A&A RentFlow, you agree to this Privacy Policy. If you do not agree with the terms of this Privacy Policy, please do not access or use our services.
+                        By accessing or using AspireTowards, you agree to this Privacy Policy. If you do not agree with the terms of this Privacy Policy, please do not access or use our services.
                     </p>
                 </section>
 
@@ -204,7 +192,7 @@
                         If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:
                     </p>
                     <div class="bg-gray-50 p-6 rounded-lg">
-                        <p class="text-gray-700 mb-2"><strong>A&A RentFlow</strong></p>
+                        <p class="text-gray-700 mb-2"><strong>AspireTowards</strong></p>
                         <p class="text-gray-700 mb-2">Email: privacy@aarentflow.com</p>
                         <p class="text-gray-700 mb-2">Website: <a href="https://aspiretowards.com" class="text-teal-600 hover:underline">https://aspiretowards.com</a></p>
                     </div>
@@ -248,17 +236,7 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="text-center text-gray-600">
-                <p>&copy; 2026 A&A RentFlow. All rights reserved.</p>
-                <div class="mt-4 space-x-6">
-                    <a href="/privacy.html" class="text-teal-600 hover:underline">Privacy Policy</a>
-                    <a href="/terms.html" class="text-teal-600 hover:underline">Terms of Service</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <div id="public-footer"></div>
+    <script>renderPublicFooter()</script>
 </body>
 </html>

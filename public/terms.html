@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terms of Service - A&A RentFlow</title>
+    <title>Terms of Service - AspireTowards</title>
+    <script src="/js/public-partials.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -11,21 +12,8 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="/index.html" class="text-2xl font-bold text-teal-600">A&A RentFlow</a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="/index.html" class="text-gray-600 hover:text-gray-900">Home</a>
-                    <a href="/privacy.html" class="text-gray-600 hover:text-gray-900">Privacy</a>
-                    <a href="/auth/login.html" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">Login</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <div id="public-nav"></div>
+    <script>renderPublicNav()</script>
 
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -37,7 +25,7 @@
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
                     <p class="text-gray-700 mb-4">
-                        Welcome to A&A RentFlow. These Terms of Service ("Terms") constitute a legally binding agreement between you and A&A RentFlow ("we," "us," or "our") governing your access to and use of our vacation rental management platform, including our website, mobile applications, and related services (collectively, the "Platform").
+                        Welcome to AspireTowards. These Terms of Service ("Terms") constitute a legally binding agreement between you and AspireTowards ("we," "us," or "our") governing your access to and use of our vacation rental management platform, including our website, mobile applications, and related services (collectively, the "Platform").
                     </p>
                     <p class="text-gray-700">
                         By accessing or using the Platform, you agree to be bound by these Terms and our Privacy Policy. If you do not agree to these Terms, you may not access or use the Platform.
@@ -186,7 +174,7 @@
 
                     <h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">8.1 Our Content</h3>
                     <p class="text-gray-700 mb-4">
-                        The Platform and its content, including but not limited to text, graphics, logos, images, software, and functionality, are owned by A&A RentFlow and are protected by copyright, trademark, and other intellectual property laws.
+                        The Platform and its content, including but not limited to text, graphics, logos, images, software, and functionality, are owned by AspireTowards and are protected by copyright, trademark, and other intellectual property laws.
                     </p>
 
                     <h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">8.2 User Content</h3>
@@ -232,7 +220,7 @@
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">11. Indemnification</h2>
                     <p class="text-gray-700">
-                        You agree to indemnify, defend, and hold harmless A&A RentFlow and its officers, directors, employees, and agents from any claims, liabilities, damages, losses, costs, or expenses (including reasonable attorneys' fees) arising out of or related to:
+                        You agree to indemnify, defend, and hold harmless AspireTowards and its officers, directors, employees, and agents from any claims, liabilities, damages, losses, costs, or expenses (including reasonable attorneys' fees) arising out of or related to:
                     </p>
                     <ul class="list-disc list-inside text-gray-700 mb-4 space-y-2 mt-4">
                         <li>Your use of the Platform</li>
@@ -253,7 +241,7 @@
 
                     <h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">12.2 Governing Law</h3>
                     <p class="text-gray-700 mb-4">
-                        These Terms shall be governed by and construed in accordance with the laws of the United States and the state in which A&A RentFlow is headquartered, without regard to conflict of law principles.
+                        These Terms shall be governed by and construed in accordance with the laws of the United States and the state in which AspireTowards is headquartered, without regard to conflict of law principles.
                     </p>
 
                     <h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">12.3 Arbitration</h3>
@@ -289,7 +277,7 @@
 
                     <h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">15.1 Entire Agreement</h3>
                     <p class="text-gray-700 mb-4">
-                        These Terms, together with our Privacy Policy, constitute the entire agreement between you and A&A RentFlow regarding your use of the Platform.
+                        These Terms, together with our Privacy Policy, constitute the entire agreement between you and AspireTowards regarding your use of the Platform.
                     </p>
 
                     <h3 class="text-xl font-semibold text-gray-800 mb-3 mt-6">15.2 Severability</h3>
@@ -314,7 +302,7 @@
                         If you have questions about these Terms or need to contact us, please use the following information:
                     </p>
                     <div class="bg-gray-50 p-6 rounded-lg">
-                        <p class="text-gray-700 mb-2"><strong>A&A RentFlow</strong></p>
+                        <p class="text-gray-700 mb-2"><strong>AspireTowards</strong></p>
                         <p class="text-gray-700 mb-2">Email: support@aarentflow.com</p>
                         <p class="text-gray-700 mb-2">Legal: legal@aarentflow.com</p>
                         <p class="text-gray-700 mb-2">Website: <a href="https://aspiretowards.com" class="text-teal-600 hover:underline">https://aspiretowards.com</a></p>
@@ -331,16 +319,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="text-center text-gray-600">
-                <p>&copy; 2026 A&A RentFlow. All rights reserved.</p>
-                <div class="mt-4 space-x-6">
-                    <a href="/privacy.html" class="text-teal-600 hover:underline">Privacy Policy</a>
-                    <a href="/terms.html" class="text-teal-600 hover:underline">Terms of Service</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <div id="public-footer"></div>
+    <script>renderPublicFooter()</script>
 </body>
 </html>

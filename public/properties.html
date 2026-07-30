@@ -33,6 +33,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/resources/favicon-16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/resources/apple-touch-icon.png">
 
+    <script src="/js/public-partials.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -44,10 +45,6 @@
         .property-card:hover { transform: translateY(-8px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
         .filter-tag { cursor: pointer; transition: all 0.2s; }
         .filter-tag:hover { transform: scale(1.05); }
-
-        /* Mobile menu styles */
-        .mobile-menu { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
-        .mobile-menu.active { transform: translateX(0); }
 
         /* Mobile filters */
         .mobile-filters { transform: translateY(100%); transition: transform 0.3s ease-in-out; }
@@ -61,57 +58,8 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
-                <a href="index.html" class="flex items-center">
-                    <img src="/assets/resources/logo-single-line.png" alt="AspireTowards" class="h-10 hidden sm:block"><img src="/assets/resources/icon-mark-color.png"  alt="AspireTowards" class="h-9 sm:hidden">
-                </a>
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="index.html" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
-                    <a href="properties.html" class="text-teal-600 font-medium">Properties</a>
-                    <a href="index.html#why-direct" class="text-gray-600 hover:text-teal-600 font-medium transition">Why Book Direct</a>
-                    <a href="index.html#contact" class="text-gray-600 hover:text-teal-600 font-medium transition">Contact</a>
-                </div>
-                <div class="hidden md:block">
-                    <a href="/auth/login.html" class="text-gray-600 hover:text-teal-600 font-medium transition">
-                        Host Login
-                    </a>
-                </div>
-                <!-- Mobile menu button -->
-                <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="mobile-menu fixed inset-y-0 right-0 w-64 bg-white shadow-2xl z-50 md:hidden">
-        <div class="flex flex-col h-full">
-            <div class="flex justify-between items-center p-4 border-b">
-                <h2 class="text-lg font-display font-bold text-gray-900">Menu</h2>
-                <button id="mobile-menu-close" class="p-2 rounded-lg text-gray-600 hover:bg-gray-100">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <nav class="flex-1 overflow-y-auto p-4">
-                <a href="index.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Home</a>
-                <a href="properties.html" class="block py-3 px-4 text-teal-600 bg-teal-50 rounded-lg font-medium">Properties</a>
-                <a href="index.html#why-direct" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Why Book Direct</a>
-                <a href="index.html#contact" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Contact</a>
-                <a href="/auth/login.html" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Host Login</a>
-            </nav>
-        </div>
-    </div>
-
-    <!-- Mobile Menu Overlay -->
-    <div id="mobile-menu-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
+    <div id="public-nav"></div>
+    <script>renderPublicNav('properties')</script>
 
     <!-- Header -->
     <div class="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-12">
@@ -298,35 +246,8 @@
     <!-- Mobile Filters Overlay -->
     <div id="mobile-filters-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"></div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-300 py-12 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                <div>
-                    <h3 class="text-white font-display font-bold text-xl mb-4">AspireTowards</h3>
-                    <p class="text-gray-400">Premium vacation rentals without the platform fees</p>
-                </div>
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
-                    <ul class="space-y-2">
-                        <li><a href="index.html" class="hover:text-white transition">Home</a></li>
-                        <li><a href="properties.html" class="hover:text-white transition">Properties</a></li>
-                        <li><a href="/auth/login.html" class="hover:text-white transition">Host Login</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Contact Us</h4>
-                    <ul class="space-y-2">
-                        <li>Email: info@aspiretowards.com</li>
-                        <li>Phone: +1 (518) 217-8257</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
-                <p>&copy; 2026 AspireTowards. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <div id="public-footer"></div>
+    <script>renderPublicFooter()</script>
 
     <script src="/js/config.js"></script>
     <script>
@@ -563,28 +484,6 @@
             loadProperties()
             setupEnterKeyListeners()
         })
-
-        // Mobile menu functionality
-        const mobileMenuButton = document.getElementById('mobile-menu-button')
-        const mobileMenu = document.getElementById('mobile-menu')
-        const mobileMenuClose = document.getElementById('mobile-menu-close')
-        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay')
-
-        function openMobileMenu() {
-            mobileMenu.classList.add('active')
-            mobileMenuOverlay.classList.remove('hidden')
-            document.body.style.overflow = 'hidden'
-        }
-
-        function closeMobileMenu() {
-            mobileMenu.classList.remove('active')
-            mobileMenuOverlay.classList.add('hidden')
-            document.body.style.overflow = ''
-        }
-
-        mobileMenuButton.addEventListener('click', openMobileMenu)
-        mobileMenuClose.addEventListener('click', closeMobileMenu)
-        mobileMenuOverlay.addEventListener('click', closeMobileMenu)
 
         // Mobile filters functionality
         const mobileFiltersButton = document.getElementById('mobile-filters-button')
