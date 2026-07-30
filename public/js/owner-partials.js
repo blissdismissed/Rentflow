@@ -50,7 +50,7 @@
     + '<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">'
     + '<div class="grid grid-cols-1 md:grid-cols-4 gap-8">'
     + '<div class="col-span-1 md:col-span-2">'
-    + '<div class="flex items-center space-x-3 mb-4"><img src="/assets/resources/logo-single-line.png" alt="AspireTowards" class="h-8 brightness-0 invert"></div>'
+    + '<div class="flex items-center space-x-3 mb-4"><img src="/assets/resources/logo-single-line.png" alt="AspireTowards" class="h-8 logo-wordmark"></div>'
     + '<p class="text-gray-400 mb-4">Manage your vacation rental properties with ease. Direct booking platform with no hidden fees.</p>'
     + '</div>'
     + '<div><h4 class="text-white font-semibold mb-4">Quick Links</h4>'
