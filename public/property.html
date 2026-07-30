@@ -1695,7 +1695,8 @@
 
             if (!checkIn || !checkOut) return
 
-            const url = `${API_URL}/properties/${slug}/availability?checkIn=${checkIn}&checkOut=${checkOut}`
+            const effectiveSlug = slug || currentProperty?.slug
+            const url = `${API_URL}/properties/${effectiveSlug}/availability?checkIn=${checkIn}&checkOut=${checkOut}`
             console.log('🔍 Checking availability:', url)
 
             try {
@@ -1802,7 +1803,8 @@
             }
 
             // Redirect to booking page with details
-            window.location.href = `booking.html?slug=${slug}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`
+            const effectiveSlug = slug || currentProperty?.slug
+            window.location.href = `booking.html?slug=${effectiveSlug}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`
         })
 
         // Check if user is logged in and update nav
