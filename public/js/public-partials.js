@@ -69,7 +69,7 @@
     + '<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">'
     + '<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">'
     + '<div>'
-    + '<div class="mb-4"><img src="/assets/resources/logo-single-line.png" alt="AspireTowards" class="h-8 brightness-0 invert opacity-80 hidden sm:block">'
+    + '<div class="mb-4"><img src="/assets/resources/logo-single-line.png" alt="AspireTowards" class="h-8 hidden sm:block" style="filter:invert(1) hue-rotate(180deg)">'
     + '<span class="text-white font-bold text-xl sm:hidden">AspireTowards</span></div>'
     + '<p class="text-gray-400">Mountain escapes and family-friendly vacation rentals. Book direct and save.</p>'
     + '</div>'
