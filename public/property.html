@@ -1335,7 +1335,7 @@
                 } else {
                     // Public view — use slug via public endpoint
                     const identifier = slug || propertyId
-                    const response = await fetch(`${API_URL}/public/properties/${identifier}`)
+                    const response = await fetch(`${API_URL}/properties/${identifier}`)
                     const data = await response.json()
                     if (!data.success || !data.property) throw new Error('Property not found')
                     property = data.property

@@ -20,7 +20,6 @@ class PublicPropertyController {
       const filters = {
         publiclyVisible: true,
         isActive: true,
-        status: 'active',
         slug: { [Op.ne]: null }
       }
 
@@ -93,8 +92,7 @@ class PublicPropertyController {
         where: {
           slug,
           publiclyVisible: true,
-          isActive: true,
-          status: 'active'
+          isActive: true
         }
       })
 
@@ -191,8 +189,7 @@ class PublicPropertyController {
         where: {
           slug,
           publiclyVisible: true,
-          isActive: true,
-          status: 'active'
+          isActive: true
         }
       })
 
