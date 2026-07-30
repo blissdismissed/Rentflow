@@ -297,6 +297,10 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                             Send Email
                         </button>
+                        <button onclick="openDirectBookingModal()" class="px-3 py-2 bg-violet-600 text-white text-sm rounded-lg hover:bg-violet-700 flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Direct Booking
+                        </button>
                         <button onclick="loadGuests()" class="px-3 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50">Refresh</button>
                     </div>
                 </div>
@@ -320,10 +324,11 @@
                                 <th class="pb-3 px-2">Last Stay</th>
                                 <th class="pb-3 px-2">Source</th>
                                 <th class="pb-3 px-2">Tags</th>
+                                <th class="pb-3 px-2 w-8"></th>
                             </tr>
                         </thead>
                         <tbody id="guests-table-body">
-                            <tr><td colspan="9" class="py-8 text-center text-gray-400 text-sm">Loading...</td></tr>
+                            <tr><td colspan="10" class="py-8 text-center text-gray-400 text-sm">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -898,6 +903,159 @@
                 <div class="p-6 border-t flex justify-end gap-3">
                     <button onclick="closeMonthModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
                     <button onclick="saveMonth()" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guest Edit Modal -->
+        <div id="guest-edit-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4" onclick="if(event.target===this)closeGuestEditModal()">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900">Edit Guest</h3>
+                    <button onclick="closeGuestEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="ge-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Guest name">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="ge-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="guest@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                            <input type="tel" id="ge-phone" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="+1 (555) 000-0000">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Total Stays</label>
+                            <input type="number" id="ge-stays" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Total Spent ($)</label>
+                            <input type="number" step="0.01" id="ge-spent" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 -mt-2">Stays and spent are normally tracked automatically from imported bookings. Edit to correct errors.</p>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <textarea id="ge-notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none" placeholder="Private notes about this guest…"></textarea>
+                    </div>
+                    <div class="flex items-center gap-6 pt-1">
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" id="ge-marketing" class="rounded">
+                            <span class="text-sm text-gray-700">Marketing opt-in</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" id="ge-blocked" onchange="toggleGuestBlockedReason()" class="rounded accent-red-600">
+                            <span class="text-sm text-red-600 font-medium">Block guest</span>
+                        </label>
+                    </div>
+                    <div id="ge-blocked-reason-row" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Block Reason</label>
+                        <input type="text" id="ge-blocked-reason" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Reason for blocking this guest…">
+                    </div>
+                </div>
+                <div class="p-6 border-t flex items-center gap-3">
+                    <button onclick="closeGuestEditModal(); openDirectBookingModal(guestEditingId)" class="px-4 py-2 border border-violet-300 text-violet-700 rounded-lg text-sm hover:bg-violet-50 flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Log a Stay
+                    </button>
+                    <div class="flex-1"></div>
+                    <button onclick="closeGuestEditModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                    <button id="ge-save-btn" onclick="saveGuestEdit()" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direct Booking Modal -->
+        <div id="direct-booking-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4" onclick="if(event.target===this)closeDirectBookingModal()">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Record Direct Booking</h3>
+                        <p class="text-sm text-gray-400 mt-0.5">Log a stay booked via phone or email</p>
+                    </div>
+                    <button onclick="closeDirectBookingModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <!-- Guest selector: existing or new -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-sm font-medium text-gray-700">Guest</label>
+                            <button id="db-toggle-btn" onclick="toggleDirectBookingGuestMode()" class="text-xs text-teal-600 hover:underline font-medium">+ New Guest</button>
+                        </div>
+                        <!-- Existing guest search + select -->
+                        <div id="db-existing-section">
+                            <input type="text" id="db-guest-search" placeholder="Filter by name or email…" oninput="filterDirectBookingGuests()"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-t-lg text-sm border-b-0">
+                            <select id="db-guest-select" size="4"
+                                class="w-full px-3 py-1 border border-gray-300 rounded-b-lg text-sm bg-white focus:outline-none focus:border-teal-400">
+                                <option value="">— choose a guest —</option>
+                            </select>
+                        </div>
+                        <!-- New guest fields -->
+                        <div id="db-new-section" class="hidden space-y-3">
+                            <input type="text" id="db-new-name" placeholder="Full name *"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="email" id="db-new-email" placeholder="Email (optional)"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <input type="tel" id="db-new-phone" placeholder="Phone (optional)"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Property -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Property</label>
+                        <select id="db-property" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <option value="">— select property —</option>
+                        </select>
+                    </div>
+                    <!-- Dates -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Check-in</label>
+                            <input type="date" id="db-checkin" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Check-out</label>
+                            <input type="date" id="db-checkout" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                    </div>
+                    <!-- Amount + # guests -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Payout ($)</label>
+                            <input type="number" step="0.01" min="0" id="db-amount" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"># of Guests</label>
+                            <input type="number" min="1" id="db-num-guests" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                    </div>
+                    <!-- Notes -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <textarea id="db-notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none" placeholder="Optional notes about this booking…"></textarea>
+                    </div>
+                    <!-- Source indicator -->
+                    <div class="flex items-center gap-2 pt-1">
+                        <span class="text-sm text-gray-500">Source:</span>
+                        <span class="bg-violet-100 text-violet-700 text-xs px-2.5 py-0.5 rounded-full font-medium">Direct Booking</span>
+                    </div>
+                </div>
+                <div class="p-6 border-t flex justify-end gap-3">
+                    <button onclick="closeDirectBookingModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                    <button id="db-save-btn" onclick="saveDirectBooking()" class="px-4 py-2 bg-violet-600 text-white rounded-lg text-sm hover:bg-violet-700">Record Stay</button>
                 </div>
             </div>
         </div>
@@ -4400,8 +4558,8 @@ Total: $${props.totalAmount}`);
                 'vrbo':        { label: 'Vrbo',           bg: 'bg-blue-100',   text: 'text-blue-700'   },
                 'booking.com': { label: 'Booking.com',   bg: 'bg-amber-100',  text: 'text-amber-700'  },
                 'evolve':      { label: 'Evolve',         bg: 'bg-teal-100',   text: 'text-teal-700'   },
-                'direct':      { label: 'AspireTowards',  bg: 'bg-orange-100', text: 'text-orange-700' },
-                'website':     { label: 'AspireTowards',  bg: 'bg-orange-100', text: 'text-orange-700' },
+                'direct':      { label: 'Direct Booking', bg: 'bg-violet-100',  text: 'text-violet-700'  },
+                'website':     { label: 'AspireTowards',  bg: 'bg-orange-100', text: 'text-orange-700'  },
             };
             const key = (src || '').toLowerCase();
             return map[key] || { label: src ? src.charAt(0).toUpperCase() + src.slice(1) : 'Unknown', bg: 'bg-gray-100', text: 'text-gray-600' };
@@ -4440,7 +4598,7 @@ Total: $${props.totalAmount}`);
         function renderGuestsTable(guests) {
             const tbody = document.getElementById('guests-table-body');
             if (!guests.length) {
-                tbody.innerHTML = `<tr><td colspan="9" class="py-10 text-center text-gray-400 text-sm">No guests found. Import an Evolve booking CSV to populate this list.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="py-10 text-center text-gray-400 text-sm">No guests found. Import an Evolve booking CSV to populate this list.</td></tr>`;
                 document.getElementById('guests-count-label').textContent = '';
                 renderGuestChannelSummary([]);
                 return;
@@ -4482,8 +4640,203 @@ Total: $${props.totalAmount}`);
                     <td class="py-3 px-2 text-sm text-gray-500 whitespace-nowrap">${lastStay}</td>
                     <td class="py-3 px-2 whitespace-nowrap">${sourceBadges}</td>
                     <td class="py-3 px-2">${tags.join(' ') || ''}</td>
+                    <td class="py-3 px-2">
+                        <button onclick="openGuestEditModal('${g.id}')" class="text-gray-300 hover:text-teal-600 transition" title="Edit guest">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+                    </td>
                 </tr>`;
             }).join('');
+        }
+
+        // ── Guest edit modal ────────────────────────────────────────────────
+        let guestEditingId = null;
+
+        function openGuestEditModal(guestId) {
+            const g = guestState.all.find(x => x.id === guestId);
+            if (!g) return;
+            guestEditingId = guestId;
+
+            document.getElementById('ge-name').value = g.name || '';
+            document.getElementById('ge-email').value = g.email || '';
+            document.getElementById('ge-phone').value = g.phoneNumber || '';
+            document.getElementById('ge-stays').value = g.totalStays ?? 0;
+            document.getElementById('ge-spent').value = g.totalSpent ? parseFloat(g.totalSpent).toFixed(2) : '';
+            document.getElementById('ge-notes').value = g.notes || '';
+            document.getElementById('ge-marketing').checked = g.marketingOptIn !== false;
+            document.getElementById('ge-blocked').checked = !!g.isBlacklisted;
+            document.getElementById('ge-blocked-reason').value = g.blacklistReason || '';
+            document.getElementById('ge-blocked-reason-row').classList.toggle('hidden', !g.isBlacklisted);
+
+            document.getElementById('guest-edit-modal').classList.remove('hidden');
+        }
+
+        function closeGuestEditModal() {
+            document.getElementById('guest-edit-modal').classList.add('hidden');
+            guestEditingId = null;
+        }
+
+        function toggleGuestBlockedReason() {
+            const blocked = document.getElementById('ge-blocked').checked;
+            document.getElementById('ge-blocked-reason-row').classList.toggle('hidden', !blocked);
+        }
+
+        async function saveGuestEdit() {
+            if (!guestEditingId) return;
+            const btn = document.getElementById('ge-save-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving…';
+
+            const body = {
+                name: document.getElementById('ge-name').value.trim(),
+                email: document.getElementById('ge-email').value.trim() || null,
+                phoneNumber: document.getElementById('ge-phone').value.trim() || null,
+                totalStays: parseInt(document.getElementById('ge-stays').value) || 0,
+                totalSpent: parseFloat(document.getElementById('ge-spent').value) || 0,
+                notes: document.getElementById('ge-notes').value.trim(),
+                marketingOptIn: document.getElementById('ge-marketing').checked,
+                isBlacklisted: document.getElementById('ge-blocked').checked,
+                blacklistReason: document.getElementById('ge-blocked-reason').value.trim() || null,
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/guests/${guestEditingId}`, {
+                    method: 'PUT',
+                    headers: authHeaders(),
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Save failed');
+                closeGuestEditModal();
+                await loadGuests();
+            } catch (err) {
+                alert('Error saving guest: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Changes';
+            }
+        }
+
+        // ── Direct Booking modal ─────────────────────────────────────────────
+        let dbGuestMode = 'existing'; // 'existing' | 'new'
+        let dbAllGuests = []; // snapshot for filtering
+
+        function openDirectBookingModal(preselectedGuestId) {
+            dbGuestMode = 'existing';
+            dbAllGuests = [...guestState.all].sort((a, b) => a.name.localeCompare(b.name));
+
+            // Populate guest select
+            const sel = document.getElementById('db-guest-select');
+            sel.innerHTML = '<option value="">— choose a guest —</option>'
+                + dbAllGuests.map(g =>
+                    `<option value="${g.id}">${g.name}${g.email ? ' — ' + g.email : ''}</option>`
+                ).join('');
+            if (preselectedGuestId) sel.value = preselectedGuestId;
+
+            // Populate property select
+            const propSel = document.getElementById('db-property');
+            propSel.innerHTML = '<option value="">— select property —</option>'
+                + (userProperties || []).map(p =>
+                    `<option value="${p.id}">${p.name}</option>`
+                ).join('');
+            if ((userProperties || []).length === 1) propSel.value = userProperties[0].id;
+
+            // Reset other fields
+            document.getElementById('db-guest-search').value = '';
+            document.getElementById('db-new-name').value = '';
+            document.getElementById('db-new-email').value = '';
+            document.getElementById('db-new-phone').value = '';
+            document.getElementById('db-checkin').value = '';
+            document.getElementById('db-checkout').value = '';
+            document.getElementById('db-amount').value = '';
+            document.getElementById('db-num-guests').value = '1';
+            document.getElementById('db-notes').value = '';
+
+            // Show existing-guest UI
+            document.getElementById('db-existing-section').classList.remove('hidden');
+            document.getElementById('db-new-section').classList.add('hidden');
+            document.getElementById('db-toggle-btn').textContent = '+ New Guest';
+
+            document.getElementById('direct-booking-modal').classList.remove('hidden');
+        }
+
+        function closeDirectBookingModal() {
+            document.getElementById('direct-booking-modal').classList.add('hidden');
+        }
+
+        function toggleDirectBookingGuestMode() {
+            dbGuestMode = dbGuestMode === 'existing' ? 'new' : 'existing';
+            document.getElementById('db-existing-section').classList.toggle('hidden', dbGuestMode === 'new');
+            document.getElementById('db-new-section').classList.toggle('hidden', dbGuestMode === 'existing');
+            document.getElementById('db-toggle-btn').textContent =
+                dbGuestMode === 'existing' ? '+ New Guest' : '← Existing Guest';
+        }
+
+        function filterDirectBookingGuests() {
+            const q = document.getElementById('db-guest-search').value.toLowerCase().trim();
+            const sel = document.getElementById('db-guest-select');
+            const prev = sel.value;
+            sel.innerHTML = '<option value="">— choose a guest —</option>'
+                + dbAllGuests
+                    .filter(g => !q
+                        || g.name.toLowerCase().includes(q)
+                        || (g.email || '').toLowerCase().includes(q)
+                        || (g.phoneNumber || '').includes(q))
+                    .map(g => `<option value="${g.id}">${g.name}${g.email ? ' — ' + g.email : ''}</option>`)
+                    .join('');
+            if (prev) sel.value = prev;
+        }
+
+        async function saveDirectBooking() {
+            const btn = document.getElementById('db-save-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving…';
+
+            const propertyId = document.getElementById('db-property').value;
+            const checkIn = document.getElementById('db-checkin').value;
+            const checkOut = document.getElementById('db-checkout').value;
+
+            if (!propertyId) { alert('Please select a property.'); btn.disabled = false; btn.textContent = 'Record Stay'; return; }
+            if (!checkIn || !checkOut) { alert('Please enter check-in and check-out dates.'); btn.disabled = false; btn.textContent = 'Record Stay'; return; }
+            if (checkOut <= checkIn) { alert('Check-out must be after check-in.'); btn.disabled = false; btn.textContent = 'Record Stay'; return; }
+
+            const body = {
+                propertyId,
+                checkIn,
+                checkOut,
+                amount: parseFloat(document.getElementById('db-amount').value) || 0,
+                numberOfGuests: parseInt(document.getElementById('db-num-guests').value) || 1,
+                notes: document.getElementById('db-notes').value.trim()
+            };
+
+            if (dbGuestMode === 'existing') {
+                const guestId = document.getElementById('db-guest-select').value;
+                if (!guestId) { alert('Please select a guest.'); btn.disabled = false; btn.textContent = 'Record Stay'; return; }
+                body.guestId = guestId;
+            } else {
+                const name = document.getElementById('db-new-name').value.trim();
+                if (!name) { alert('Guest name is required.'); btn.disabled = false; btn.textContent = 'Record Stay'; return; }
+                body.name = name;
+                body.email = document.getElementById('db-new-email').value.trim() || null;
+                body.phoneNumber = document.getElementById('db-new-phone').value.trim() || null;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/guests/manual-stay`, {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Save failed');
+                closeDirectBookingModal();
+                await loadGuests();
+            } catch (err) {
+                alert('Error recording stay: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Record Stay';
+            }
         }
 
         let guestChannelExpanded = false;

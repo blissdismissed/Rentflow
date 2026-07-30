@@ -1,4 +1,4 @@
-const { Guest, GuestStay, Property, Booking } = require('../models')
+const { Guest, GuestStay, Property, Booking, FinancialBookingTransaction, FinancialMonthly } = require('../models')
 const { Op } = require('sequelize')
 
 /**
@@ -138,14 +138,23 @@ class GuestController {
   async updateGuest(req, res) {
     try {
       const { id } = req.params
-      const { notes, tags, marketingOptIn, isBlacklisted, blacklistReason } = req.body
+      const {
+        name, email, phoneNumber,
+        totalStays, totalSpent,
+        notes, tags, marketingOptIn,
+        isBlacklisted, blacklistReason
+      } = req.body
 
       const guest = await Guest.findByPk(id)
       if (!guest) {
         return res.status(404).json({ success: false, message: 'Guest not found' })
       }
 
-      // Update fields
+      if (name !== undefined && name.trim()) guest.name = name.trim()
+      if (email !== undefined) guest.email = email ? email.trim() : null
+      if (phoneNumber !== undefined) guest.phoneNumber = phoneNumber ? phoneNumber.trim() : null
+      if (totalStays !== undefined) guest.totalStays = Math.max(0, parseInt(totalStays) || 0)
+      if (totalSpent !== undefined) guest.totalSpent = Math.max(0, parseFloat(totalSpent) || 0)
       if (notes !== undefined) guest.notes = notes
       if (tags !== undefined) guest.tags = tags
       if (marketingOptIn !== undefined) guest.marketingOptIn = marketingOptIn
@@ -162,6 +171,9 @@ class GuestController {
 
       res.json({ success: true, message: 'Guest updated successfully', guest })
     } catch (error) {
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({ success: false, message: 'That email is already associated with another guest.' })
+      }
       console.error('Error updating guest:', error)
       res.status(500).json({ success: false, message: 'Error updating guest', error: error.message })
     }
@@ -522,6 +534,123 @@ class GuestController {
     } catch (error) {
       console.error('sendMarketingEmail error:', error)
       res.status(500).json({ success: false, message: 'Send failed: ' + error.message })
+    }
+  }
+
+  /**
+   * Record a manual / direct-booking stay
+   * @route POST /api/guests/manual-stay
+   */
+  async manualStay(req, res) {
+    try {
+      const userId = req.user.id
+      const {
+        guestId, name, email, phoneNumber,
+        propertyId, checkIn, checkOut,
+        amount, numberOfGuests, notes
+      } = req.body
+
+      // Validate property belongs to this owner
+      const property = await Property.findOne({ where: { id: propertyId, userId } })
+      if (!property) {
+        return res.status(404).json({ success: false, message: 'Property not found' })
+      }
+
+      // Validate dates
+      const checkInDate = new Date(checkIn)
+      const checkOutDate = new Date(checkOut)
+      const nights = Math.round((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24))
+      if (!checkIn || !checkOut || nights <= 0) {
+        return res.status(400).json({ success: false, message: 'Check-out must be after check-in' })
+      }
+
+      // Resolve guest — use existing or create new
+      let guest
+      if (guestId) {
+        guest = await Guest.findByPk(guestId)
+        if (!guest) return res.status(404).json({ success: false, message: 'Guest not found' })
+      } else {
+        if (!name || !name.trim()) {
+          return res.status(400).json({ success: false, message: 'Guest name is required for new guests' })
+        }
+        const cleanEmail = email ? email.trim().toLowerCase() : null
+        if (cleanEmail) {
+          const [g] = await Guest.findOrCreate({
+            where: { email: cleanEmail },
+            defaults: { name: name.trim(), phoneNumber: phoneNumber || null, totalStays: 0, totalSpent: 0 }
+          })
+          guest = g
+        } else {
+          guest = await Guest.create({
+            name: name.trim(),
+            phoneNumber: phoneNumber || null,
+            totalStays: 0,
+            totalSpent: 0
+          })
+        }
+      }
+
+      const paidAmount = parseFloat(amount) || 0
+
+      // Create the guest stay record
+      const stay = await GuestStay.create({
+        guestId: guest.id,
+        propertyId,
+        checkIn,
+        checkOut,
+        nights,
+        numberOfGuests: Math.max(1, parseInt(numberOfGuests) || 1),
+        totalAmount: paidAmount,
+        bookingSource: 'direct',
+        review: notes || null
+      })
+
+      // Update guest aggregate stats
+      const guestUpdates = {
+        totalStays: (parseInt(guest.totalStays) || 0) + 1,
+        totalSpent: (parseFloat(guest.totalSpent) || 0) + paidAmount
+      }
+      if (!guest.firstStayDate || checkInDate < new Date(guest.firstStayDate)) guestUpdates.firstStayDate = checkIn
+      if (!guest.lastStayDate || checkOutDate > new Date(guest.lastStayDate)) guestUpdates.lastStayDate = checkOut
+      await guest.update(guestUpdates)
+
+      // Record in financial ledger — same pattern as Evolve CSV import
+      const year = checkInDate.getFullYear()
+      const month = checkInDate.getMonth() + 1
+      const externalBookingId = `direct-${stay.id}`
+
+      await FinancialBookingTransaction.create({
+        propertyId,
+        externalBookingId,
+        bookingSource: 'direct',
+        year,
+        month,
+        grossAmount: paidAmount,
+        managementFee: 0,
+        nightsBooked: nights,
+        checkInDate: checkIn,
+        checkOutDate: checkOut,
+        guestName: guest.name,
+        status: 'Checked out'
+      })
+
+      // Recompute FinancialMonthly.grossIncome from all transactions for this month
+      const txns = await FinancialBookingTransaction.findAll({ where: { propertyId, year, month } })
+      const grossIncome = txns.reduce((s, t) => s + parseFloat(t.grossAmount || 0), 0)
+      const nightsTotal = txns.reduce((s, t) => s + parseInt(t.nightsBooked || 0), 0)
+
+      const [monthly, monthlyCreated] = await FinancialMonthly.findOrCreate({
+        where: { propertyId, year, month },
+        defaults: { propertyId, year, month, grossIncome, nightsBooked: nightsTotal, numReservations: txns.length, syncSource: 'direct' }
+      })
+      if (!monthlyCreated) {
+        await monthly.update({ grossIncome, nightsBooked: nightsTotal, numReservations: txns.length })
+      }
+
+      res.json({ success: true, message: 'Stay recorded successfully', guest, stay, year, month })
+    } catch (error) {
+      console.error('Error recording manual stay:', error)
+      res.status(500).json({ success: false, message: 'Error recording stay', error: error.message })
     }
   }
 }
