@@ -268,6 +268,8 @@ class BookingController {
         guestPhone,
         numberOfGuests,
         totalAmount,
+        checkIn,
+        checkOut,
         status,
         bookingStatus,
         paymentStatus,
@@ -306,7 +308,20 @@ class BookingController {
       if (guestEmail) updateData.guestEmail = guestEmail;
       if (guestPhone) updateData.guestPhone = guestPhone;
       if (numberOfGuests) updateData.numberOfGuests = numberOfGuests;
-      if (totalAmount) updateData.totalAmount = totalAmount;
+      if (totalAmount !== undefined && totalAmount !== null) updateData.totalAmount = totalAmount;
+      if (checkIn && checkOut) {
+        const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+        if (nights < 1) {
+          return res.status(400).json({ success: false, message: 'Check-out must be after check-in' });
+        }
+        updateData.checkIn = checkIn;
+        updateData.checkOut = checkOut;
+        updateData.nights = nights;
+      } else if (checkIn) {
+        updateData.checkIn = checkIn;
+      } else if (checkOut) {
+        updateData.checkOut = checkOut;
+      }
       if (status) updateData.status = status;
       if (paymentStatus) updateData.paymentStatus = paymentStatus;
       if (specialRequests !== undefined) updateData.specialRequests = specialRequests;
