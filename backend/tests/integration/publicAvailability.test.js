@@ -163,10 +163,13 @@ describe('GET /api/public/properties/:slug/availability', () => {
     expect(res.body.success).toBe(false)
   })
 
-  it('returns 404 when the property exists but status is not active', async () => {
+  it('returns 200 when the property has a non-active status but isActive is true', async () => {
+    // status field is no longer checked by the public endpoint — isActive is the sole
+    // boolean gate. A property with status:'pending' or 'inactive' but isActive:true
+    // and publiclyVisible:true is available for booking.
     await createProperty(testUser.id, {
       slug: 'inactive-cabin',
-      status: 'inactive',
+      status: 'pending',
       publiclyVisible: true,
       isActive: true,
       basePrice: 100.00
@@ -174,6 +177,23 @@ describe('GET /api/public/properties/:slug/availability', () => {
 
     const res = await request(app)
       .get(availUrl('inactive-cabin', { checkIn: CHECK_IN, checkOut: CHECK_OUT }))
+      .expect(200)
+
+    expect(res.body.success).toBe(true)
+    expect(res.body.available).toBe(true)
+  })
+
+  it('returns 404 when the property has isActive false', async () => {
+    await createProperty(testUser.id, {
+      slug: 'deactivated-cabin',
+      status: 'active',
+      publiclyVisible: true,
+      isActive: false,
+      basePrice: 100.00
+    })
+
+    const res = await request(app)
+      .get(availUrl('deactivated-cabin', { checkIn: CHECK_IN, checkOut: CHECK_OUT }))
       .expect(404)
 
     expect(res.body.success).toBe(false)
